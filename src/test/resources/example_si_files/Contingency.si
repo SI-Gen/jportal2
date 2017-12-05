@@ -1,0 +1,115 @@
+///
+/// Name:Contingency.si
+///
+DATABASE testDatabase
+PACKAGE  co.za.entities
+OUTPUT   Contingency
+SERVER   PostgeSQL95
+
+Table Contingency
+   ID                            BIGSEQUENCE   //** annotation
+   DataSourceId                  INT
+   ExternalReference             CHAR(64)
+   FixtureExternalReference      CHAR(64)
+   PlayTypeID                    INT
+   ContingencyStatus             INT
+   Description                   CHAR(256)
+   IsActive                      INT (Yes = 1 No = 0)
+   IsActiveReason                CHAR(512) NULL
+   SourceBetTypeID               INT
+   SourceBetTypeValue            CHAR(100) NULL
+   StartTime                     DATETIME NULL
+   CloseTime                     DATETIME NULL
+   ResultTime                    DATETIME NULL
+   MessageTimeStamp              DATETIME
+   UsrID                         CHAR(48)
+   TMStamp                       TIMESTAMP
+
+
+KEY PKEY PRIMARY ID
+KEY UKEY_DATASOURCE_REF UNIQUE DataSourceId ExternalReference
+//KEY UKEY_SOURCE_STATUS_ISACTIVE DataSourceId FeedActive ContingencyStatusID EndDate
+LINK ContingencyStatus ContingencyStatus
+
+PROC SelectOne
+PROC SelectAll
+PROC Update
+PROC Insert Returning
+PROC BulkInsert (20)
+
+PROC SelectForUpdateBySourceAndExternalRef (standard)
+INPUT
+    DataSourceId        =
+    ExternalReference   =
+OUTPUT (SINGLE)
+SQLCODE
+    SELECT
+    ID
+   ,DataSourceId
+   ,ExternalReference
+   ,FixtureExternalReference
+   ,PlayTypeID
+   ,ContingencyStatus
+   ,Description
+   ,IsActive
+   ,IsActiveReason
+   ,SourceBetTypeID
+   ,SourceBetTypeValue
+   ,StartTime
+   ,CloseTime
+   ,ResultTime
+   ,MessageTimeStamp
+   ,UsrID
+   ,TMStamp
+    FROM Contingency
+    WHERE DataSourceId = :DataSourceId
+    AND ExternalReference  = :ExternalReference
+    FOR UPDATE
+ENDCODE
+
+PROC SelectBySourceAndFixtureExternalRef (standard)
+INPUT
+    DataSourceId        =
+    FixtureExternalReference   =
+SQLCODE
+    SELECT
+    ID
+   ,DataSourceId
+   ,ExternalReference
+   ,FixtureExternalReference
+   ,PlayTypeID
+   ,ContingencyStatus
+   ,Description
+   ,IsActive
+   ,IsActiveReason
+   ,SourceBetTypeID
+   ,SourceBetTypeValue
+   ,StartTime
+   ,CloseTime
+   ,ResultTime
+   ,MessageTimeStamp
+   ,UsrID
+   ,TMStamp
+    FROM Contingency
+    WHERE DataSourceId = :DataSourceId
+    AND FixtureExternalReference  = :FixtureExternalReference
+ENDCODE
+
+PROC SelectForExpiry
+INPUT
+OUTPUT
+    DataSourceId                  INT
+    ExternalReference             CHAR(64)
+    FixtureExternalReference      CHAR(64)
+SQLCODE
+    SELECT
+    DataSourceId
+   ,ExternalReference
+   ,FixtureExternalReference
+    FROM Contingency
+    WHERE CloseTime is not null
+    AND CloseTime <= current_timestamp;
+ENDCODE
+
+SQLDATA
+-- Takeons come here

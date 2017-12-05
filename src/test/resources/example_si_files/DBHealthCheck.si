@@ -1,0 +1,19 @@
+///
+/// Name:DBHealthCheck.si
+///
+DATABASE testDatabase
+PACKAGE  co.za.entities
+OUTPUT   DBHealthCheck
+SERVER   PostgeSQL95
+
+
+//TODO: AnyDB doesn't want to compile without a table definition
+Table DBHealthCheck
+    stamp TIMESTAMP
+PROC TestDB
+INPUT
+OUTPUT
+    stamp TIMESTAMP
+SQLCODE
+    SELECT CURRENT_TIMESTAMP
+ENDCODE

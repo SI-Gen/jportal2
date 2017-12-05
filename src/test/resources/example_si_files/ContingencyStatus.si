@@ -1,0 +1,30 @@
+///
+/// Name:ContingencyStatus.si
+///
+DATABASE testDatabase
+PACKAGE  co.za.entities
+OUTPUT   ContingencyStatus
+SERVER   PostgeSQL95
+
+Table ContingencyStatus
+  ID                            INT
+  Description                   CHAR(50)
+  UsrID                         CHAR(48)
+  TMStamp                       TIMESTAMP
+
+KEY PKEY PRIMARY ID
+
+PROC Insert
+PROC SelectOne
+
+SQLDATA
+-- Takeons come here
+INSERT INTO ContingencyStatus(id, description, usrid, tmstamp)VALUES (0, 'PENDING', 'SYSTEM', CURRENT_TIMESTAMP);
+INSERT INTO ContingencyStatus(id, description, usrid, tmstamp)VALUES (1, 'OPEN', 'SYSTEM', CURRENT_TIMESTAMP);
+INSERT INTO ContingencyStatus(id, description, usrid, tmstamp)VALUES (2, 'SUSPENDED', 'SYSTEM', CURRENT_TIMESTAMP);
+INSERT INTO ContingencyStatus(id, description, usrid, tmstamp)VALUES (3, 'CLOSED', 'SYSTEM', CURRENT_TIMESTAMP);
+INSERT INTO ContingencyStatus(id, description, usrid, tmstamp)VALUES (4, 'FINALISED', 'SYSTEM', CURRENT_TIMESTAMP);
+INSERT INTO ContingencyStatus(id, description, usrid, tmstamp)VALUES (5, 'RESULTED', 'SYSTEM', CURRENT_TIMESTAMP);
+INSERT INTO ContingencyStatus(id, description, usrid, tmstamp)VALUES (6, 'PROVISIONAL_RESULT', 'SYSTEM', CURRENT_TIMESTAMP);
+INSERT INTO ContingencyStatus(id, description, usrid, tmstamp)VALUES (7, 'SETTLED', 'SYSTEM', CURRENT_TIMESTAMP);
+

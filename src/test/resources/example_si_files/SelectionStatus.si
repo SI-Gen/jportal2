@@ -1,0 +1,36 @@
+///
+/// Name:SelectionStatus.si
+///
+DATABASE testDatabase
+PACKAGE  co.za.entities
+OUTPUT   SelectionStatus
+SERVER   PostgeSQL95
+
+Table SelectionStatus
+  ID                            INT
+  Description                   CHAR(50)
+  UsrID                         CHAR(48)
+  TMStamp                       TIMESTAMP
+
+KEY PKEY PRIMARY ID
+
+PROC Insert
+PROC SelectOne
+
+Proc SelectOneBy Description AS AAA
+Proc SelectBy Description UsrID AFieldNotInTable
+OUTPUT
+	ID 			=
+	Description =
+	Blah		INT
+
+Proc CCCC SelectBy UsrID
+Proc SelectBy UsrID AS DDD
+
+SQLDATA
+-- Takeons come here
+INSERT INTO SelectionStatus(id, description, usrid, tmstamp)VALUES (1, 'PENDING', 'SYSTEM', CURRENT_TIMESTAMP);
+INSERT INTO SelectionStatus(id, description, usrid, tmstamp)VALUES (2, 'OPEN', 'SYSTEM', CURRENT_TIMESTAMP);
+INSERT INTO SelectionStatus(id, description, usrid, tmstamp)VALUES (3, 'SUSPENDED', 'SYSTEM', CURRENT_TIMESTAMP);
+INSERT INTO SelectionStatus(id, description, usrid, tmstamp)VALUES (4, 'RESULTED', 'SYSTEM', CURRENT_TIMESTAMP);
+

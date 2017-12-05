@@ -1,0 +1,82 @@
+///
+/// Name:Selection.si
+///
+DATABASE testDatabase
+PACKAGE  co.za.entities
+OUTPUT   Selection
+SERVER   PostgeSQL95
+
+Table Selection
+   ID                            BIGSEQUENCE
+   ContingencyID                 LONG
+   ExternalReference             CHAR(64)
+   ContingencyExternalReference  CHAR(64)
+   SelectionStatus               INT
+   Description                   CHAR(256)
+   Price                         DOUBLE(18,7)
+   Result                        INT
+   PercentageWin                 DOUBLE(18,7)
+   PercentageScratch             DOUBLE(18,7)
+   Place                         INT
+   UsrID                         CHAR(48)
+   TMStamp                       TIMESTAMP
+
+KEY PKEY PRIMARY ID
+KEY UKEY_DATASOURCE_REF UNIQUE ContingencyID ExternalReference
+KEY KEY_CONTINGENCY_REF ContingencyID
+LINK SelectionStatus SelectionStatus
+LINK Contingency ContingencyID
+
+PROC SelectOne
+PROC Update
+PROC Insert Returning
+
+PROC SelectForUpdateByContingencyId (standard)
+INPUT
+    ContingencyID        =
+OUTPUT
+SQLCODE
+    SELECT
+    ID
+    ,ContingencyID
+    ,ExternalReference
+    ,ContingencyExternalReference
+    ,SelectionStatus
+    ,Description
+    ,Price
+    ,Result
+    ,PercentageWin
+    ,PercentageScratch
+    ,Place
+    ,UsrID
+    ,TMStamp
+    FROM Selection
+    WHERE ContingencyID = :ContingencyID
+    FOR UPDATE
+ENDCODE
+
+PROC SelectByContingencyId (standard)
+INPUT
+    ContingencyID        =
+OUTPUT
+SQLCODE
+    SELECT
+    ID
+    ,ContingencyID
+    ,ExternalReference
+    ,ContingencyExternalReference
+    ,SelectionStatus
+    ,Description
+    ,Price
+    ,Result
+    ,PercentageWin
+    ,PercentageScratch
+    ,Place
+    ,UsrID
+    ,TMStamp
+    FROM Selection
+    WHERE ContingencyID = :ContingencyID
+ENDCODE
+
+SQLDATA
+-- Takeons come here
