@@ -17,31 +17,33 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.lang.*;
 import java.util.Vector;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author vince
  */
 public class PythonTreeCode extends Generator
 {
+  private static final Logger logger = LoggerFactory.getLogger(PythonTreeCode.class);
+
   /**
    * Reads input from stored repository
    */
   public static void main(String args[])
   {
     try
-    {
-      PrintWriter outLog = new PrintWriter(System.out);
+    {      
       for (int i = 0; i < args.length; i++)
       {
-        outLog.println(args[i] + ": Generate Python Tree Code");
+        logger.info(args[i] + ": Generate Python Tree Code");
         ObjectInputStream in = new ObjectInputStream(new FileInputStream(args[i]));
         Database database = (Database) in.readObject();
         in.close();
-        generate(database, "", outLog);
-      }
-      outLog.flush();
+        generate(database, "");
+      }    
     }
     catch (Exception e)
     {
@@ -89,12 +91,12 @@ public class PythonTreeCode extends Generator
     if (data.length() > 0)
       outData.println(data);
   }
-  public static void generate(Database database, String output, PrintWriter outLog)
+  public static void generate(Database database, String output)
   {
-    database = database.doImports(outLog);
+    database = database.doImports();
     try
     {
-      outLog.println("Code: " + output + database.output + ".py");
+      logger.info("Code: " + output + database.output + ".py");
       OutputStream outFile = new FileOutputStream(output + database.output + ".py");
       try
       {
@@ -120,14 +122,14 @@ public class PythonTreeCode extends Generator
           if (database.flags.size() > 0)
           {
             outData.print("_db.flags = ");
-            generateString(database.flags, outData, outLog);
+            generateString(database.flags, outData);
           }
           else
             outData.println("_db.flags = ''");
           if (database.imports.size() > 0)
           {
             outData.print("_db.imports = ");
-            generateString(database.imports, outData, outLog);
+            generateString(database.imports, outData);
           }
           else
             outData.println("_db.imports = ''");
@@ -135,7 +137,7 @@ public class PythonTreeCode extends Generator
           for (int i = 0; i < database.tables.size(); i++)
           {
             Table table = (Table) database.tables.elementAt(i);
-            generateTable(table, outData, outLog);
+            generateTable(table, outData);
             //outData.println();
             outData.println(lowerFirst(table.useName()) + " = _tb");
             outData.println("_db.tables.append(_tb)");
@@ -144,7 +146,7 @@ public class PythonTreeCode extends Generator
           for (int i = 0; i < database.views.size(); i++)
           {
             View view = (View) database.views.elementAt(i);
-            generateView(view, outData, outLog);
+            generateView(view, outData);
             //outData.println();
             outData.println("_db.views.append(_vw)");
           }
@@ -152,7 +154,7 @@ public class PythonTreeCode extends Generator
           for (int i = 0; i < database.sequences.size(); i++)
           {
             Sequence sequence = (Sequence) database.sequences.elementAt(i);
-            generateSequence(sequence, outData, outLog);
+            generateSequence(sequence, outData);
             //outData.println();
             outData.println("_db.sequences.append(_sq)");
           }
@@ -169,10 +171,10 @@ public class PythonTreeCode extends Generator
     }
     catch (IOException e1)
     {
-      outLog.println("Generate Procs IO Error");
+      logger.error("Generate Procs IO Error");
     }
   }
-  static void generateTable(Table table, PrintWriter outData, PrintWriter outLog)
+  static void generateTable(Table table, PrintWriter outData)
   {
     //outData.println();
     outData.println("_tb = _class()");
@@ -194,56 +196,56 @@ public class PythonTreeCode extends Generator
     if (table.comments.size() > 0)
     {
       outData.print("_tb.comments = ");
-      generateString(table.comments, outData, outLog);
+      generateString(table.comments, outData);
     }
     else
       outData.println("_tb.comments = ''");
     if (table.options.size() > 0)
     {
       outData.print("_tb.options = ");
-      generateString(table.options, outData, outLog);
+      generateString(table.options, outData);
     }
     else
       outData.println("_tb.options = ''");
     if (table.allUsers.size() > 0)
     {
       outData.print("_tb.allUsers = ");
-      generateString(table.allUsers, outData, outLog);
+      generateString(table.allUsers, outData);
     }
     else
       outData.println("_tb.allUsers = ''");
     outData.println("_tb.fields = []");
     for (int i = 0; i < table.fields.size(); i++)
     {
-      generateField((Field) table.fields.elementAt(i), outData, outLog);
+      generateField((Field) table.fields.elementAt(i), outData);
       //outData.println();
       outData.println("_tb.fields.append(_fd)");
     }
     outData.println("_tb.keys = []");
     for (int i = 0; i < table.keys.size(); i++)
     {
-      generateKey((Key) table.keys.elementAt(i), outData, outLog);
+      generateKey((Key) table.keys.elementAt(i), outData);
       //outData.println();
       outData.println("_tb.keys.append(_ky)");
     }
     outData.println("_tb.links = []");
     for (int i = 0; i < table.links.size(); i++)
     {
-      generateLink((Link) table.links.elementAt(i), outData, outLog);
+      generateLink((Link) table.links.elementAt(i), outData);
       //outData.println();
       outData.println("_tb.links.append(_ln)");
     }
     outData.println("_tb.grants = []");
     for (int i = 0; i < table.grants.size(); i++)
     {
-      generateGrant((Grant) table.grants.elementAt(i), outData, outLog);
+      generateGrant((Grant) table.grants.elementAt(i), outData);
       //outData.println();
       outData.println("_tb.grants.append(_gr)");
     }
     outData.println("_tb.views = []");
     for (int i = 0; i < table.views.size(); i++)
     {
-      generateView((View) table.views.elementAt(i), outData, outLog);
+      generateView((View) table.views.elementAt(i), outData);
       //outData.println();
       outData.println("_tb.views.append(_vw)");
     }
@@ -253,7 +255,7 @@ public class PythonTreeCode extends Generator
       Proc proc = (Proc) table.procs.elementAt(i);
       if (proc.isData == true)
         continue;
-      generateProc(proc, outData, outLog);
+      generateProc(proc, outData);
       //outData.println();
       outData.println(lowerFirst(table.useName()) + proc.name + " = _pr");
       outData.println("_tb.procs.append(_pr)");
@@ -263,7 +265,7 @@ public class PythonTreeCode extends Generator
   {
     return value.substring(0, 1).toLowerCase() + value.substring(1);
   }
-  static void generateProc(Proc proc, PrintWriter outData, PrintWriter outLog)
+  static void generateProc(Proc proc, PrintWriter outData)
   {
     //outData.println();
     outData.println("_pr = _class()");
@@ -284,28 +286,28 @@ public class PythonTreeCode extends Generator
     if (proc.comments.size() > 0)
     {
       outData.print("_pr.comments = ");
-      generateString(proc.comments, outData, outLog);
+      generateString(proc.comments, outData);
     }
     else
       outData.println("_pr.comments = ''");
     if (proc.options.size() > 0)
     {
       outData.print("_pr.options = ");
-      generateString(proc.options, outData, outLog);
+      generateString(proc.options, outData);
     }
     else
       outData.println("_pr.options = ''");
     outData.println("_pr.inputs = []");
     for (int i = 0; i < proc.inputs.size(); i++)
     {
-      generateField((Field) proc.inputs.elementAt(i), outData, outLog);
+      generateField((Field) proc.inputs.elementAt(i), outData);
       //outData.println();
       outData.println("_pr.inputs.append(_fd)");
     }
     outData.println("_pr.outputs = []");
     for (int i = 0; i < proc.outputs.size(); i++)
     {
-      generateField((Field) proc.outputs.elementAt(i), outData, outLog);
+      generateField((Field) proc.outputs.elementAt(i), outData);
       //outData.println();
       outData.println("_pr.outputs.append(_fd)");
     }
@@ -314,21 +316,21 @@ public class PythonTreeCode extends Generator
     if (lines.size() > 0)
     {
       outData.print("_pr.lines = ");
-      generateString(lines, outData, outLog);
+      generateString(lines, outData);
     }
     else
       outData.println("_pr.lines = ''");
     if (proc.dynamics.size() > 0)
     {
       outData.print("_pr.dynamics = ");
-      generateString(proc.dynamics, outData, outLog);
+      generateString(proc.dynamics, outData);
     }
     else
       outData.println("_pr.dynamics = ''");
     if (proc.dynamicSizes.size() > 0)
     {
       outData.print("_pr.dynamicSizes = ");
-      generateInteger(proc.dynamicSizes, outData, outLog);
+      generateInteger(proc.dynamicSizes, outData);
     }
     else
       outData.println("_pr.dynamicSizes = ''");
@@ -390,7 +392,7 @@ public class PythonTreeCode extends Generator
     }
     return "0";
   }
-  static void generateField(Field field, PrintWriter outData, PrintWriter outLog)
+  static void generateField(Field field, PrintWriter outData)
   {
     //outData.println();
     outData.println("_fd = _class()");
@@ -413,14 +415,14 @@ public class PythonTreeCode extends Generator
     if (field.comments.size() > 0)
     {
       outData.print("_fd.comments = ");
-      generateString(field.comments, outData, outLog);
+      generateString(field.comments, outData);
     }
     else
       outData.println("_fd.comments = ''");
     outData.println("_fd.enums = []");
     for (int i = 0; i < field.enums.size(); i++)
     {
-      generateEnum((Enum) field.enums.elementAt(i), outData, outLog);
+      generateEnum((Enum) field.enums.elementAt(i), outData);
       outData.println("_fd.enums.append(_en)");
     }
     outData.println("_fd.valueList = []");
@@ -430,38 +432,38 @@ public class PythonTreeCode extends Generator
       outData.println("_fd.valueList.append(_val)");
     }
   }
-  static void generateLine(Line line, PrintWriter outData, PrintWriter outLog)
+  static void generateLine(Line line, PrintWriter outData)
   {
     if (line.line.trim().length() > 0)
       outData.println((line.isVar ? "&" : "") + line.line);
   }
-  static void generateEnum(Enum entry, PrintWriter outData, PrintWriter outLog)
+  static void generateEnum(Enum entry, PrintWriter outData)
   {
     //outData.println();
     outData.println("_en = _class()");
     out(outData, string("_en.name", entry.name));
     out(outData, string("_en.value", entry.value));
   }
-  static void generateGrant(Grant grant, PrintWriter outData, PrintWriter outLog)
+  static void generateGrant(Grant grant, PrintWriter outData)
   {
     //outData.println();
     outData.println("_gr = _class()");
     if (grant.perms.size() > 0)
     {
       outData.print("_gr.perms = ");
-      generateString(grant.perms, outData, outLog);
+      generateString(grant.perms, outData);
     }
     else
       outData.println("_gr.perms = ''");
     if (grant.users.size() > 0)
     {
       outData.print("_gr.users = ");
-      generateString(grant.users, outData, outLog);
+      generateString(grant.users, outData);
     }
     else
       outData.println("_gr.users = ''");
   }
-  static void generateKey(Key key, PrintWriter outData, PrintWriter outLog)
+  static void generateKey(Key key, PrintWriter outData)
   {
     //outData.println();
     outData.println("_ky = _class()");
@@ -471,19 +473,19 @@ public class PythonTreeCode extends Generator
     if (key.fields.size() > 0)
     {
       outData.print("_ky.fields = ");
-      generateString(key.fields, outData, outLog);
+      generateString(key.fields, outData);
     }
     else
       outData.println("_ky.fields = ''");
     if (key.options.size() > 0)
     {
       outData.print("_ky.options = ");
-      generateString(key.options, outData, outLog);
+      generateString(key.options, outData);
     }
     else
       outData.println("_ky.options = ''");
   }
-  static void generateLink(Link link, PrintWriter outData, PrintWriter outLog)
+  static void generateLink(Link link, PrintWriter outData)
   {
     //outData.println();
     outData.println("_ln = _class()");
@@ -492,19 +494,19 @@ public class PythonTreeCode extends Generator
     if (link.fields.size() > 0)
     {
       outData.print("_ln.fields = ");
-      generateString(link.fields, outData, outLog);
+      generateString(link.fields, outData);
     }
     else
       outData.println("_ln.fields = ");
   }
-  static void generateFlag(Flag flag, PrintWriter outData, PrintWriter outLog)
+  static void generateFlag(Flag flag, PrintWriter outData)
   {
     outData.println("_fg = _class()");
     out(outData, string("_fg.name", flag.name));
     out(outData, string("_fg.value", toBoolean(flag.value)));
     outData.println("_fg.description = '" + flag.description + "'");
   }
-  static void generateString(Vector<String> allUsers, PrintWriter outData, PrintWriter outLog)
+  static void generateString(Vector<String> allUsers, PrintWriter outData)
   {
     outData.println("_strings('''\\");
     for (int i = 0; i < allUsers.size(); i++)
@@ -517,7 +519,7 @@ public class PythonTreeCode extends Generator
     }
     outData.println("''')");
   }
-  static void generateInteger(Vector<Integer> integers, PrintWriter outData, PrintWriter outLog)
+  static void generateInteger(Vector<Integer> integers, PrintWriter outData)
   {
     outData.println("_integers('''\\");
     for (int i = 0; i < integers.size(); i++)
@@ -527,7 +529,7 @@ public class PythonTreeCode extends Generator
     }
     outData.println("''')");
   }
-  static void generateSequence(Sequence sequence, PrintWriter outData, PrintWriter outLog)
+  static void generateSequence(Sequence sequence, PrintWriter outData)
   {
     outData.println("_sq = _class()");
     out(outData, string("_sq.name", sequence.name));
@@ -539,7 +541,7 @@ public class PythonTreeCode extends Generator
     out(outData, string("_sq.startWith", sequence.startWith));
     out(outData, string("_sq.start", sequence.start));
   }
-  static void generateView(View view, PrintWriter outData, PrintWriter outLog)
+  static void generateView(View view, PrintWriter outData)
   {
     //outData.println();
     outData.println("_vw = _class()");
@@ -548,21 +550,21 @@ public class PythonTreeCode extends Generator
     if (view.aliases.size() > 0)
     {
       outData.print("_vw.aliases = ");
-      generateString(view.aliases, outData, outLog);
+      generateString(view.aliases, outData);
     }
     else
       outData.println("_vw.aliases = ''");
     if (view.lines.size() > 0)
     {
       outData.print("_vw.lines = ");
-      generateString(view.lines, outData, outLog);
+      generateString(view.lines, outData);
     }
     else
       outData.println("_vw.lines = ''");
     if (view.users.size() > 0)
     {
       outData.print("_vw.users = ");
-      generateString(view.users, outData, outLog);
+      generateString(view.users, outData);
     }
     else
       outData.println("_vw.users = ''");

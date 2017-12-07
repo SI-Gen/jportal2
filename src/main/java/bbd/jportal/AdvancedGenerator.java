@@ -12,13 +12,12 @@
 
 package bbd.jportal;
 
-import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Vector;
 
 public abstract class AdvancedGenerator
 {
-  public static void generateAdvanced(Database database, Map<String,String> parameters, String output, PrintWriter outLog)
+  public static void generateAdvanced(Database database, Map<String,String> parameters, String output)
   {
   }
   public static String description()

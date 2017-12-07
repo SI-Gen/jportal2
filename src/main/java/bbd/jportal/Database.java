@@ -17,12 +17,17 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.Vector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * The Database identified by name, holds a list of tables for a
  * server, userid and password.
  */
 public class Database implements Serializable
 {
+  private static final Logger logger = LoggerFactory.getLogger(Database.class);
+
   /**
    * 
    */
@@ -126,10 +131,10 @@ public class Database implements Serializable
       return output;
     return name;
   }
-  public static Database readRepository(String name, PrintWriter outLog)
+  public static Database readRepository(String name)
       throws Exception
   {
-    outLog.println("Inputting " + name + ".repository");
+    logger.info("Inputting " + name + ".repository");
     ObjectInputStream in = new ObjectInputStream(new FileInputStream(name + ".repository"));
     try
     {
@@ -141,77 +146,77 @@ public class Database implements Serializable
       in.close();
     }
   }
-  private void addinTable(Vector<Table> tables, Table addin, PrintWriter outLog)
+  private void addinTable(Vector<Table> tables, Table addin)
   {
     for (int i = 0; i < tables.size(); i++)
     {
       Table table = (Table) tables.elementAt(i);
       if (table.name.equalsIgnoreCase(addin.name))
       {
-        outLog.println("Import table name :" + addin.name + " to merge with existing.");
-        table = table.add(addin, outLog);
+        logger.info("Import table name :" + addin.name + " to merge with existing.");
+        table = table.add(addin);
         tables.setElementAt(table, i);
         return;
       }
     }
     tables.addElement(addin);
   }
-  private void addinView(Vector<View> views, View addin, PrintWriter outLog)
+  private void addinView(Vector<View> views, View addin)
   {
     for (int i = 0; i < views.size(); i++)
     {
       View view = (View) views.elementAt(i);
       if (view.name.equalsIgnoreCase(addin.name))
       {
-        outLog.println("Import view name :" + addin.name + " already exists");
+        logger.warn("Import view name :" + addin.name + " already exists");
         return;
       }
     }
     views.addElement(addin);
   }
-  private static void addinSequence(Vector<Sequence> sequences, Sequence addin, PrintWriter outLog)
+  private static void addinSequence(Vector<Sequence> sequences, Sequence addin)
   {
     for (int i = 0; i < sequences.size(); i++)
     {
       Sequence sequence = (Sequence) sequences.elementAt(i);
       if (sequence.name.equalsIgnoreCase(addin.name))
       {
-        outLog.println("Import sequence name :" + addin.name + " already exists");
+        logger.warn("Import sequence name :" + addin.name + " already exists");
         return;
       }
     }
     sequences.addElement(addin);
   }
-  private String set(String a, String b, String what, PrintWriter outLog)
+  private String set(String a, String b, String what)
   {
     if (a.length() == 0)
       a = b;
     else if (a.equalsIgnoreCase(b) == false)
-      outLog.println("Import " + what + " name :" + a + " not the same as :" + b);
+      logger.warn("Import " + what + " name :" + a + " not the same as :" + b);
     return a;
   }
-  public void add(Database database, PrintWriter outLog)
+  public void add(Database database)
   {
-    name = set(name, database.name, "name", outLog);
-    output = set(output, database.output, "output", outLog);
-    server = set(server, database.server, "server", outLog);
-    userid = set(userid, database.userid, "userid", outLog);
-    password = set(password, database.password, "password", outLog);
-    packageName = set(packageName, database.packageName, "packageName", outLog);
+    name = set(name, database.name, "name");
+    output = set(output, database.output, "output");
+    server = set(server, database.server, "server");
+    userid = set(userid, database.userid, "userid");
+    password = set(password, database.password, "password");
+    packageName = set(packageName, database.packageName, "packageName" );
     for (int i = 0; i < database.tables.size(); i++)
     {
       Table table = (Table) database.tables.elementAt(i);
-      addinTable(tables, table, outLog);
+      addinTable(tables, table);
     }
     for (int i = 0; i < database.views.size(); i++)
     {
       View view = (View) database.views.elementAt(i);
-      addinView(views, view, outLog);
+      addinView(views, view);
     }
     for (int i = 0; i < database.sequences.size(); i++)
     {
       Sequence sequence = (Sequence) database.sequences.elementAt(i);
-      addinSequence(sequences, sequence, outLog);
+      addinSequence(sequences, sequence);
     }
     for (int i = 0; i < database.imports.size(); i++)
     {
@@ -219,7 +224,7 @@ public class Database implements Serializable
       try
       {
         addinName = (String) database.imports.elementAt(i);
-        outLog.println("Addin name " + addinName);
+        logger.warn("Addin name " + addinName);
         boolean addIt = true;
         for (int j = 0; j < imports.size(); j++)
         {
@@ -227,29 +232,29 @@ public class Database implements Serializable
           if (already.equalsIgnoreCase(addinName) == true)
           {
             addIt = false;
-            outLog.println("Already imported: " + addinName);
+            logger.warn("Already imported: " + addinName);
             break;
           }
         }
         if (addIt == true)
         {
           imports.addElement(addinName);
-          Database next = readRepository(addinName, outLog);
-          add(next, outLog);
+          Database next = readRepository(addinName);
+          add(next);
         }
       }
       catch (Exception ex)
       {
-        outLog.println("Import name :" + addinName + " failed.");
+        logger.error("Import name :" + addinName + " failed.",ex);
       }
     }
   }
-  public Database doImports(PrintWriter outLog)
+  public Database doImports()
   {
     if (imports.size() > 0)
     {
       Database database = new Database();
-      database.add(this, outLog);
+      database.add(this);
       return database;
     }
     return this;

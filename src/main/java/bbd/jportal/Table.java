@@ -15,9 +15,11 @@ package bbd.jportal;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.Vector;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Table identified by name holds fields, keys, links, grants, views and
@@ -25,6 +27,8 @@ import java.util.Vector;
  */
 public class Table implements Serializable
 {
+  private static final Logger logger = LoggerFactory.getLogger(Table.class);
+
   private static final long serialVersionUID = 1L;
 
   public Database getDatabase() {
@@ -802,7 +806,7 @@ public class Table implements Serializable
   /**
    * Builds an update proc generated as part of standard record class
    */
-  public void buildUpdateFor(Proc proc, PrintWriter outLog)
+  public void buildUpdateFor(Proc proc)
   {
     String name = tableName();
     int i, j, k;
@@ -855,7 +859,7 @@ public class Table implements Serializable
   /**
    * Builds an updateby proc generated as part of standard record class
    */
-  public void buildUpdateBy(Proc proc, PrintWriter outLog)
+  public void buildUpdateBy(Proc proc)
   {
     String name = tableName();
     int i, j, k;
@@ -1194,7 +1198,7 @@ public class Table implements Serializable
     else if (readonly)
       proc.lines.addElement(new Line(" for read only"));
   }
-  public void buildDeleteBy(Proc proc, PrintWriter outLog)
+  public void buildDeleteBy(Proc proc)
   {
     String name = tableName();
     int i, j, k;
@@ -1229,7 +1233,7 @@ public class Table implements Serializable
       throw new Error("Error generating buildDeleteBy");
     }
   }
-  public void buildSelectBy(Proc proc, boolean forUpdate, boolean forReadOnly, boolean inOrder, boolean descending, PrintWriter outLog)
+  public void buildSelectBy(Proc proc, boolean forUpdate, boolean forReadOnly, boolean inOrder, boolean descending)
   {
     String name = tableName();
     int i, j, k;
@@ -1297,7 +1301,7 @@ public class Table implements Serializable
     }
     selectOrderBy(proc, inOrder, descending);
   }
-  public void buildSelectFrom(Proc proc, Table table, PrintWriter outLog)
+  public void buildSelectFrom(Proc proc, Table table)
   {
     String name = tableName();
     int i, j, k;
@@ -1316,7 +1320,7 @@ public class Table implements Serializable
         if (first.line.toLowerCase().indexOf("select ") > -1 && first.line.toLowerCase().indexOf("select ") < 5)
         {
           doSelect = false;
-          outLog.println("Select found not generating SELECT." + first.line.toLowerCase().indexOf("select "));
+          logger.warn("Select found not generating SELECT." + first.line.toLowerCase().indexOf("select "));
           break;
         }
       }
@@ -1338,7 +1342,7 @@ public class Table implements Serializable
             }
             if (!name.toLowerCase().startsWith(preFix.toLowerCase().substring(0, 1)))
             {
-              outLog.println("PREFIX mismatch. Dropping PREFIX");
+              logger.warn("PREFIX mismatch. Dropping PREFIX");
               preFix = "";
             }
             break;
@@ -1347,7 +1351,7 @@ public class Table implements Serializable
       }
       if (preFix.equals(""))
       {
-        outLog.println("Unable to determine PREFIX for table");
+        logger.warn("Unable to determine PREFIX for table");
       }
       proc.lines.insertElementAt(new Line("SELECT "), 0);
       for (j = 0; j < proc.outputs.size(); j++)
@@ -1388,23 +1392,23 @@ public class Table implements Serializable
   {
     return name;
   }
-  private String set(String a, String b, String what, PrintWriter outLog)
+  private String set(String a, String b, String what)
   {
     if (a.length() == 0)
       a = b;
     else if (a.equalsIgnoreCase(b) == false)
-      outLog.println("Import " + what + " name :" + a + " not the same as :" + b);
+      logger.warn("Import " + what + " name :" + a + " not the same as :" + b);
     return a;
   }
-  private boolean set(boolean a, boolean b, String what, PrintWriter outLog)
+  private boolean set(boolean a, boolean b, String what)
   {
     if (a == false)
       a = b;
     else if (b == false)
-      outLog.println("Import " + what + " is already true and is not set to false.");
+    logger.warn("Import " + what + " is already true and is not set to false.");
     return a;
   }
-  private void copy(Table addin, PrintWriter outLog)
+  private void copy(Table addin)
   {
     name = addin.name;
     alias = addin.alias;
@@ -1432,28 +1436,28 @@ public class Table implements Serializable
     hasIdentity = addin.hasIdentity;
     start = addin.start;
   }
-  private void merge(Table addin, PrintWriter outLog)
+  private void merge(Table addin)
   {
-    alias = set(alias, addin.alias, "alias", outLog);
-    check = set(check, addin.check, "check", outLog);
-    hasPrimaryKey = set(hasPrimaryKey, addin.hasPrimaryKey, "hasPrimaryKey", outLog);
-    hasSequence = set(hasSequence, addin.hasSequence, "hasSequence", outLog);
-    hasTimeStamp = set(hasTimeStamp, addin.hasTimeStamp, "hasTimeStamp", outLog);
-    hasAutoTimeStamp = set(hasAutoTimeStamp, addin.hasAutoTimeStamp, "hasAutoTimeStamp", outLog);
-    hasUserStamp = set(hasUserStamp, addin.hasUserStamp, "hasUserStamp", outLog);
-    hasExecute = set(hasExecute, addin.hasExecute, "hasExecute", outLog);
-    hasSelect = set(hasSelect, addin.hasSelect, "hasSelect", outLog);
-    hasInsert = set(hasInsert, addin.hasInsert, "hasInsert", outLog);
-    hasDelete = set(hasDelete, addin.hasDelete, "hasDelete", outLog);
-    hasUpdate = set(hasUpdate, addin.hasUpdate, "hasUpdate", outLog);
-    hasStdProcs = set(hasStdProcs, addin.hasStdProcs, "hasStdProcs", outLog);
-    hasIdentity = set(hasIdentity, addin.hasIdentity, "hasIdentity", outLog);
+    alias = set(alias, addin.alias, "alias");
+    check = set(check, addin.check, "check");
+    hasPrimaryKey = set(hasPrimaryKey, addin.hasPrimaryKey, "hasPrimaryKey");
+    hasSequence = set(hasSequence, addin.hasSequence, "hasSequence");
+    hasTimeStamp = set(hasTimeStamp, addin.hasTimeStamp, "hasTimeStamp");
+    hasAutoTimeStamp = set(hasAutoTimeStamp, addin.hasAutoTimeStamp, "hasAutoTimeStamp");
+    hasUserStamp = set(hasUserStamp, addin.hasUserStamp, "hasUserStamp");
+    hasExecute = set(hasExecute, addin.hasExecute, "hasExecute");
+    hasSelect = set(hasSelect, addin.hasSelect, "hasSelect");
+    hasInsert = set(hasInsert, addin.hasInsert, "hasInsert");
+    hasDelete = set(hasDelete, addin.hasDelete, "hasDelete");
+    hasUpdate = set(hasUpdate, addin.hasUpdate, "hasUpdate");
+    hasStdProcs = set(hasStdProcs, addin.hasStdProcs, "hasStdProcs");
+    hasIdentity = set(hasIdentity, addin.hasIdentity, "hasIdentity");
   }
-  public Table add(Table addin, PrintWriter outLog)
+  public Table add(Table addin)
   {
     Table table = new Table();
-    table.copy(this, outLog);
-    table.merge(addin, outLog);
+    table.copy(this);
+    table.merge(addin);
     return table;
   }
   public boolean hasOption(String value)

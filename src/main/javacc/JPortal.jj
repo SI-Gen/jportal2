@@ -18,14 +18,19 @@ PARSER_BEGIN(JPortal)
 package bbd.jportal;
 
 import java.util.*;
-import java.lang.*;
 import java.io.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
 * JDBC Database Definition Compiler and Generator
 */
 public class JPortal
 {
+  private static final Logger logger = LoggerFactory.getLogger(JPortal.class);
+
   protected static Database  database;
   protected static Table     table;
   protected static Enum      entry;
@@ -42,7 +47,6 @@ public class JPortal
   protected static String    user;
   protected static String    line;
   protected static String    inDir;
-  protected static PrintWriter outLog;
   static private boolean parser_initialised = false;
   static private boolean fieldsNullByDefault = false;
   static private boolean isLiteral = false;
@@ -54,12 +58,11 @@ public class JPortal
   {
     try
     {
-      PrintWriter outLog = new PrintWriter(System.out);
       for (int i = 0; i <args.length; i++)
       {
         System.out.println(args[i]+": Parsing ...");
         setFieldsNullState(false);
-        run(args[i], outLog);
+        run(args[i]);
       }
     }
     catch (Exception e)
@@ -72,18 +75,18 @@ public class JPortal
   * @param  inFile is the input file to parse
   * @return Table from jbdcdef package
   */
-  public static Database run(String inFile, PrintWriter outLog)
+  public static Database run(String inFile)
   {
-    return run(inFile, "", outLog);
+    return run(inFile);
   }
-  public static Database run(String inFile, String inNub, PrintWriter outLog)
+  public static Database run(String inFile, String inNub)
   {
     try
     {
       FileReader reader = new FileReader(inFile);
       try
       {
-        return run(inFile, inNub, reader, outLog);
+        return run(inFile, inNub, reader);
       }
       finally
       {
@@ -100,13 +103,12 @@ public class JPortal
   {
     inDir = inNub;
   }
-  public static Database run(String inFile, Reader reader, PrintWriter useOutLog)
+  public static Database run(String inFile, Reader reader)
   {
-    return run(inFile, "", reader, useOutLog);
+    return run(inFile, "", reader);
   }
-  public static Database run(String inFile, String inNub, Reader reader, PrintWriter useOutLog)
+  public static Database run(String inFile, String inNub, Reader reader)
   {
-    outLog = useOutLog;
     setupNub(inNub);
     try
     {
@@ -139,8 +141,7 @@ public class JPortal
     }
     catch (ParseException e)
     {
-      outLog.println("ParseException ["+e.getMessage()+"]");
-      outLog.flush();
+      logger.error("ParseException",e);
       e.printStackTrace();
     }
     catch (Exception e)
@@ -321,7 +322,7 @@ public class JPortal
         found = new File(importFile).exists();
       if (found == true)
       {
-        outLog.println("Inputting " + importFile);
+        logger.info("Inputting " + importFile);
         DataInputStream ids = new DataInputStream(new FileInputStream(importFile));
         table = new Table();
         table.reader(ids, useProcs);
@@ -329,11 +330,11 @@ public class JPortal
         table.database = database;
       }
       else
-        outLog.println("Import of " + s + ".nub failed");
+        logger.warn("Import of " + s + ".nub failed");
     }
     catch (Exception e)
     {
-      outLog.println("Table nub " + s + ".nub failed to read (" + e.getMessage() + ")");
+      logger.warn("Table nub " + s + ".nub failed to read (" + e.getMessage() + ")");
       e.printStackTrace();
     }
   }
@@ -375,7 +376,7 @@ public class JPortal
         outDir = inDir.substring(0, sep);
       if (outDir.length() > 0)
       {
-        outLog.println("Outputting " + outDir + table.name + ".nub");
+        logger.info("Outputting " + outDir + table.name + ".nub");
         DataOutputStream ods = new DataOutputStream(new FileOutputStream(outDir + table.name + ".nub"));
         table.database = null;
         table.writer(ods);
@@ -385,8 +386,7 @@ public class JPortal
     }
     catch (Exception e)
     {
-      outLog.println("Table nub " + inDir + table.name + ".nub failed to write");
-      e.printStackTrace();
+      logger.error("Table nub " + inDir + table.name + ".nub failed to write",e);
     }
   }
 }
@@ -633,7 +633,7 @@ void jInput() :
   ( jTables()
     {
       if (database.hasTable(table.name))
-        outLog.println(table.name+" is already present");
+        logger.warn(table.name+" is already present");
       else
         database.tables.addElement(table);
     }
@@ -817,7 +817,7 @@ void jTable() :
   ( jField()
     {
       if (table.hasField(field.name))
-        outLog.println(field.name+" is already present");
+        logger.warn(field.name+" is already present");
       else
         table.fields.addElement(field);
     }
@@ -1113,7 +1113,7 @@ void jLookup() :
       other = table.getField(name);
     if (other == null)
     {
-      outLog.println(field.name + " is not present for type usage. Resorting to int.");
+      logger.warn(field.name + " is not present for type usage. Resorting to int.");
       field.type = Field.INT;
       field.length = 4;
     }
@@ -1291,7 +1291,7 @@ void jParm() :
         if (table.hasField(s))
           parameter.shows.addElement(table.getField(s));
         else
-          outLog.println(s + " is not present in table for show.");
+          logger.warn(s + " is not present in table for show.");
       }
     )+
   | <PARMVIEWONLY>
@@ -1304,7 +1304,7 @@ void jParm() :
         if (table.hasField(s))
           parameter.supplied.addElement(table.getField(s));
         else
-          outLog.println(s+" is not present in table for supplied.");
+          logger.warn(s+" is not present in table for supplied.");
       }
     )+
   | <PARMCACHE>
@@ -1314,7 +1314,7 @@ void jParm() :
       if (p != null)
         parameter.cache = p;
       else
-        outLog.println(s+" is not present in table as a cache reader.");
+        logger.warn(s+" is not present in table as a cache reader.");
     }
     (
       s = jIdent()
@@ -1329,7 +1329,7 @@ void jParm() :
       if (p != null)
         parameter.reader = p;
       else
-        outLog.println(s+" is not present in table as a reader.");
+        logger.warn(s+" is not present in table as a reader.");
     }
   | <PARMINSERT>
     (s = jIdent() | <INSERT> {s = "Insert";} )
@@ -1338,7 +1338,7 @@ void jParm() :
       if (p != null)
         parameter.insert = p;
       else
-        outLog.println(s+" is not present in table as an inserter.");
+        logger.warn(s+" is not present in table as an inserter.");
     }
   | <PARMUPDATE>
     (s = jIdent() | <UPDATE> {s = "Update";} )
@@ -1347,7 +1347,7 @@ void jParm() :
       if (p != null)
         parameter.update = p;
       else
-        outLog.println(s+" is not present in table as an updater.");
+        logger.warn(s+" is not present in table as an updater.");
     }
   | <PARMDELETE>
     (s = jIdent() | <DELETEONE> {s = "DeleteOne";} )
@@ -1356,7 +1356,7 @@ void jParm() :
       if (p != null)
         parameter.delete = p;
       else
-        outLog.println(s+" is not present in table as a deleter.");
+        logger.warn(s+" is not present in table as a deleter.");
     }
   )*
 }
@@ -1419,7 +1419,7 @@ void jGrant() :
   (jPermission()
   {
     if (grant.hasPerm(perm))
-      outLog.println("perm "+perm+" already present in grant");
+      logger.warn("perm "+perm+" already present in grant");
     else
       grant.perms.addElement(perm);
   }
@@ -1428,7 +1428,7 @@ void jGrant() :
   (jUser()
   {
     if (grant.hasUser(user))
-      outLog.println("user "+user+" already present in grant");
+      logger.warn("user "+user+" already present in grant");
     else
       grant.users.addElement(user);
   }
@@ -1526,9 +1526,9 @@ void jColumn() :
   s = jIdent()
   {
     if (!table.hasField(s))
-      outLog.println(key.name+" field "+s+" not present in table");
+      logger.warn(key.name+" field "+s+" not present in table");
     else if (key.hasField(s))
-      outLog.println(key.name+" field "+s+" already present in key");
+      logger.warn(key.name+" field "+s+" already present in key");
     else
     {
       if (key.isPrimary)
@@ -1587,9 +1587,9 @@ void jLinkColumn() :
   s = jIdent()
   {
     if (!table.hasField(s))
-      outLog.println(link.name+" field "+s+" not present in table");
+      logger.warn(link.name+" field "+s+" not present in table");
     else if (link.hasField(s))
-      outLog.println(link.name+" field "+s+" already present in link");
+      logger.warn(link.name+" field "+s+" already present in link");
     else
       link.fields.addElement(s);
   }
@@ -1611,7 +1611,7 @@ void jView() :
     (jUser()
     {
     if (view.hasUser(user))
-      outLog.println(view.name+" user "+user+" already present in view");
+      logger.warn(view.name+" user "+user+" already present in view");
     else
       view.users.addElement(user);
     }
@@ -1659,7 +1659,7 @@ void jViewAlias() :
   s = jIdent()
   {
     if (view.hasAlias(s))
-      outLog.println(key.name+" alias "+s+" already present in view");
+      logger.warn(key.name+" alias "+s+" already present in view");
     else
     {
       view.aliases.addElement(s);
@@ -1727,7 +1727,7 @@ void jProc() :
   (jStdProc() | (LOOKAHEAD(3) jNewProc() |jUserProc()))
   {
     if (table.hasProc(proc))
-      outLog.println("proc "+proc.name+" already present in table");
+      logger.warn("proc "+proc.name+" already present in table");
     else
     {
       table.procs.addElement(proc);
@@ -1770,7 +1770,7 @@ void jStdProc() :
   | <UPDATE>
       {
         if (!table.hasPrimaryKey)
-          outLog.println("proc Update requires a primary key");
+          logger.warn("proc Update requires a primary key");
         else
         {
           proc.name = "Update";
@@ -1795,7 +1795,7 @@ void jStdProc() :
   | <BULKUPDATE> (jRowCount())?
     {
       if (!table.hasPrimaryKey)
-        outLog.println("proc Update requires a primary key");
+        logger.warn("proc Update requires a primary key");
       else
       {
         proc.name = "BulkUpdate";
@@ -1817,7 +1817,7 @@ void jStdProc() :
 
     {
       if (!table.hasPrimaryKey)
-        outLog.println("proc DeleteOne requires a primary key");
+        logger.warn("proc DeleteOne requires a primary key");
       else
       {
         proc.name = "DeleteOne";
@@ -1836,7 +1836,7 @@ void jStdProc() :
     ((<FOR>)? (<UPDATE> {forUpdate = true;} | <READONLY> {forReadOnly = true;}))?
     {
       if (!table.hasPrimaryKey)
-        outLog.println("proc SelectOne requires a primary key");
+        logger.warn("proc SelectOne requires a primary key");
       else
       {
         proc.name = "SelectOne";
@@ -1870,7 +1870,7 @@ void jStdProc() :
           }
         }
         proc.isSingle = true;
-        table.buildSelectBy(proc, forUpdate, forReadOnly, inOrder, descending, outLog);        
+        table.buildSelectBy(proc, forUpdate, forReadOnly, inOrder, descending);        
         table.hasStdProcs = true;
       }    
   | <SELECTBY> ( jProcColumn())+
@@ -1900,7 +1900,7 @@ void jStdProc() :
               if (proc.hasOutput(field.name))
               {
                 if (proc.extendsStd == false)
-                  outLog.println(proc.name+" field "+field.name+" already present as output");
+                  logger.warn(proc.name+" field "+field.name+" already present as output");
               }
               else
               {
@@ -1927,7 +1927,7 @@ void jStdProc() :
             proc.name += fname;
           }
         }      
-        table.buildSelectBy(proc, forUpdate, forReadOnly, inOrder, descending, outLog);
+        table.buildSelectBy(proc, forUpdate, forReadOnly, inOrder, descending);
         table.hasStdProcs = true;
       }      
   | <SELECTALL>
@@ -1935,7 +1935,7 @@ void jStdProc() :
     ((<FOR>)? (<UPDATE> {forUpdate = true;} | <READONLY> {forReadOnly = true;}))?
     {
       if (table.hasBigXML)
-        outLog.println("proc SelectAll is invalid with BigXML field");
+        logger.warn("proc SelectAll is invalid with BigXML field");
       else
       {
         proc.name = "SelectAll";
@@ -1954,7 +1954,7 @@ void jStdProc() :
   | <EXISTS>
     {
       if (!table.hasPrimaryKey)
-        outLog.println("proc Exists requires a primary key");
+        logger.warn("proc Exists requires a primary key");
       else
       {
         proc.name = "Exists";
@@ -1964,9 +1964,9 @@ void jStdProc() :
   | <MERGE>
     {
       if (!table.hasPrimaryKey)
-        outLog.println("proc Merge requires a primary key");
+        logger.warn("proc Merge requires a primary key");
       else if (table.hasSequence)
-        outLog.println("proc Merge cannot be used on a table with a sequence");
+        logger.warn("proc Merge cannot be used on a table with a sequence");
       else
       {
         proc.name = "Merge";
@@ -2016,7 +2016,7 @@ void jNewProc() :
             if (proc.hasInput(field.name))
             {
               //if (proc.extendsStd == false)
-              outLog.println(proc.name+" field "+field.name+" already present as input");
+              logger.warn(proc.name+" field "+field.name+" already present as input");
             }
             else
             {
@@ -2049,7 +2049,7 @@ void jNewProc() :
               if (proc.hasOutput(field.name))
               {
                 if (proc.extendsStd == false)
-                  outLog.println(proc.name+" field "+field.name+" already present as output");
+                  logger.warn(proc.name+" field "+field.name+" already present as output");
               }
               else
               {
@@ -2068,7 +2068,7 @@ void jNewProc() :
       )?
       ( jOldCode() | jNewCode() )
       {
-        table.buildSelectFrom(proc, table, outLog);
+        table.buildSelectFrom(proc, table);
         proc.useStd = true;
         isStdProc = true;
       }
@@ -2077,7 +2077,7 @@ void jNewProc() :
       ((<FOR>)? (<UPDATE> {forUpdate = true;} | <READONLY> {forReadOnly = true;}))?
       {
         proc.isSingle = true;
-        table.buildSelectBy(proc, forUpdate, forReadOnly, inOrder, descending, outLog);
+        table.buildSelectBy(proc, forUpdate, forReadOnly, inOrder, descending);
         table.hasStdProcs = true;
       }
   | <SELECTBY> ( jProcColumn())+
@@ -2099,7 +2099,7 @@ void jNewProc() :
               if (proc.hasOutput(field.name))
               {
                 if (proc.extendsStd == false)
-                  outLog.println(proc.name+" field "+field.name+" already present as output");
+                  logger.warn(proc.name+" field "+field.name+" already present as output");
               }
               else
               {
@@ -2117,24 +2117,24 @@ void jNewProc() :
         )*
       )?
       {
-        table.buildSelectBy(proc, forUpdate, forReadOnly, inOrder, descending, outLog);
+        table.buildSelectBy(proc, forUpdate, forReadOnly, inOrder, descending);
         table.hasStdProcs = true;
       }
   | <DELETEBY> ( jProcColumn())+
       {
-        table.buildDeleteBy(proc, outLog);
+        table.buildDeleteBy(proc);
         table.hasStdProcs = true;
       }
   | <UPDATEFOR> (jProcColumn())+
       {
         proc.isUpdate = true;
-        table.buildUpdateFor(proc, outLog);
+        table.buildUpdateFor(proc);
         table.hasStdProcs = true;
       }
   | <UPDATEBY> ( (jProcUpdateByColumn())+ (<FOR> (jProcColumn())+)? )
       {
         proc.isUpdate = true;
-        table.buildUpdateBy(proc, outLog);
+        table.buildUpdateBy(proc);
         table.hasStdProcs = true;
       }
   )
@@ -2148,11 +2148,11 @@ void jProcColumn() :
   s = jIdent()
   {
     if (!table.hasField(s))
-      outLog.println(proc.name+" field "+s+" not present in table");
+      logger.warn(proc.name+" field "+s+" not present in table");
     else if (proc.hasFields(s))
-      outLog.println(proc.name+" field "+s+" already present");
+      logger.warn(proc.name+" field "+s+" already present");
     else if (proc.hasUpdateFields(s))
-      outLog.println(proc.name+" field "+s+" cannot be set aswell, already present as input");
+      logger.warn(proc.name+" field "+s+" cannot be set as well, already present as input");
     else
       proc.fields.addElement(s);
   }
@@ -2166,9 +2166,9 @@ void jOrderColumn() :
   s = jIdent()
   {
     if (!table.hasField(s))
-      outLog.println(proc.name+" field "+s+" not present in table");
+      logger.warn(proc.name+" field "+s+" not present in table");
     else if (proc.hasOrders(s))
-      outLog.println(proc.name+" field "+s+" already present");
+      logger.warn(proc.name+" field "+s+" already present");
     else
       proc.orderFields.addElement(s);
   }
@@ -2182,9 +2182,9 @@ void jProcUpdateByColumn() :
   s = jIdent()
   {
     if (!table.hasField(s))
-      outLog.println(proc.name+" field "+s+" not present in table");
+      logger.warn(proc.name+" field "+s+" not present in table");
     else if (proc.hasUpdateFields(s))
-      outLog.println(proc.name+" field "+s+" already present");
+      logger.warn(proc.name+" field "+s+" already present");
     else
       proc.updateFields.addElement(s);
   }
@@ -2266,7 +2266,7 @@ void jUserProc() :
         if (proc.hasInput(field.name))
         {
           //if (proc.extendsStd == false)
-          outLog.println(proc.name+" field "+field.name+" already present as input");
+          logger.warn(proc.name+" field "+field.name+" already present as input");
         }
         else
         {
@@ -2289,12 +2289,12 @@ void jUserProc() :
         if (proc.hasInput(field.name))
         {
           //if (proc.extendsStd == false)
-          outLog.println(proc.name+" field "+field.name+" already present as input");
+          logger.warn(proc.name+" field "+field.name+" already present as input");
         }
         else if (proc.hasOutput(field.name))
         {
           if (proc.extendsStd == false)
-            outLog.println(proc.name+" field "+field.name+" already present as output");
+            logger.warn(proc.name+" field "+field.name+" already present as output");
         }
         else
         {
@@ -2331,7 +2331,7 @@ void jUserProc() :
           if (proc.hasOutput(field.name))
           {
             if (proc.extendsStd == false)
-              outLog.println(proc.name+" field "+field.name+" already present as output");
+              logger.warn(proc.name+" field "+field.name+" already present as output");
           }
           else
           {

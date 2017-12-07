@@ -16,20 +16,6 @@ import java.util.Vector;
 /**
  * @author vince
  */
-class PlaceHolderPairs implements Serializable
-{
-  /**
-   * 
-   */
-  private static final long serialVersionUID = 1L;
-  public Field field;
-  public int pos;
-  PlaceHolderPairs(Field field, int pos)
-  {
-    this.field = field;
-    this.pos = pos;
-  }
-}
 public class PlaceHolder implements Serializable
 {
   /**

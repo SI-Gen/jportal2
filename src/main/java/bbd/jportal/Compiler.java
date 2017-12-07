@@ -34,7 +34,7 @@ public class Compiler
         boolean hasErrors = false;
         for (int p = 0; p < pieces.length; p++)
         {
-            Database db = JPortal.run(pieces[p], nubDir, outLog);
+            Database db = JPortal.run(pieces[p], nubDir);
             if (db == null)
             {
                 outLog.println("::>" + pieces[p] + "<:: compile has errors");

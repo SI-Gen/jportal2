@@ -4,28 +4,33 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import bbd.jportal.JPortal;
+import bbd.jportal.Database;
+
 import freemarker.template.TemplateException;
 import org.junit.Test;
 
-import bbd.jportal.Database;
-import bbd.jportal.FreeMarker;
+import bbd.jportal.generators.FreeMarker;
 
-import javax.imageio.IIOException;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
 
 /**
  * Created by dieter on 2017/05/30.
  * Unittest to test the FreeMarker template based generator
  */
 public class FreeMarkerTest {
+    private static final Logger logger = LoggerFactory.getLogger(FreeMarkerTest.class);
+
     private String  INPUT_DIRS = "src/test/resources/freemarker_input_dirs/";
     private String SI_DIR = "src/test/resources/example_si_files/";
     private String OUTPUT_DIR = "target/test-freemarker-template-out/";
@@ -42,10 +47,9 @@ public class FreeMarkerTest {
         params.put("TemplateDir", templateDir.toString());
 
         String nubDir="";
-        PrintWriter outLog = new PrintWriter(System.out);
-        Database db = JPortal.run(siFile.toString(), nubDir, outLog);
+        Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        FreeMarker.generateAdvanced(db, params, outputDirectory, outLog);
+        FreeMarker.generateAdvanced(db, params, outputDirectory);
 
         //Test output
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "single_file"));
@@ -63,10 +67,10 @@ public class FreeMarkerTest {
         params.put("TemplateDir", templateDir.toString());
 
         String nubDir="";
-        PrintWriter outLog = new PrintWriter(System.out);
-        Database db = JPortal.run(siFile.toString(), nubDir, outLog);
+    
+        Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        FreeMarker.generateAdvanced(db, params, outputDirectory, outLog);
+        FreeMarker.generateAdvanced(db, params, outputDirectory);
 
         //Test output - file1.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "dir1/file1.txt"));
@@ -92,10 +96,9 @@ public class FreeMarkerTest {
         params.put("TemplateDir", templateDir.toString());
 
         String nubDir="";
-        PrintWriter outLog = new PrintWriter(System.out);
-        Database db = JPortal.run(siFile.toString(), nubDir, outLog);
+        Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        FreeMarker.generateAdvanced(db, params, outputDirectory, outLog);
+        FreeMarker.generateAdvanced(db, params, outputDirectory);
 
         //Test output - dir1/file1.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "dir1/file1.txt"));
@@ -136,10 +139,9 @@ public class FreeMarkerTest {
         params.put("TemplateDir", templateDir.toString());
 
         String nubDir="";
-        PrintWriter outLog = new PrintWriter(System.out);
-        Database db = JPortal.run(siFile.toString(), nubDir, outLog);
+        Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        FreeMarker.generateAdvanced(db, params, outputDirectory, outLog);
+        FreeMarker.generateAdvanced(db, params, outputDirectory);
 
         //Test output - dir1/file1.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "TestContingency.java"));

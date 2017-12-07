@@ -16,7 +16,7 @@ import java.util.Vector;
 
 public abstract class Generator
 {
-  public static void generate(Database database, String output, PrintWriter outLog)
+  public static void generate(Database database, String output)
   {
   }
   public static String description()
