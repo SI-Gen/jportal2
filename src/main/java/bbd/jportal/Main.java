@@ -48,13 +48,13 @@ public class Main
     @Parameter(description = "InputFiles")
     private List<String> inputFiles = new ArrayList<>();
 
-    @Parameter(names = { "--generator", "-o"}, description = "Generator to run (format is generator_name:dest_dir i.e. --generator=CSNetCode:./cs")
+    @Parameter(names = { "--generator", "-o"}, description = "Generator to run (format is generator_name:dest_dir i.e. --generator=CSNetCode:./cs)")
     private List<String> generators = new ArrayList<>();
         
     @Parameter(names = { "--flag", "-F"}, description = "Flags to pass to the generator")
     private List<String> flags = new ArrayList<>();
 
-    @Parameter(names = { "--help", "-h" }, help = true)
+    @Parameter(names = { "--help", "-h", "-?" }, help = true)
     private boolean help;    
     //===============================================================================================  
 
@@ -78,6 +78,11 @@ public class Main
 
             jCommander.setProgramName("JPortal2");
             jCommander.parse(args);
+            
+            if (main.help) {
+                jCommander.usage();
+                return;
+            }            
         }
         catch (ParameterException exc)
         {
@@ -97,10 +102,12 @@ public class Main
             {
                 File folder = new File(main.inputDir);
                 File[] listOfFiles = folder.listFiles();
-                for (File file : listOfFiles) {
-                    if (file.isFile()) {
-                        Path path = Paths.get( main.inputDir,file.getName());
-                        main.inputFiles.add(path.toString());
+                if (listOfFiles != null) {
+                    for (File file : listOfFiles) {
+                        if (file.isFile()) {
+                            Path path = Paths.get( main.inputDir,file.getName());
+                            main.inputFiles.add(path.toString());
+                        }
                     }
                 }
             }
@@ -190,12 +197,13 @@ public class Main
 
 
             logger.info("Executing: " + generatorName);
-            //try {
-                Class<?> c = Class.forName("bbd.jportal.generators." + generatorName);
+            Class<?> c;
+            try {
+                c = Class.forName("bbd.jportal.generators." + generatorName);
 //TODO: Support for FreeMarker template
-                //            }
-//            catch (ClassNotFoundException cnf)
-//            {
+            }
+            catch (ClassNotFoundException cnf)
+            {
 //                //Assume it's a freemarker template
 //                File file = new File(generatorName);
 //                if (file.isFile()) {
@@ -204,7 +212,10 @@ public class Main
 //                    Path path = Paths.get( main.inputDir,file.getName());
 //                    main.inputFiles.add(path.toString());
 //                }
-//            }
+                logger.error("Could not find generator {}. Make sure there is a class bbd.jportal.generators.{}", generatorName);
+                return 1;
+            }
+
             Class<?> d[] = { database.getClass(), generatorDirectory.getClass() };
             Method m = c.getMethod("generate", d);
             Object o[] = { database, generatorDirectory};

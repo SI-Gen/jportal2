@@ -1,0 +1,61 @@
+///
+/// Name:Example.si
+///
+DATABASE jportal_example_db
+PACKAGE  sigen.org.jportal2.example.db
+OUTPUT   ExampleTable
+SERVER   PostgeSQL95
+
+Table ExampleTable
+   ID                            BIGSEQUENCE
+   IntField                      INT
+   UniqueInt                     INT     // See below in KEY section for Unique constraint
+   StandardString                CHAR(64)
+   ByteField                     BYTE
+   IntEnum                       INT (Yes = 1 No = 0)
+   DateTimeColumn                DATETIME
+   DateTimeNullable              DATETIME NULL
+   DateColumn                    DATE
+   DateNullable                  DATE Null
+   Blobby                        BLOB
+   TMStamp                       TIMESTAMP
+
+
+KEY PKEY PRIMARY ID
+KEY UKEY_UNIQUEINT_REF UNIQUE UniqueInt
+//LINK foreign key section
+
+PROC SelectOne
+PROC Update
+PROC Insert Returning
+
+PROC SelectForUpdateByUniqueInt (standard)
+INPUT
+    UniqueInt           =
+OUTPUT (SINGLE)
+SQLCODE
+    SELECT
+            ID
+            ,IntField
+            ,UniqueInt
+            ,StandardString
+            ,ByteField
+            ,IntEnum
+            ,DateTime
+            ,DateTime
+            ,Date
+            ,DateNullable
+            ,Blobby
+            ,TMStamp
+    FROM
+        ExampleTable
+    WHERE UniqueInt = :UniqueInt
+    FOR UPDATE
+ENDCODE
+
+PROC SelectBy UniqueInt For Update AS SelectByUniqueInt2
+
+
+
+SQLDATA
+-- Takeons come here
