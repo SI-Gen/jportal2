@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>za.co.bbd</groupId>
-    <artifactId>jportal</artifactId>
+    <artifactId>jportal2</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
     <properties>
@@ -12,7 +12,7 @@
     </properties>
     <description>Database, Module and Application code generators for varying platforms, vendors and languages.</description>
     <scm>
-        <url>https://github.com/dieterrosch/jportal.git</url>
+        <url>https://github.com/SI-Gen/jportal2</url>
     </scm>
     <licenses>
         <license>
@@ -34,10 +34,21 @@
             </roles>
             <timezone>GMT +2</timezone>
         </developer>
+        <developer>
+            <id>dieterrosch</id>
+            <name>Dieter Rosch</name>
+            <email>dieter.rosch@gmail.com</email>
+            <organization>SI-Gen</organization>
+            <organizationUrl>https://github.com/SI-Gen</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>GMT +2</timezone>
+        </developer>
     </developers>
 
-    <name>JPortal</name>
-    <url>https://github.com/dieterrosch/jportal</url>
+    <name>JPortal2</name>
+    <url>https://github.com/SI-Gen/jportal2</url>
 
     <dependencies>
 
@@ -230,7 +241,7 @@
                             <addClasspath>true</addClasspath>
                         </manifest>
                         <manifestEntries>
-                            <Main-Class>bbd.jportal.Main</Main-Class>
+                            <Main-Class>bbd.jportal2.Main</Main-Class>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -251,7 +262,7 @@
                             <transformers>
                                 <!-- add Main-Class to manifest file -->
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>bbd.jportal.Main</mainClass>
+                                    <mainClass>bbd.jportal2.Main</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
