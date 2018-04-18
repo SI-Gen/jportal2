@@ -17,9 +17,10 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
-import freemarker.template.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
+
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -76,6 +77,11 @@ public class Main
      */
     public static void main(String args[])
     {
+
+
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
+
         Main main = new Main();
 
         try 
@@ -170,7 +176,7 @@ public class Main
 
 
         for (String templateGenerator : templateGenerators) {
-            if (ExecuteTemplateGenerator(database, templateGenerator)) return 1;
+            if (!ExecuteTemplateGenerator(database, templateGenerator)) return 1;
         }
 
         return 0;
@@ -179,7 +185,7 @@ public class Main
     private boolean ExecuteTemplateGenerator(Database database, String templateGenerator) {
         if (!templateGenerator.contains(":") || templateGenerator.split(":").length < 2) {
             logger.error("Error in template-generator parameter. The correct format is --template-generator=<name>:<output_directory>, but --template-generator='{}' was specified instead.", templateGenerator);
-            return true;
+            return false;
         }
 
         GeneratorParameters generatorParameters = new GeneratorParameters(templateGenerator).extractParametersFromOption();

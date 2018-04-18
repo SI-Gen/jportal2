@@ -27,6 +27,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.Map;
 
+import static freemarker.log.Logger.selectLoggerLibrary;
+
 
 public class FreeMarker extends AdvancedGenerator {
 
@@ -85,12 +87,13 @@ public class FreeMarker extends AdvancedGenerator {
                     Path relativePathToFTL = fullGeneratorPath.relativize(file);
                     try {
                         GenerateTemplate(templateBaseDir, generatorName, relativePathToFTL.toString(), outputDirectory, database);
-                    } catch (TemplateException te) {
+                    } catch (Exception te) {
                         throw new RuntimeException(te);
                     }
                 }
                 return FileVisitResult.CONTINUE;
             }
+            //Empty string
 
             @Override
             public FileVisitResult visitFileFailed(Path file, IOException exc) {
@@ -123,10 +126,11 @@ public class FreeMarker extends AdvancedGenerator {
         return cfg;
     }
 
-    private static void GenerateTemplate(String templateBaseDir, String generatorName, String templateName, File outputDir, Database database) throws TemplateException, IOException {
+    private static void GenerateTemplate(String templateBaseDir, String generatorName, String templateName, File outputDir, Database database) throws TemplateException, IOException, ClassNotFoundException {
 
-
+        freemarker.log.Logger.selectLoggerLibrary(freemarker.log.Logger.LIBRARY_SLF4J);
         Configuration cfg = configure(new File(templateBaseDir));
+
 
         //Set up FreeMarker object maps
         java.util.Map<String, Object> root = new HashMap<>();
@@ -193,7 +197,7 @@ public class FreeMarker extends AdvancedGenerator {
 
         Path templateFileFullLocation = Paths.get(generatorName, templateName);
         Template temp = cfg.getTemplate(templateFileFullLocation.toString());
-        logger.info("Generating [{}]", fullDestinationFile.toString());
+        logger.info("\t [{}]: Generating [{}]", generatorName, fullDestinationFile.toString());
         try (OutputStream outFile = new FileOutputStream(fullDestinationFile.toString())) {
             PrintWriter outData = new PrintWriter(outFile);
             temp.process(root, outData);
