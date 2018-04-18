@@ -12,14 +12,15 @@
 
 package bbd.jportal2;
 
+import java.io.File;
 import java.util.Map;
 import java.util.Vector;
 
 public abstract class AdvancedGenerator
 {
-  public static void generateAdvanced(Database database, Map<String,String> parameters, String output)
-  {
-  }
+    public static void generateAdvanced(Database database, String templateBaseDir, String generatorName, File outputDirectory) throws Exception {
+    }
+
   public static String description()
   {
     return "This description should be implemented in the generator";

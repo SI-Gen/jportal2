@@ -18,77 +18,73 @@ import bbd.jportal2.Main;
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.ext.beans.BeansWrapperBuilder;
 import freemarker.template.*;
-
-import java.io.*;
-import java.nio.file.*;
-
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.HashMap;
-
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.*;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashMap;
+import java.util.Map;
 
-public class FreeMarker extends AdvancedGenerator
-{
 
-  private static final Logger logger = LoggerFactory.getLogger(Main.class);
+public class FreeMarker extends AdvancedGenerator {
 
-  /**
-   * Reads input from stored repository
-   */
-  public static void main(String[] args)
-  {
-    try
-    {
-      for (int i = 0; i < args.length; i++)
-      {
-        ObjectInputStream in = new ObjectInputStream(new FileInputStream(args[i]));
-        Database database = (Database)in.readObject();
-        in.close();
-        i++;
-        Map<String,String> params = new HashMap<String, String>();
-        params.put("Template",args[i]);
-        generateAdvanced(database, params,"");
-      }
-    }
-    catch (Exception e)
-    {
-      e.printStackTrace();
-    }
-  }
-  public static String description()
-  {
-    return "Generate according to a given FreeMarker template.";
-  }
-  public static String documentation()
-  {
-    return "Generate according to a given FreeMarker template. Usage is TODO";
-  }
-  /**
-   * Generates code using a given FreeMarker template
-   */
-  public static void generateAdvanced(Database database, Map<String,String> parameters, File outputDirectory) throws IOException, TemplateException
-  {
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+
+    //  /**
+//   * Reads input from stored repository
+//   */
+//  public static void main(String[] args)
+//  {
 //    try
 //    {
-        File templateDir = new File(parameters.get("TemplateDir"));
-        Configuration cfg = configure(templateDir);
+//      for (int i = 0; i < args.length; i++)
+//      {
+//        ObjectInputStream in = new ObjectInputStream(new FileInputStream(args[i]));
+//        Database database = (Database)in.readObject();
+//        in.close();
+//        i++;
+//        Map<String,String> params = new HashMap<>();
+//        params.put("Template",args[i]);
+//        generateAdvanced(database, params,"");
+//      }
+//    }
+//    catch (Exception e)
+//    {
+//      e.printStackTrace();
+//    }
+//  }
+    public static String description() {
+        return "Generate according to a given FreeMarker template.";
+    }
 
+    public static String documentation() {
+        return "Generate according to a given FreeMarker template. Usage is TODO";
+    }
 
-      //FileSystem fileSystem = FileSystems.getDefault();
+    /**
+     * Generates code using a given FreeMarker template
+     */
+    //public static void generateAdvanced(Database database, Map<String,String> parameters, File outputDirectory) throws IOException, TemplateException
+    public static void generateAdvanced(Database database, String templateBaseDir, String generatorName, File outputDirectory) throws IOException {
+
+        Path fullGeneratorPath = Paths.get(templateBaseDir, generatorName);
+        if (!Files.exists(fullGeneratorPath))
+            throw new IOException(String.format("Template %1$s does not exist. Make sure a directory called %1$s exists in the template location (which is currently set to %2$s). See the --template-location option for more information.", generatorName, templateBaseDir));
+
+        logger.info("Executing generator [{}] found in [{}]", generatorName, templateBaseDir);
+
         final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.ftl");
-        Files.walkFileTree(Paths.get(templateDir.toString()), new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(Paths.get(fullGeneratorPath.toString()), new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 if (matcher.matches(file)) {
                     //Subtract source directory from found path
-                    Path pathBase = Paths.get(templateDir.toString());
-                    Path pathRelative = pathBase.relativize(file);
+                    Path pathToTemplateBaseDir = Paths.get(templateBaseDir);
+                    Path relativePathToFTL = fullGeneratorPath.relativize(file);
                     try {
-                        GenerateTemplate(cfg, pathRelative.toFile(), outputDirectory, database);
+                        GenerateTemplate(templateBaseDir, generatorName, relativePathToFTL.toString(), outputDirectory, database);
                     } catch (TemplateException te) {
                         throw new RuntimeException(te);
                     }
@@ -97,14 +93,14 @@ public class FreeMarker extends AdvancedGenerator
             }
 
             @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+            public FileVisitResult visitFileFailed(Path file, IOException exc) {
                 return FileVisitResult.CONTINUE;
             }
         });
 
-  }
+    }
 
-    public static Configuration configure(File templateDir) throws IOException {
+    private static Configuration configure(File templateDir) throws IOException {
         // Create your Configuration instance, and specify if up to what FreeMarker
         // version (here 2.3.25) do you want to apply the fixes that are not 100%
         // backward-compatible. See the Configuration JavaDoc for details.
@@ -127,77 +123,83 @@ public class FreeMarker extends AdvancedGenerator
         return cfg;
     }
 
-    public static void GenerateTemplate(Configuration cfg, File templateName, File outputDir, Database database)  throws TemplateException, IOException {
-//      try {
-          Template temp = cfg.getTemplate(templateName.toString());
+    private static void GenerateTemplate(String templateBaseDir, String generatorName, String templateName, File outputDir, Database database) throws TemplateException, IOException {
 
 
-      //Set up FreeMarker object maps
-      java.util.Map<String,Object> root = new HashMap<String,Object>();
-      root.put("database", database);
+        Configuration cfg = configure(new File(templateBaseDir));
 
-      // Create the builder:
-      BeansWrapperBuilder builder = new BeansWrapperBuilder(Configuration.VERSION_2_3_23);
-      // Set desired BeansWrapper configuration properties:
-      builder.setUseModelCache(true);
-      builder.setExposeFields(true);
-      builder.setExposureLevel(BeansWrapper.EXPOSE_ALL);
-      BeansWrapper wrapper = builder.build();
+        //Set up FreeMarker object maps
+        java.util.Map<String, Object> root = new HashMap<>();
+        root.put("database", database);
 
-      //This is a bit crappy of FreeMarker. It doesn't expose static and enum members of classes,
-      //so we need to manually expose them. To access, use such as:
-      //${STATICS.Field.BLOB} to access the static member BLOB, defined in the Field class.
-      //${ENUMS.Field.BLOB} to access the static member BLOB, defined in the Field class.
+        // Create the builder:
+        BeansWrapperBuilder builder = new BeansWrapperBuilder(Configuration.VERSION_2_3_23);
+        // Set desired BeansWrapper configuration properties:
+        builder.setUseModelCache(true);
+        builder.setExposeFields(true);
+        builder.setExposureLevel(BeansWrapper.EXPOSE_ALL);
+        BeansWrapper wrapper = builder.build();
 
-      //Expose static variables
-      root.put("STATICS", new HashMap());
-      TemplateHashModel staticModels = wrapper.getStaticModels();
-      ((HashMap)root.get("STATICS")).put("Database",staticModels.get("bbd.jportal2.Database"));
-      ((HashMap)root.get("STATICS")).put("Table",staticModels.get("bbd.jportal2.Table"));
-      ((HashMap)root.get("STATICS")).put("Field",staticModels.get("bbd.jportal2.Field"));
-      ((HashMap)root.get("STATICS")).put("PlaceHolder",staticModels.get("bbd.jportal2.PlaceHolder"));
+        //This is a bit crappy of FreeMarker. It doesn't expose static and enum members of classes,
+        //so we need to manually expose them. To access, use such as:
+        //${STATICS.Field.BLOB} to access the static member BLOB, defined in the Field class.
+        //${ENUMS.Field.BLOB} to access the static member BLOB, defined in the Field class.
 
-
-      //Expose enums
-      root.put("ENUMS", new HashMap());
-      TemplateHashModel enumModels = wrapper.getEnumModels();
-      ((HashMap)root.get("ENUMS")).put("Database"   ,enumModels.get("bbd.jportal2.Database"));
-      ((HashMap)root.get("ENUMS")).put("Table"      ,enumModels.get("bbd.jportal2.Table"));
-      ((HashMap)root.get("ENUMS")).put("Field"      ,enumModels.get("bbd.jportal2.Field"));
-      ((HashMap)root.get("ENUMS")).put("PlaceHolder",enumModels.get("bbd.jportal2.PlaceHolder"));
+        //Expose static variables
+        root.put("STATICS", new HashMap());
+        TemplateHashModel staticModels = wrapper.getStaticModels();
+        ((HashMap) root.get("STATICS")).put("Database", staticModels.get("bbd.jportal2.Database"));
+        ((HashMap) root.get("STATICS")).put("Table", staticModels.get("bbd.jportal2.Table"));
+        ((HashMap) root.get("STATICS")).put("Field", staticModels.get("bbd.jportal2.Field"));
+        ((HashMap) root.get("STATICS")).put("PlaceHolder", staticModels.get("bbd.jportal2.PlaceHolder"));
 
 
-      String destFileName;
-      destFileName = templateName.getName().replaceAll(".ftl", "");
+        //Expose enums
+        root.put("ENUMS", new HashMap());
+        TemplateHashModel enumModels = wrapper.getEnumModels();
+        ((HashMap) root.get("ENUMS")).put("Database", enumModels.get("bbd.jportal2.Database"));
+        ((HashMap) root.get("ENUMS")).put("Table", enumModels.get("bbd.jportal2.Table"));
+        ((HashMap) root.get("ENUMS")).put("Field", enumModels.get("bbd.jportal2.Field"));
+        ((HashMap) root.get("ENUMS")).put("PlaceHolder", enumModels.get("bbd.jportal2.PlaceHolder"));
 
-      //Replace variables in filename with correct values
-      Template fileNameTemplate = new Template("fileNameTemplate", new StringReader(destFileName), cfg);
 
-      Writer fileNameOut = new StringWriter();
-      fileNameTemplate.process(root, fileNameOut);
+        String destFileName;
+        Path templateRelativePath = Paths.get(templateName);
+        destFileName = templateRelativePath.toFile().getName().replaceAll(".ftl", "");
 
-      destFileName = fileNameOut.toString();
+        //Replace variables in filename with correct values
+        Template fileNameTemplate = new Template("fileNameTemplate", new StringReader(destFileName), cfg);
+        Writer fileNameOut = new StringWriter();
+        fileNameTemplate.process(root, fileNameOut);
 
-          Path destDir;
-          if (templateName.getParent() != null)
-            destDir = Paths.get(outputDir.toString(),templateName.getParent().toString());
-          else
-            destDir = Paths.get(outputDir.toString());
-          
-          Path destFileFullPath = Paths.get(destDir.toString(),destFileName.toString());
 
-          //Create directory if it doesn't exist.
-          destDir.toFile().mkdirs();
+        Path destDir;
+        Path fullGeneratorPath = Paths.get(templateBaseDir, generatorName);
+        if (templateRelativePath.getParent() == null)
+            destDir = Paths.get("");
+        else
+            destDir = templateRelativePath.getParent();
 
-          OutputStream outFile = new FileOutputStream(destFileFullPath.toString());
-          try {
-              PrintWriter outData = new PrintWriter(outFile);
-              temp.process(root, outData);
-          } finally {
-              outFile.close();
-          }
 
-}
+        destFileName = fileNameOut.toString();
+
+        //Create directory if it doesn't exist.
+        Path fullDestinationPath = Paths.get(outputDir.toString(), destDir.toString());
+        fullDestinationPath.toFile().mkdirs();
+
+
+        Path fullTemplatePath = Paths.get(fullGeneratorPath.toString(), templateName);
+        Path fullDestinationFile = Paths.get(fullDestinationPath.toString(), destFileName);
+
+        Path templateFileFullLocation = Paths.get(generatorName, templateName);
+        Template temp = cfg.getTemplate(templateFileFullLocation.toString());
+        logger.info("Generating [{}]", fullDestinationFile.toString());
+        try (OutputStream outFile = new FileOutputStream(fullDestinationFile.toString())) {
+            PrintWriter outData = new PrintWriter(outFile);
+            temp.process(root, outData);
+        }
+
+    }
 //  /**
 //   * @param database
 //   * @param table
