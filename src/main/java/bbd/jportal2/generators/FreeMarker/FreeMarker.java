@@ -10,11 +10,15 @@
 ///    Vincent Risi
 /// ------------------------------------------------------------------
 
-package bbd.jportal2.generators;
+package bbd.jportal2.generators.FreeMarker;
 
 import bbd.jportal2.AdvancedGenerator;
 import bbd.jportal2.Database;
 import bbd.jportal2.Main;
+import freemarker.cache.ClassTemplateLoader;
+import freemarker.cache.FileTemplateLoader;
+import freemarker.cache.MultiTemplateLoader;
+import freemarker.cache.TemplateLoader;
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.ext.beans.BeansWrapperBuilder;
 import freemarker.template.*;
@@ -109,9 +113,15 @@ public class FreeMarker extends AdvancedGenerator {
         // backward-compatible. See the Configuration JavaDoc for details.
         Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
 
-        // Specify the source where the template files come from. Here I set a
-        // plain directory for it, but non-file-system sources are possible too:
-        cfg.setDirectoryForTemplateLoading(templateDir);
+
+        // Specify the source where the template files come from. We allow use of the built-in
+        //templates (inside of src/main/java/bbd.jportal2/generators/FreeMarker/FreeMarkerHelpers
+        //as well as the location specified by the user
+        FileTemplateLoader ftl1 = new FileTemplateLoader(templateDir);
+        ClassTemplateLoader ctl = new ClassTemplateLoader(FreeMarker.class, "templates");
+        MultiTemplateLoader mtl = new MultiTemplateLoader(new TemplateLoader[]{ftl1, ctl});
+        cfg.setTemplateLoader(mtl);
+
 
         // Set the preferred charset template files are stored in. UTF-8 is
         // a good choice in most applications:

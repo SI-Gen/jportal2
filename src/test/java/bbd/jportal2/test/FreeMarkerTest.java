@@ -2,7 +2,7 @@ package bbd.jportal2.test;
 
 import bbd.jportal2.Database;
 import bbd.jportal2.JPortal;
-import bbd.jportal2.generators.FreeMarker;
+import bbd.jportal2.generators.FreeMarker.FreeMarker;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,5 +133,23 @@ public class FreeMarkerTest {
         assertEquals("{"                     ,lines.get(1));
         //assertEquals("      }"               ,lines.get(2));
     }
+
+    @Test
+    public void testFreeMarkerDumpDB() throws IOException {
+        String nameOfTest = "testFreeMarkerDumpDB";
+        Path templateDir = Paths.get(INPUT_DIRS);
+        Path siFile = Paths.get(SI_DIR, "ExampleTable.si");
+        Path outputDir = Paths.get(OUTPUT_DIR, nameOfTest);
+
+        String nubDir = "";
+        Database db = JPortal.run(siFile.toString(), nubDir);
+        File outputDirectory = new File(outputDir.toString());
+        FreeMarker.generateAdvanced(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+
+        //Test output
+        //List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "single_file"));
+        //assertEquals("Hello World jportal_example_db",lines.get(0));
+    }
+
 }
 

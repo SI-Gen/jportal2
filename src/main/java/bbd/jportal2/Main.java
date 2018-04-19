@@ -12,7 +12,7 @@
 
 package bbd.jportal2;
 
-import bbd.jportal2.generators.FreeMarker;
+import bbd.jportal2.generators.FreeMarker.FreeMarker;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;

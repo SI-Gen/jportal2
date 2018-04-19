@@ -74,7 +74,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>jul-to-slf4j</artifactId>
             <version>1.7.25</version>
-
         </dependency>
         <!-- https://mvnrepository.com/artifact/https://mvnrepository.com/artifact/com.beust/jcommander -->
         <dependency>
@@ -132,6 +131,13 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
             <version>3.1.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.antlr/stringtemplate -->
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>stringtemplate</artifactId>
+            <version>4.0.2</version>
         </dependency>
 
     </dependencies>

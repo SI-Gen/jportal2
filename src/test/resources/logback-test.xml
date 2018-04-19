@@ -24,6 +24,6 @@
         <appender-ref ref="STDOUT"/>
     </root>
     <logger name="freemarker">
-        <level value="INFO"/>
+        <level value="DEBUG"/>
     </logger>
 </configuration>

@@ -8,6 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/target/generated-sources/javacc" isTestSource="false" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
@@ -100,5 +101,7 @@
     <orderEntry type="library" name="Maven: org.ow2.asm:asm-analysis:6.0_BETA" level="project" />
     <orderEntry type="library" name="Maven: org.ow2.asm:asm-util:6.0_BETA" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava:19.0" level="project" />
+    <orderEntry type="library" name="Maven: org.antlr:stringtemplate:4.0.2" level="project" />
+    <orderEntry type="library" name="Maven: org.antlr:antlr-runtime:3.3" level="project" />
   </component>
 </module>
