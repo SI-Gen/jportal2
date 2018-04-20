@@ -158,11 +158,111 @@
         </pluginManagement>
         <sourceDirectory>src/main/java</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>
+        <!--<plugins>-->
+        <!--<plugin>-->
+        <!--<groupId>org.codehaus.mojo</groupId>-->
+        <!--<artifactId>javacc-maven-plugin</artifactId>-->
+        <!--<version>2.6</version>-->
+        <!--<executions>-->
+        <!--<execution>-->
+        <!--<goals>-->
+        <!--<goal>javacc</goal>-->
+        <!--</goals>-->
+        <!--</execution>-->
+        <!--</executions>-->
+        <!--</plugin>-->
+        <!--<plugin>-->
+        <!--<groupId>org.codehaus.mojo</groupId>-->
+        <!--<artifactId>build-helper-maven-plugin</artifactId>-->
+        <!--<version>1.9.1</version>-->
+        <!--<executions>-->
+        <!--&lt;!&ndash; Add a new source directory to our build &ndash;&gt;-->
+        <!--<execution>-->
+        <!--<id>add-source</id>-->
+        <!--<phase>generate-sources</phase>-->
+        <!--<goals>-->
+        <!--<goal>add-source</goal>-->
+        <!--</goals>-->
+        <!--<configuration>-->
+        <!--<sources>-->
+        <!--<source>target/generated-sources/javacc</source>                            -->
+        <!--</sources>-->
+        <!--</configuration>-->
+        <!--</execution>                -->
+        <!--&lt;!&ndash; Add a new source directory to our build &ndash;&gt;-->
+        <!--<execution>-->
+        <!--<id>add-integration-test-sources</id>-->
+        <!--<phase>generate-test-sources</phase>-->
+        <!--<goals>-->
+        <!--<goal>add-test-source</goal>-->
+        <!--</goals>-->
+        <!--<configuration>-->
+        <!--&lt;!&ndash; Configures the source directory of our integration tests &ndash;&gt;-->
+        <!--<sources>-->
+        <!--<source>src/integration-test/java</source>-->
+        <!--</sources>-->
+        <!--</configuration>-->
+        <!--</execution>-->
+        <!--&lt;!&ndash; Add a new resource directory to our build &ndash;&gt;-->
+        <!--<execution>-->
+        <!--<id>add-integration-test-resources</id>-->
+        <!--<phase>generate-test-resources</phase>-->
+        <!--<goals>-->
+        <!--<goal>add-test-resource</goal>-->
+        <!--</goals>-->
+        <!--<configuration>-->
+        <!--&lt;!&ndash; Configures the resource directory of our integration tests &ndash;&gt;-->
+        <!--<resources>-->
+        <!--&lt;!&ndash;-->
+        <!--Placeholders that are found from the files located in the configured resource-->
+        <!--directories are replaced with the property values found from the profile-->
+        <!--specific configuration file.-->
+        <!--&ndash;&gt;-->
+        <!--<resource>-->
+        <!--<filtering>true</filtering>-->
+        <!--<directory>src/integration-test/resources</directory>-->
+        <!--</resource>-->
+        <!--</resources>-->
+        <!--</configuration>-->
+        <!--</execution>                    -->
+        <!--</executions>-->
+        <!--</plugin>-->
+        <!--<plugin>-->
+        <!--<groupId>org.apache.maven.plugins</groupId>-->
+        <!--<artifactId>maven-compiler-plugin</artifactId>-->
+        <!--<version>3.1</version>-->
+        <!--&lt;!&ndash; compile for Java 1.8 &ndash;&gt;-->
+        <!--<configuration>-->
+        <!--<source>1.8</source>-->
+        <!--<target>1.8</target>-->
+        <!--<encoding>UTF-8</encoding>-->
+        <!--<useIncrementalCompilation>false</useIncrementalCompilation>-->
+        <!--<showWarnings>true</showWarnings>-->
+        <!--<compilerArgument>-Xlint:unchecked</compilerArgument>-->
+        <!--</configuration>-->
+
+        <!--</plugin>-->
+        <!--<plugin>-->
+        <!--<groupId>org.apache.maven.plugins</groupId>-->
+        <!--<artifactId>maven-jar-plugin</artifactId>-->
+        <!--<version>3.0.0</version>-->
+        <!--<configuration>-->
+        <!--<archive>-->
+        <!--<index>true</index>-->
+        <!--<manifest>-->
+        <!--<addClasspath>true</addClasspath>-->
+        <!--</manifest>-->
+        <!--<manifestEntries>-->
+        <!--<Main-Class>bbd.jportal2.Main</Main-Class>-->
+        <!--</manifestEntries>-->
+        <!--</archive>-->
+        <!--</configuration>-->
+        <!--</plugin>-->
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>javacc-maven-plugin</artifactId>
-                <version>2.6</version>
+                <groupId>com.helger.maven</groupId>
+                <artifactId>ph-javacc-maven-plugin</artifactId>
+                <version>4.0.3</version>
                 <executions>
                     <execution>
                         <goals>
@@ -181,14 +281,14 @@
                         <id>add-source</id>
                         <phase>generate-sources</phase>
                         <goals>
-                        <goal>add-source</goal>
+                            <goal>add-source</goal>
                         </goals>
                         <configuration>
-                        <sources>
-                            <source>target/generated-sources/javacc</source>                            
-                        </sources>
+                            <sources>
+                                <source>target/generated-sources/javacc</source>
+                            </sources>
                         </configuration>
-                    </execution>                
+                    </execution>
                     <!-- Add a new source directory to our build -->
                     <execution>
                         <id>add-integration-test-sources</id>
@@ -224,7 +324,7 @@
                                 </resource>
                             </resources>
                         </configuration>
-                    </execution>                    
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -258,6 +358,7 @@
                     </archive>
                 </configuration>
             </plugin>
+
             <!-- Maven Shade Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

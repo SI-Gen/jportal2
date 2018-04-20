@@ -75,13 +75,8 @@ public class FreeMarker extends AdvancedGenerator {
     //public static void generateAdvanced(Database database, Map<String,String> parameters, File outputDirectory) throws IOException, TemplateException
     public static void generateAdvanced(Database database, String templateBaseDir, String generatorName, File outputDirectory) throws IOException {
 
-        Path fullGeneratorPath = Paths.get(templateBaseDir, generatorName);
-        if (!Files.exists(fullGeneratorPath))
-            throw new IOException(String.format("Template %1$s does not exist. Make sure a directory called %1$s exists in the template location (which is currently set to %2$s). See the --template-location option for more information.", generatorName, templateBaseDir));
-
-        logger.info("Executing generator [{}] found in [{}]", generatorName, templateBaseDir);
-
         final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.ftl");
+        Path fullGeneratorPath = Paths.get(templateBaseDir, generatorName);
         Files.walkFileTree(Paths.get(fullGeneratorPath.toString()), new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
@@ -160,21 +155,21 @@ public class FreeMarker extends AdvancedGenerator {
         //${ENUMS.Field.BLOB} to access the static member BLOB, defined in the Field class.
 
         //Expose static variables
-        root.put("STATICS", new HashMap());
+        root.put("STATICS", new HashMap<String, TemplateModel>());
         TemplateHashModel staticModels = wrapper.getStaticModels();
-        ((HashMap) root.get("STATICS")).put("Database", staticModels.get("bbd.jportal2.Database"));
-        ((HashMap) root.get("STATICS")).put("Table", staticModels.get("bbd.jportal2.Table"));
-        ((HashMap) root.get("STATICS")).put("Field", staticModels.get("bbd.jportal2.Field"));
-        ((HashMap) root.get("STATICS")).put("PlaceHolder", staticModels.get("bbd.jportal2.PlaceHolder"));
+        ((HashMap<String, TemplateModel>) root.get("STATICS")).put("Database", staticModels.get("bbd.jportal2.Database"));
+        ((HashMap<String, TemplateModel>) root.get("STATICS")).put("Table", staticModels.get("bbd.jportal2.Table"));
+        ((HashMap<String, TemplateModel>) root.get("STATICS")).put("Field", staticModels.get("bbd.jportal2.Field"));
+        ((HashMap<String, TemplateModel>) root.get("STATICS")).put("PlaceHolder", staticModels.get("bbd.jportal2.PlaceHolder"));
 
 
         //Expose enums
-        root.put("ENUMS", new HashMap());
+        root.put("ENUMS", new HashMap<String, TemplateModel>());
         TemplateHashModel enumModels = wrapper.getEnumModels();
-        ((HashMap) root.get("ENUMS")).put("Database", enumModels.get("bbd.jportal2.Database"));
-        ((HashMap) root.get("ENUMS")).put("Table", enumModels.get("bbd.jportal2.Table"));
-        ((HashMap) root.get("ENUMS")).put("Field", enumModels.get("bbd.jportal2.Field"));
-        ((HashMap) root.get("ENUMS")).put("PlaceHolder", enumModels.get("bbd.jportal2.PlaceHolder"));
+        ((HashMap<String, TemplateModel>) root.get("ENUMS")).put("Database", enumModels.get("bbd.jportal2.Database"));
+        ((HashMap<String, TemplateModel>) root.get("ENUMS")).put("Table", enumModels.get("bbd.jportal2.Table"));
+        ((HashMap<String, TemplateModel>) root.get("ENUMS")).put("Field", enumModels.get("bbd.jportal2.Field"));
+        ((HashMap<String, Object>) root.get("ENUMS")).put("PlaceHolder", enumModels.get("bbd.jportal2.PlaceHolder"));
 
 
         String destFileName;
