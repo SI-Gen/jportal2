@@ -12,7 +12,7 @@
 
 package bbd.jportal2;
 
-import bbd.jportal2.generators.FreeMarker.FreeMarker;
+import bbd.jportal2.generators.FreeMarker.FreeMarkerGenerator;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
@@ -49,15 +49,15 @@ public class Main
     @Parameter(names = {"--generator", "-o"}, description = "Generator to run. Format is <generator_name>:<dest_dir> i.e. --generator=CSNetCode:./cs")
     private List<String> generators = new ArrayList<>();
 
-    @Parameter(names = {"--template-generator", "-t"},
+    @Parameter(names = {"--templates-generator", "-t"},
             description =
-                    "FreeMarker-based generator to run."
+                    "FreeMarker1-based generator to run."
                             + "Format is <free_marker_generator_name>:<dest_dir> i.e. "
-                            + "'--template-generator=MyCustomGenerator:./output'. "
-                            + "The template must exist as a directory under the location specified by --template-location.")
+                            + "'--templates-generator=MyCustomGenerator:./output'. "
+                            + "The templates must exist as a directory under the location specified by --templates-location.")
     private List<String> templateGenerators = new ArrayList<>();
 
-    @Parameter(names = {"--template-location", "-tl"}, description = "Freemarker template location. Default is <current_working_directory>/jportal2_templates")
+    @Parameter(names = {"--templates-location", "-tl"}, description = "Freemarker templates location. Default is <current_working_directory>/jportal2_templates")
     private String templateLocation = Paths.get(System.getProperty("user.dir"), "jportal2_templates").toString();
 
     @Parameter(names = { "--flag", "-F"}, description = "Flags to pass to the generator")
@@ -184,7 +184,7 @@ public class Main
 
     private boolean ExecuteTemplateGenerator(Database database, String templateGenerator) {
         if (!templateGenerator.contains(":") || templateGenerator.split(":").length < 2) {
-            logger.error("Error in template-generator parameter. The correct format is --template-generator=<name>:<output_directory>, but --template-generator='{}' was specified instead.", templateGenerator);
+            logger.error("Error in templates-generator parameter. The correct format is --templates-generator=<name>:<output_directory>, but --templates-generator='{}' was specified instead.", templateGenerator);
             return false;
         }
 
@@ -198,7 +198,7 @@ public class Main
         generatorDirectory = addTrailingSlash(generatorDirectory);
         File templateLocationFile = Paths.get(templateLocation).toFile();
         try {
-            FreeMarker.generateAdvanced(database, templateLocationFile.getAbsolutePath(), generatorName, new File(generatorDirectory));
+            FreeMarkerGenerator.generateAdvanced(database, templateLocationFile.getAbsolutePath(), generatorName, new File(generatorDirectory));
         } catch (IOException e) {
             logger.error("Error executing {}", generatorName, e);
             return false;

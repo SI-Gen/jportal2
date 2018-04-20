@@ -10,20 +10,16 @@
 ///    Vincent Risi
 /// ------------------------------------------------------------------
 
-package bbd.jportal2.generators.FreeMarker;
+package bbd.jportal2.generators.StringTemplate;
 
 import bbd.jportal2.AdvancedGenerator;
 import bbd.jportal2.Database;
 import bbd.jportal2.Main;
-import freemarker.cache.ClassTemplateLoader;
-import freemarker.cache.FileTemplateLoader;
-import freemarker.cache.MultiTemplateLoader;
-import freemarker.cache.TemplateLoader;
-import freemarker.ext.beans.BeansWrapper;
-import freemarker.ext.beans.BeansWrapperBuilder;
-import freemarker.template.*;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.stringtemplate.v4.*;
 
 import java.io.*;
 import java.nio.file.*;
@@ -31,10 +27,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.Map;
 
-import static freemarker.log.Logger.selectLoggerLibrary;
 
-
-public class FreeMarker extends AdvancedGenerator {
+public class StringTemplateGenerator extends AdvancedGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
@@ -62,15 +56,15 @@ public class FreeMarker extends AdvancedGenerator {
 //    }
 //  }
     public static String description() {
-        return "Generate according to a given FreeMarker template.";
+        return "Generate according to a given FreeMarkerGeneratorStringTemplate template.";
     }
 
     public static String documentation() {
-        return "Generate according to a given FreeMarker template. Usage is TODO";
+        return "Generate according to a given FreeMarkerGeneratorStringTemplat template. Usage is TODO";
     }
 
     /**
-     * Generates code using a given FreeMarker template
+     * Generates code using a given FreeMarkerGenerator template
      */
     //public static void generateAdvanced(Database database, Map<String,String> parameters, File outputDirectory) throws IOException, TemplateException
     public static void generateAdvanced(Database database, String templateBaseDir, String generatorName, File outputDirectory) throws IOException {
@@ -81,16 +75,16 @@ public class FreeMarker extends AdvancedGenerator {
 
         logger.info("Executing generator [{}] found in [{}]", generatorName, templateBaseDir);
 
-        final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.ftl");
+        final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.st");
         Files.walkFileTree(Paths.get(fullGeneratorPath.toString()), new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 if (matcher.matches(file)) {
                     //Subtract source directory from found path
                     Path pathToTemplateBaseDir = Paths.get(templateBaseDir);
-                    Path relativePathToFTL = fullGeneratorPath.relativize(file);
+                    Path relativePathToTemplate = fullGeneratorPath.relativize(file);
                     try {
-                        GenerateTemplate(templateBaseDir, generatorName, relativePathToFTL.toString(), outputDirectory, database);
+                        GenerateTemplate(templateBaseDir, generatorName, relativePathToTemplate.toString(), outputDirectory, database);
                     } catch (Exception te) {
                         throw new RuntimeException(te);
                     }
@@ -107,95 +101,91 @@ public class FreeMarker extends AdvancedGenerator {
 
     }
 
-    private static Configuration configure(File templateDir) throws IOException {
-        // Create your Configuration instance, and specify if up to what FreeMarker
-        // version (here 2.3.25) do you want to apply the fixes that are not 100%
-        // backward-compatible. See the Configuration JavaDoc for details.
-        Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
+//    private static Configuration configure(File templateDir) throws IOException {
+//        // Create your Configuration instance, and specify if up to what FreeMarker
+//        // version (here 2.3.25) do you want to apply the fixes that are not 100%
+//        // backward-compatible. See the Configuration JavaDoc for details.
+//        Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
+//
+//
+//        // Specify the source where the template files come from. We allow use of the built-in
+//        //templates (inside of src/main/java/bbd.jportal2/generators/FreeMarker/FreeMarkerHelpers
+//        //as well as the location specified by the user
+//        FileTemplateLoader ftl1 = new FileTemplateLoader(templateDir);
+//        ClassTemplateLoader ctl = new ClassTemplateLoader(StringTemplateGenerator.class, "templates");
+//        MultiTemplateLoader mtl = new MultiTemplateLoader(new TemplateLoader[]{ftl1, ctl});
+//        cfg.setTemplateLoader(mtl);
+//
+//
+//        // Set the preferred charset template files are stored in. UTF-8 is
+//        // a good choice in most applications:
+//        cfg.setDefaultEncoding("UTF-8");
+//
+//        // Sets how errors will appear.
+//        // During web page *development* TemplateExceptionHandler.HTML_DEBUG_HANDLER is better.
+//        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+//
+//        // Don't log exceptions inside FreeMarker that it will thrown at you anyway:
+//        cfg.setLogTemplateExceptions(false);
+//        return cfg;
+//    }
+
+    private static void GenerateTemplate(String templateBaseDir, String generatorName, String templateName, File outputDir, Database database) throws IOException {
 
 
-        // Specify the source where the template files come from. We allow use of the built-in
-        //templates (inside of src/main/java/bbd.jportal2/generators/FreeMarker/FreeMarkerHelpers
-        //as well as the location specified by the user
-        FileTemplateLoader ftl1 = new FileTemplateLoader(templateDir);
-        ClassTemplateLoader ctl = new ClassTemplateLoader(FreeMarker.class, "templates");
-        MultiTemplateLoader mtl = new MultiTemplateLoader(new TemplateLoader[]{ftl1, ctl});
-        cfg.setTemplateLoader(mtl);
+        Path fullGeneratorPath = Paths.get(templateBaseDir, generatorName);
+        STGroup dir = new STGroupDir(fullGeneratorPath.toString(), '$', '$');
+        dir.load();
+        Path templateRelativePath = Paths.get(templateName);
+        String destFileName = templateRelativePath.toFile().getName().replaceAll("\\.st$", "");
+        Path parent = templateRelativePath.getParent();
+        if (parent == null)
+            parent = Paths.get("");
 
+        Path stRelativeName = Paths.get(parent.toString(), destFileName);
+        ST st = dir.getInstanceOf("/" + stRelativeName.toString());
+        //ST st = dir.getInstanceOf(templateName);
 
-        // Set the preferred charset template files are stored in. UTF-8 is
-        // a good choice in most applications:
-        cfg.setDefaultEncoding("UTF-8");
+        if (st == null) {
+            throw new RuntimeException(String.format("Error loading template %s from directory %s", templateName, templateBaseDir));
+        }
+        //Set up FreeMarkerGenerator object maps
+        //Map<String, Object> rootHashMap = new HashMap<>();
+        //rootHashMap.put("database", database);
+        st.add("database", database);
 
-        // Sets how errors will appear.
-        // During web page *development* TemplateExceptionHandler.HTML_DEBUG_HANDLER is better.
-        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-
-        // Don't log exceptions inside FreeMarker that it will thrown at you anyway:
-        cfg.setLogTemplateExceptions(false);
-        return cfg;
-    }
-
-    private static void GenerateTemplate(String templateBaseDir, String generatorName, String templateName, File outputDir, Database database) throws TemplateException, IOException, ClassNotFoundException {
-
-        freemarker.log.Logger.selectLoggerLibrary(freemarker.log.Logger.LIBRARY_SLF4J);
-        Configuration cfg = configure(new File(templateBaseDir));
-
-
-        //Set up FreeMarker object maps
-        java.util.Map<String, Object> root = new HashMap<>();
-        root.put("database", database);
-
-        // Create the builder:
-        BeansWrapperBuilder builder = new BeansWrapperBuilder(Configuration.VERSION_2_3_23);
-        // Set desired BeansWrapper configuration properties:
-        builder.setUseModelCache(true);
-        builder.setExposeFields(true);
-        builder.setExposureLevel(BeansWrapper.EXPOSE_ALL);
-        BeansWrapper wrapper = builder.build();
-
-        //This is a bit crappy of FreeMarker. It doesn't expose static and enum members of classes,
-        //so we need to manually expose them. To access, use such as:
-        //${STATICS.Field.BLOB} to access the static member BLOB, defined in the Field class.
-        //${ENUMS.Field.BLOB} to access the static member BLOB, defined in the Field class.
 
         //Expose static variables
-        root.put("STATICS", new HashMap());
-        TemplateHashModel staticModels = wrapper.getStaticModels();
-        ((HashMap) root.get("STATICS")).put("Database", staticModels.get("bbd.jportal2.Database"));
-        ((HashMap) root.get("STATICS")).put("Table", staticModels.get("bbd.jportal2.Table"));
-        ((HashMap) root.get("STATICS")).put("Field", staticModels.get("bbd.jportal2.Field"));
-        ((HashMap) root.get("STATICS")).put("PlaceHolder", staticModels.get("bbd.jportal2.PlaceHolder"));
+//        rootHashMap.put("STATICS", new HashMap());
+//        TemplateHashModel staticModels = wrapper.getStaticModels();
+//        ((HashMap) rootHashMap.get("STATICS")).put("Database", staticModels.get("bbd.jportal2.Database"));
+//        ((HashMap) rootHashMap.get("STATICS")).put("Table", staticModels.get("bbd.jportal2.Table"));
+//        ((HashMap) rootHashMap.get("STATICS")).put("Field", staticModels.get("bbd.jportal2.Field"));
+//        ((HashMap) rootHashMap.get("STATICS")).put("PlaceHolder", staticModels.get("bbd.jportal2.PlaceHolder"));
+//
+//
+//        //Expose enums
+//        rootHashMap.put("ENUMS", new HashMap());
+//        TemplateHashModel enumModels = wrapper.getEnumModels();
+//        ((HashMap) rootHashMap.get("ENUMS")).put("Database", enumModels.get("bbd.jportal2.Database"));
+//        ((HashMap) rootHashMap.get("ENUMS")).put("Table", enumModels.get("bbd.jportal2.Table"));
+//        ((HashMap) rootHashMap.get("ENUMS")).put("Field", enumModels.get("bbd.jportal2.Field"));
+//        ((HashMap) rootHashMap.get("ENUMS")).put("PlaceHolder", enumModels.get("bbd.jportal2.PlaceHolder"));
 
-
-        //Expose enums
-        root.put("ENUMS", new HashMap());
-        TemplateHashModel enumModels = wrapper.getEnumModels();
-        ((HashMap) root.get("ENUMS")).put("Database", enumModels.get("bbd.jportal2.Database"));
-        ((HashMap) root.get("ENUMS")).put("Table", enumModels.get("bbd.jportal2.Table"));
-        ((HashMap) root.get("ENUMS")).put("Field", enumModels.get("bbd.jportal2.Field"));
-        ((HashMap) root.get("ENUMS")).put("PlaceHolder", enumModels.get("bbd.jportal2.PlaceHolder"));
-
-
-        String destFileName;
-        Path templateRelativePath = Paths.get(templateName);
-        destFileName = templateRelativePath.toFile().getName().replaceAll(".ftl", "");
 
         //Replace variables in filename with correct values
-        Template fileNameTemplate = new Template("fileNameTemplate", new StringReader(destFileName), cfg);
-        Writer fileNameOut = new StringWriter();
-        fileNameTemplate.process(root, fileNameOut);
+        ST fileNameTemplate = new ST(destFileName);
+        fileNameTemplate.add("database", database);
 
 
         Path destDir;
-        Path fullGeneratorPath = Paths.get(templateBaseDir, generatorName);
         if (templateRelativePath.getParent() == null)
             destDir = Paths.get("");
         else
             destDir = templateRelativePath.getParent();
 
 
-        destFileName = fileNameOut.toString();
+        destFileName = fileNameTemplate.render();
 
         //Create directory if it doesn't exist.
         Path fullDestinationPath = Paths.get(outputDir.toString(), destDir.toString());
@@ -206,11 +196,12 @@ public class FreeMarker extends AdvancedGenerator {
         Path fullDestinationFile = Paths.get(fullDestinationPath.toString(), destFileName);
 
         Path templateFileFullLocation = Paths.get(generatorName, templateName);
-        Template temp = cfg.getTemplate(templateFileFullLocation.toString());
+        //Template temp = cfg.getTemplate(templateFileFullLocation.toString());
         logger.info("\t [{}]: Generating [{}]", generatorName, fullDestinationFile.toString());
-        try (OutputStream outFile = new FileOutputStream(fullDestinationFile.toString())) {
-            PrintWriter outData = new PrintWriter(outFile);
-            temp.process(root, outData);
+        try (OutputStreamWriter outFileWriter = new OutputStreamWriter(new FileOutputStream(fullDestinationFile.toString()))) {
+            STWriter stWriter = new AutoIndentWriter(outFileWriter);
+            st.write(stWriter);
+            outFileWriter.flush();
         }
 
     }

@@ -2,7 +2,7 @@ package bbd.jportal2.test;
 
 import bbd.jportal2.Database;
 import bbd.jportal2.JPortal;
-import bbd.jportal2.generators.FreeMarker.FreeMarker;
+import bbd.jportal2.generators.FreeMarker.FreeMarkerGenerator;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,14 +19,14 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * Created by dieter on 2017/05/30.
- * Unittest to test the FreeMarker template based generator
+ * Unittest to test the FreeMarker1 templates based generator
  */
 public class FreeMarkerTest {
     private static final Logger logger = LoggerFactory.getLogger(FreeMarkerTest.class);
 
     private final String INPUT_DIRS = "src/test/resources/freemarker_input_dirs/";
     private final String SI_DIR = "src/test/resources/example_si_files/";
-    private final String OUTPUT_DIR = "target/test-freemarker-template-out/";
+    private final String OUTPUT_DIR = "target/test-freemarker-templates-out/";
     private final String TEMPLATE_DIR = "src/test/resources/freemarker_input_dirs";
 
 
@@ -40,7 +40,7 @@ public class FreeMarkerTest {
         String nubDir="";
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        FreeMarker.generateAdvanced(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+        FreeMarkerGenerator.generateAdvanced(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
 
         //Test output
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "single_file"));
@@ -58,7 +58,7 @@ public class FreeMarkerTest {
     
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        FreeMarker.generateAdvanced(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+        FreeMarkerGenerator.generateAdvanced(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
 
         //Test output - file1.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "dir1/file1.txt"));
@@ -84,7 +84,7 @@ public class FreeMarkerTest {
         String nubDir="";
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        FreeMarker.generateAdvanced(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+        FreeMarkerGenerator.generateAdvanced(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
 
         //Test output - dir1/file1.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "dir1/file1.txt"));
@@ -125,7 +125,7 @@ public class FreeMarkerTest {
         String nubDir="";
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        FreeMarker.generateAdvanced(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+        FreeMarkerGenerator.generateAdvanced(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
 
         //Test output - dir1/file1.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "TestExampleTable.java"));
@@ -144,7 +144,7 @@ public class FreeMarkerTest {
         String nubDir = "";
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        FreeMarker.generateAdvanced(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+        FreeMarkerGenerator.generateAdvanced(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
 
         //Test output
         //List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "single_file"));
