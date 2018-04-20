@@ -160,9 +160,9 @@
         <testSourceDirectory>src/test/java</testSourceDirectory>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>javacc-maven-plugin</artifactId>
-                <version>2.6</version>
+                <groupId>com.helger.maven</groupId>
+                <artifactId>ph-javacc-maven-plugin</artifactId>
+                <version>4.0.3</version>
                 <executions>
                     <execution>
                         <goals>
@@ -181,14 +181,14 @@
                         <id>add-source</id>
                         <phase>generate-sources</phase>
                         <goals>
-                        <goal>add-source</goal>
+                            <goal>add-source</goal>
                         </goals>
                         <configuration>
-                        <sources>
-                            <source>target/generated-sources/javacc</source>                            
-                        </sources>
+                            <sources>
+                                <source>target/generated-sources/javacc</source>
+                            </sources>
                         </configuration>
-                    </execution>                
+                    </execution>
                     <!-- Add a new source directory to our build -->
                     <execution>
                         <id>add-integration-test-sources</id>
@@ -224,7 +224,7 @@
                                 </resource>
                             </resources>
                         </configuration>
-                    </execution>                    
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -258,6 +258,7 @@
                     </archive>
                 </configuration>
             </plugin>
+
             <!-- Maven Shade Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

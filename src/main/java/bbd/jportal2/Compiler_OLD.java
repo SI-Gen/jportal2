@@ -18,7 +18,7 @@ import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class Compiler
+public class Compiler_OLD
 {
     private static PrintWriter    outLog;
     private static String         inputs;
@@ -217,11 +217,11 @@ public class Compiler
             System.out.println(abbreviate(inputs));
             if (args.length < 1)
             {
-                outLog.println("usage java jportal2.Compiler -l log -n nubDir (- f inputs | -d directory | infile) (generators)+");
+                outLog.println("usage java jportal2.Compiler_OLD -l log -n nubDir (- f inputs | -d directory | infile) (generators)+");
                 outLog.println("for example to create DDL for Sql Server and Java, VB and Delphi code");
                 outLog.println();
                 outLog.println(
-                        "java jportal2.Compiler airline.si -o ./dir1 MSSqlDDL -o ./dir2 JavaCode -o ./dir3 VBCode -o ./dir4 DelphiCode");
+                        "java jportal2.Compiler_OLD airline.si -o ./dir1 MSSqlDDL -o ./dir2 JavaCode -o ./dir3 VBCode -o ./dir4 DelphiCode");
                 outLog.flush();
                 System.exit(1);
             }
