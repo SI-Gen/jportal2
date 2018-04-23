@@ -1,4 +1,4 @@
-<#import "/JPortalJavaHelpers.function.ftl" as JavaHelpers>
+<#import "/helpers/JPortalJavaHelpers.function.ftl" as JavaHelpers>
 class Test${database.tables[0].name}
 {
     //Fields

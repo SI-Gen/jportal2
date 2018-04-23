@@ -34,12 +34,12 @@ public class ProjectCompilerTest {
     private final String SI_FILE1 = "src/test/resources/example_si_files/Contingency.si";
 
     private final String SI_DIR = "src/test/resources/example_si_files/";
-    private final String OUTPUT_DIR = "target/test-freemarker-template-out/";
+    private final Path OUTPUT_DIR = Paths.get("target", "test-freemarker-template-out");
     private final String TEMPLATE_DIR = "src/test/resources/freemarker_input_dirs";
-    private final String FREEMARKER_GENERATOR1 = "testFreeMarkerSingleFileInDir:target/XXXtestFreeMarkerSingleFileInDir";
-    private final String FREEMARKER_GENERATOR2 = "testFreeMarkerMultipleSubDirMultipleFiles:target/XXX/testFreeMarkerMultipleSubDirMultipleFiles";
-    private final String BUILTIN_GENERATOR1 = "CSNetCode:./cs";
-    private final String BUILTIN_GENERATOR2 = "MSSqlDDL:mssql";
+    private final String FREEMARKER_GENERATOR1 = "testFreeMarkerSingleFileInDir:" + OUTPUT_DIR.toString() + "testFreeMarkerSingleFileInDir";
+    private final String FREEMARKER_GENERATOR2 = "testFreeMarkerMultipleSubDirMultipleFiles:" + OUTPUT_DIR.toString() + "testFreeMarkerMultipleSubDirMultipleFiles";
+    private final String BUILTIN_GENERATOR1 = "CSNetCode:" + OUTPUT_DIR.toString() + "/cs";
+    private final String BUILTIN_GENERATOR2 = "MSSqlDDL:" + OUTPUT_DIR.toString() + "mssql";
 
     @Test
     public void testProjectCompilerTestSimple() throws Exception {

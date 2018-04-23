@@ -5,8 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,8 +16,7 @@ public class SingleFileCompiler {
     private List<String> templateLocations;
 
     public int compile(String source, List<String> compilerFlags, List<String> builtinGenerators, List<String> templateGenerators, List<String> templateLocations)
-            throws SecurityException, NoSuchMethodException,
-            IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+            throws Exception {
         this.templateLocations = templateLocations;
 
         String[] pieces = source.split("\\+");
@@ -75,8 +72,15 @@ public class SingleFileCompiler {
                 break;
             }
         }
-        if (templateBaseDir == null)
-            throw new SingleFileCompilerException(String.format("Template %1$s does not exist. Make sure a directory called %1$s exists in one of the template locations. See the --template-location option for more information.", generatorName));
+        if (templateBaseDir == null) {
+            StringBuilder templateLocationsAsString = new StringBuilder();
+            templateLocations.forEach(name -> {
+                templateLocationsAsString.append(name);
+                templateLocationsAsString.append('\n');
+            });
+
+            throw new SingleFileCompilerException(String.format("Template %1$s does not exist. Make sure a directory called %1$s exists in one of the template locations. See the --template-location option for more information.\\nThe templateLocation is currently set to: %2$s", generatorName, templateLocationsAsString.toString()));
+        }
 
         logger.info("Executing generator [{}] found in [{}]", generatorName, templateBaseDir);
 
@@ -84,15 +88,16 @@ public class SingleFileCompiler {
         generatorDirectory = addTrailingSlash(generatorDirectory);
         File templateLocationFile = Paths.get(templateBaseDir).toFile();
         try {
-            FreeMarker.generateAdvanced(database, templateLocationFile.getAbsolutePath(), generatorName, new File(generatorDirectory));
-        } catch (IOException e) {
+            FreeMarker fm = new FreeMarker();
+            fm.generateTemplate(database, templateLocationFile.getAbsolutePath(), generatorName, new File(generatorDirectory));
+        } catch (Exception e) {
             logger.error("Error executing {}", generatorName, e);
             return false;
         }
         return true;
     }
 
-    private boolean ExecuteGenerator(Database database, String generator) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    private boolean ExecuteGenerator(Database database, String generator) throws Exception {
         GeneratorParameters generatorParameters = new GeneratorParameters(generator).extractParametersFromOption();
         String generatorName = generatorParameters.getGeneratorName();
         String generatorDirectory = generatorParameters.getGeneratorDirectory();
@@ -103,8 +108,10 @@ public class SingleFileCompiler {
         generatorDirectory = addTrailingSlash(generatorDirectory);
 
         Class<?> c;
+        Object instanceOfC;
         try {
             c = Class.forName("bbd.jportal2.generators." + generatorName);
+            instanceOfC = c.newInstance();
         } catch (ClassNotFoundException cnf) {
             logger.error("Could not find generator {}. Make sure there is a class bbd.jportal2.generators.{}", generatorName);
             return true;
@@ -113,7 +120,7 @@ public class SingleFileCompiler {
         Class<?> d[] = {database.getClass(), generatorDirectory.getClass()};
         Method m = c.getMethod("generate", d);
         Object o[] = {database, generatorDirectory};
-        m.invoke(database, o);
+        m.invoke(instanceOfC, o);
         return false;
     }
 

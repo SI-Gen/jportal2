@@ -26,47 +26,30 @@ import java.io.PrintWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MSSqlDDL extends Generator
+public class MSSqlDDL implements Generator
 {
 
   private static final Logger logger = LoggerFactory.getLogger(MSSqlDDL.class);
 
-  /**
-   * Reads input from stored repository
-   */
-  public static void main(String args[])
-  {
-    try
-    {
-      for (String arg : args) {
-        logger.info(arg + ": Generate MSSql DDL");
-        ObjectInputStream in = new ObjectInputStream(new FileInputStream(arg));
-        Database database = (Database) in.readObject();
-        in.close();
-        generate(database, "");
-      }  
-    }
-    catch (Exception e)
-    {
-      e.printStackTrace();
-    }
-  }
-  public static String description()
+    public String description()
   {
     return "Generate MSSql DDL";
   }
-  public static String documentation()
+
+    public String documentation()
   {
     return "Generate MSSql DDL";
   }
-  private static Vector<Flag> flagsVector;
-  static boolean addTimestamp;
-  static boolean useInsertTrigger;
-  static boolean useUpdateTrigger;
-  static boolean internalStamps;
-  static boolean generate42;
-  static boolean auditTrigger;
-  private static void flagDefaults()
+
+    private Vector<Flag> flagsVector;
+    boolean addTimestamp;
+    boolean useInsertTrigger;
+    boolean useUpdateTrigger;
+    boolean internalStamps;
+    boolean generate42;
+    boolean auditTrigger;
+
+    private void flagDefaults()
   {
     addTimestamp = false;
     useInsertTrigger = false;
@@ -75,7 +58,8 @@ public class MSSqlDDL extends Generator
     auditTrigger = false;
     generate42 = false;
   }
-  public static Vector<Flag> flags()
+
+    public Vector<Flag> flags()
   {
     if (flagsVector == null)
     {
@@ -93,7 +77,7 @@ public class MSSqlDDL extends Generator
   /**
    * Sets generation flags.
    */
-  static void setFlags(Database database)
+  void setFlags(Database database)
   {
     if (flagsVector != null)
     {
@@ -140,12 +124,13 @@ public class MSSqlDDL extends Generator
     if (auditTrigger)
       logger.info(" (audit triggers)");
   }
-  private static String tableOwner;
-  private static String tableSchema;
+
+    private String tableOwner;
+    private String tableSchema;
   /**
    * Generates the SQL for SQLServer Table creation.
    */
-  public static void generate(Database database, String output)
+  public void generate(Database database, String output)
   {
     try
     {
@@ -188,7 +173,8 @@ public class MSSqlDDL extends Generator
       logger.error("Generate SQLServer SQL IO Error");
     }
   }
-  static void generateAuditTable(Table table, PrintWriter outData)
+
+    void generateAuditTable(Table table, PrintWriter outData)
   {
     String tableName = tableOwner + table.name;
     outData.println("IF OBJECT_ID('" + tableName + "Audit','U') IS NOT NULL");
@@ -209,7 +195,8 @@ public class MSSqlDDL extends Generator
     outData.println("GO");
     outData.println();
   }
-  static void generateAuditTrigger(Table table, PrintWriter outData)
+
+    void generateAuditTrigger(Table table, PrintWriter outData)
   {
     String tableName = tableOwner + table.name;
     outData.println("IF OBJECT_ID('" + tableName + "AuditTrigger','TR') IS NOT NULL");
@@ -251,7 +238,8 @@ public class MSSqlDDL extends Generator
     outData.println("GO");
     outData.println();
   }
-  static void generateTable(Table table, PrintWriter outData)
+
+    void generateTable(Table table, PrintWriter outData)
   {
     String tableName = tableOwner + table.name;
     String comma = "  ";
@@ -431,7 +419,7 @@ public class MSSqlDDL extends Generator
   /**
    * Generates SQL code for SQL Server Index
    */
-  static void generateKey(Key key, PrintWriter outData, String table)
+  void generateKey(Key key, PrintWriter outData, String table)
   {
     String comma = "  ";
     if (key.isPrimary)
@@ -469,7 +457,7 @@ public class MSSqlDDL extends Generator
   /**
    * Generates SQL code for ORACLE Primary Key create
    */
-  static void generatePrimary(Key key, String table, PrintWriter outData)
+  void generatePrimary(Key key, String table, PrintWriter outData)
   {
     String comma = "    ";
     outData.println(", CONSTRAINT PK_" + table + "_" + key.name + " PRIMARY KEY (");
@@ -483,7 +471,7 @@ public class MSSqlDDL extends Generator
   /**
    * Generates SQL code for ORACLE Unique Key create
    */
-  static void generateUnique(Key key, String table, PrintWriter outData)
+  void generateUnique(Key key, String table, PrintWriter outData)
   {
     String comma = "    ";
     outData.println(", CONSTRAINT UK_"  + table + "_" + key.name + " UNIQUE (");
@@ -497,7 +485,7 @@ public class MSSqlDDL extends Generator
   /**
    * Generates foreign key SQL Code appended to table
    */
-  static void generateLink(Link link, String table, PrintWriter outData)
+  void generateLink(Link link, String table, PrintWriter outData)
   {
     String comma = "    ";
     String temp = "";
@@ -545,7 +533,7 @@ public class MSSqlDDL extends Generator
   /**
    * Generates foreign key SQL Code for SQL Server
    */
-  static void generateSpLink(Link link, PrintWriter outData, String table)
+  void generateSpLink(Link link, PrintWriter outData, String table)
   {
     outData.println("sp_foreignkey " + table + ", " + link.name);
     for (int i = 0; i < link.fields.size(); i++)
@@ -559,7 +547,7 @@ public class MSSqlDDL extends Generator
   /**
    * Generates grant SQL Code for SQL Server
    */
-  static void generateGrant(Grant grant, PrintWriter outData, String object)
+  void generateGrant(Grant grant, PrintWriter outData, String object)
   {
     for (int i = 0; i < grant.perms.size(); i++)
     {
@@ -576,7 +564,7 @@ public class MSSqlDDL extends Generator
   /**
    * Generates view SQL Code for SQL Server
    */
-  static void generateView(View view, PrintWriter outData, String tableName)
+  void generateView(View view, PrintWriter outData, String tableName)
   {
     outData.println("IF OBJECT_ID('" + tableName + view.name + "','V') IS NOT NULL");
     outData.println("    DROP VIEW " + tableName + view.name);
@@ -612,7 +600,8 @@ public class MSSqlDDL extends Generator
       outData.println();
     }
   }
-  static void generateData(Proc proc, PrintWriter outData)
+
+    void generateData(Proc proc, PrintWriter outData)
   {
     for (int i = 0; i < proc.lines.size(); i++)
     {
@@ -627,7 +616,7 @@ public class MSSqlDDL extends Generator
   /**
    * Translates field type to SQLServer SQL column types
    */
-  static String varType(Field field, boolean typeOnly, boolean hasSequenceReturning)
+  String varType(Field field, boolean typeOnly, boolean hasSequenceReturning)
   {
     switch (field.type)
     {

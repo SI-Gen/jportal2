@@ -11,22 +11,20 @@
 /// ------------------------------------------------------------------
 
 package bbd.jportal2;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.util.Map;
 import java.util.Vector;
 
-public interface Generator {
-    void generate(Database database, String output);
+public abstract interface TemplateBasedGenerator {
+    public abstract void generateTemplate(Database database, String templateBaseDir, String generatorName, File outputDirectory) throws Exception;
 
-    String description();
+    public abstract String documentation();
 
-    String documentation();
+    public abstract String description();
 
-    default Vector<Flag> flags() {
-        return new Vector<>();
-    }
+    public abstract Vector<?> flags();
 
-    default Boolean toBoolean(Object value)
-  {
-    String s = value.toString();
-	  return s.toLowerCase().equals("true");
-  }
+    public abstract Path getTemplateFilesLocation();
 }

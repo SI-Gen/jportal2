@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,7 +30,7 @@ public class FreeMarkerTest {
 
 
     @Test
-    public void testFreeMarkerSingleFileInDir() throws IOException {
+    public void testFreeMarkerSingleFileInDir() throws Exception {
         String nameOfTest = "testFreeMarkerSingleFileInDir";
         Path templateDir = Paths.get(INPUT_DIRS);
         Path siFile = Paths.get(SI_DIR,"ExampleTable.si");
@@ -40,7 +39,7 @@ public class FreeMarkerTest {
         String nubDir="";
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        FreeMarker.generateAdvanced(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+        (new FreeMarker()).generateTemplate(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
 
         //Test output
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "single_file"));
@@ -48,7 +47,7 @@ public class FreeMarkerTest {
     }
 
     @Test
-    public void testFreeMarkerSingleSubDirMultipleFiles() throws IOException {
+    public void testFreeMarkerSingleSubDirMultipleFiles() throws Exception {
         String nameOfTest = "testFreeMarkerSingleSubDirMultipleFiles";
         Path templateDir = Paths.get(INPUT_DIRS);
         Path siFile = Paths.get(SI_DIR,"ExampleTable.si");
@@ -58,7 +57,7 @@ public class FreeMarkerTest {
     
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        FreeMarker.generateAdvanced(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+        (new FreeMarker()).generateTemplate(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
 
         //Test output - file1.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "dir1/file1.txt"));
@@ -75,7 +74,7 @@ public class FreeMarkerTest {
 
 
     @Test
-    public void testFreeMarkerMultipleSubDirMultipleFiles() throws IOException {
+    public void testFreeMarkerMultipleSubDirMultipleFiles() throws Exception {
         String nameOfTest = "testFreeMarkerMultipleSubDirMultipleFiles";
         Path templateDir = Paths.get(INPUT_DIRS);
         Path siFile = Paths.get(SI_DIR,"ExampleTable.si");
@@ -84,7 +83,7 @@ public class FreeMarkerTest {
         String nubDir="";
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        FreeMarker.generateAdvanced(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+        (new FreeMarker()).generateTemplate(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
 
         //Test output - dir1/file1.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "dir1/file1.txt"));
@@ -115,7 +114,7 @@ public class FreeMarkerTest {
 
 
     @Test
-    public void testFreeMarkerGenerateSimpleHarness() throws IOException {
+    public void testFreeMarkerGenerateSimpleHarness() throws Exception {
         String nameOfTest = "testFreeMarkerGenerateSimpleHarness";
         Path templateDir = Paths.get(INPUT_DIRS);
         Path siFile = Paths.get(SI_DIR,"ExampleTable.si");
@@ -125,7 +124,7 @@ public class FreeMarkerTest {
         String nubDir="";
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        FreeMarker.generateAdvanced(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+        (new FreeMarker()).generateTemplate(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
 
         //Test output - dir1/file1.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "TestExampleTable.java"));
@@ -135,7 +134,7 @@ public class FreeMarkerTest {
     }
 
     @Test
-    public void testFreeMarkerDumpDB() throws IOException {
+    public void testFreeMarkerDumpDB() throws Exception {
         String nameOfTest = "testFreeMarkerDumpDB";
         Path templateDir = Paths.get(INPUT_DIRS);
         Path siFile = Paths.get(SI_DIR, "ExampleTable.si");
@@ -144,7 +143,7 @@ public class FreeMarkerTest {
         String nubDir = "";
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        FreeMarker.generateAdvanced(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+        (new FreeMarker()).generateTemplate(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
 
         //Test output
         //List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "single_file"));

@@ -12,7 +12,7 @@
 
 package bbd.jportal2.generators.FreeMarker;
 
-import bbd.jportal2.AdvancedGenerator;
+import bbd.jportal2.TemplateBasedGenerator;
 import bbd.jportal2.Database;
 import bbd.jportal2.Main;
 import freemarker.cache.ClassTemplateLoader;
@@ -29,51 +29,40 @@ import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
-import java.util.Map;
-
-import static freemarker.log.Logger.selectLoggerLibrary;
+import java.util.Vector;
 
 
-public class FreeMarker extends AdvancedGenerator {
+public class FreeMarker implements TemplateBasedGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-    //  /**
-//   * Reads input from stored repository
-//   */
-//  public static void main(String[] args)
-//  {
-//    try
-//    {
-//      for (int i = 0; i < args.length; i++)
-//      {
-//        ObjectInputStream in = new ObjectInputStream(new FileInputStream(args[i]));
-//        Database database = (Database)in.readObject();
-//        in.close();
-//        i++;
-//        Map<String,String> params = new HashMap<>();
-//        params.put("Template",args[i]);
-//        generateAdvanced(database, params,"");
-//      }
-//    }
-//    catch (Exception e)
-//    {
-//      e.printStackTrace();
-//    }
-//  }
-    public static String description() {
+    //Location of the generator templates for the FreeMarkerGenerator
+    private static final String TEMPLATE_LOCATION = "generator_templates";
+
+    public String description() {
         return "Generate according to a given FreeMarker template.";
     }
 
-    public static String documentation() {
+    public String documentation() {
         return "Generate according to a given FreeMarker template. Usage is TODO";
     }
 
+    public Vector<?> flags() {
+        return new Vector<>();
+    }
+
+    ;
+
+    public Path getTemplateFilesLocation() {
+        return Paths.get(this.TEMPLATE_LOCATION);
+    }
+
+    ;
     /**
      * Generates code using a given FreeMarker template
      */
-    //public static void generateAdvanced(Database database, Map<String,String> parameters, File outputDirectory) throws IOException, TemplateException
-    public static void generateAdvanced(Database database, String templateBaseDir, String generatorName, File outputDirectory) throws IOException {
+    //public static void generateTemplate(Database database, Map<String,String> parameters, File outputDirectory) throws IOException, TemplateException
+    public void generateTemplate(Database database, String templateBaseDir, String generatorName, File outputDirectory) throws Exception {
 
         final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.ftl");
         Path fullGeneratorPath = Paths.get(templateBaseDir, generatorName);
@@ -113,7 +102,7 @@ public class FreeMarker extends AdvancedGenerator {
         //templates (inside of src/main/java/bbd.jportal2/generators/FreeMarker/FreeMarkerHelpers
         //as well as the location specified by the user
         FileTemplateLoader ftl1 = new FileTemplateLoader(templateDir);
-        ClassTemplateLoader ctl = new ClassTemplateLoader(FreeMarker.class, "templates");
+        ClassTemplateLoader ctl = new ClassTemplateLoader(FreeMarker.class, "/generator_templates");
         MultiTemplateLoader mtl = new MultiTemplateLoader(new TemplateLoader[]{ftl1, ctl});
         cfg.setTemplateLoader(mtl);
 
