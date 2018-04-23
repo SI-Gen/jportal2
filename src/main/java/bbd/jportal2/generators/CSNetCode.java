@@ -24,7 +24,7 @@ import java.util.Vector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CSNetCode extends Generator
+public class CSNetCode implements Generator
 {
     private static final Logger logger = LoggerFactory.getLogger(CSNetCode.class);
 //  public static void main(String args[])
@@ -47,11 +47,12 @@ public class CSNetCode extends Generator
 //      e.printStackTrace();
 //    }
 //  }
-  public static String description()
+public String description()
   {
     return "Generate C# Code for ADO.NET via IDbConnection";
   }
-  public static String documentation()
+
+    public String documentation()
   {
     return "Generate C# Code for ADO.NET via IDbConnection"
     + "\r\nDATABASE name FLAGS flag"
@@ -66,21 +67,23 @@ public class CSNetCode extends Generator
     + "\r\n- \"use notify\" generate classes with INotifyPropertyChanged implemented"
       ;
   }
-  protected static Vector<Flag> flagsVector;
-  static boolean mSSqlStoredProcs;
-  static boolean hasStoredProcs;
-  static boolean useGenerics;
-  static boolean usePartials;
-  static boolean useSeparate;
-  static boolean noDatatables;
-  static boolean useYields;
-  static boolean useCSharp2;
-  static boolean useCSharp1;
-  static boolean useNotify;
-  static boolean useFunc;
-  static String version = "4.0.";
-  static String runTimeVersion = "4.0.30319";
-  private static void flagDefaults()
+
+    protected Vector<Flag> flagsVector;
+    boolean mSSqlStoredProcs;
+    boolean hasStoredProcs;
+    boolean useGenerics;
+    boolean usePartials;
+    boolean useSeparate;
+    boolean noDatatables;
+    boolean useYields;
+    boolean useCSharp2;
+    boolean useCSharp1;
+    boolean useNotify;
+    boolean useFunc;
+    String version = "4.0.";
+    String runTimeVersion = "4.0.30319";
+
+    private void flagDefaults()
   {
     hasStoredProcs = false;
     mSSqlStoredProcs = false;
@@ -94,7 +97,8 @@ public class CSNetCode extends Generator
     useNotify = false;
     useFunc = false;
   }
-  public static Vector<Flag> flags()
+
+    public Vector<Flag> flags()
   {
     if (flagsVector == null)
     {
@@ -116,7 +120,7 @@ public class CSNetCode extends Generator
   /**
    * Sets generation flags.
    */
-  static void setFlags(Database database)
+  void setFlags(Database database)
   {
     if (flagsVector != null)
     {
@@ -178,7 +182,8 @@ public class CSNetCode extends Generator
     if (useFunc)
       logger.info(" (use func)");
   }
-  public static void generate(Database database, String output)
+
+    public void generate(Database database, String output)
   {
     setFlags(database);
     for (int i = 0; i < database.tables.size(); i++)
@@ -187,9 +192,11 @@ public class CSNetCode extends Generator
       generate(table, output);
     }
   }
-  static OutputStream procFile;
-  static PrintWriter procData;
-  static void generate(Table table, String output)
+
+    OutputStream procFile;
+    PrintWriter procData;
+
+    void generate(Table table, String output)
   {
     OutputStream outFile;
     try
@@ -258,7 +265,8 @@ public class CSNetCode extends Generator
       logger.error("Generate Procs IO Error");
     }
   }
-  private static PrintWriter openWriterPuttingTop(Table table, OutputStream outFile)
+
+    private PrintWriter openWriterPuttingTop(Table table, OutputStream outFile)
   {
     PrintWriter outData = new PrintWriter(outFile);
     String packageName = table.database.packageName;
@@ -297,7 +305,8 @@ public class CSNetCode extends Generator
     outData.println("{");
     return outData;
   }
-  private static OutputStream openOutputStream(Table table, String output, String added) throws FileNotFoundException, IOException
+
+    private OutputStream openOutputStream(Table table, String output, String added) throws FileNotFoundException, IOException
   {
     OutputStream outFile;
     String outFileName = output + table.name + added + ".cs";
@@ -305,7 +314,8 @@ public class CSNetCode extends Generator
     outFile = new FileOutputStream(outFileName);
     return outFile;
   }
-  private static void generateSelector(Field field, PrintWriter outData)
+
+    private void generateSelector(Field field, PrintWriter outData)
   {
     outData.println(indent(2) + "public class Nfpp" + field.useUpperName() + " // NO _______ PARAMETER PROPERTIES ");
     outData.println(indent(2) + "{");
@@ -355,7 +365,7 @@ public class CSNetCode extends Generator
     outData.println(indent(2) + "}");
   }
 
-  public static boolean isStoredProcs(Table table)
+    public boolean isStoredProcs(Table table)
   {
     boolean hasStoredProcs = false;
     for (int i = 0; i < table.procs.size(); i++)
@@ -368,7 +378,8 @@ public class CSNetCode extends Generator
     }
     return hasStoredProcs;
   }
-  public static void generateDataTables(Table table, PrintWriter outData)
+
+    public void generateDataTables(Table table, PrintWriter outData)
   {
     boolean hasDataTables = false;
     for (int i = 0; i < table.procs.size(); i++)
@@ -652,7 +663,8 @@ public class CSNetCode extends Generator
       }
         }
       }
-  public static void generateStructPairs(Proc proc, Vector<Field> fields, Vector<?> dynamics, String mainName, PrintWriter outData, String tableName, boolean hasReturning)
+
+    public void generateStructPairs(Proc proc, Vector<Field> fields, Vector<?> dynamics, String mainName, PrintWriter outData, String tableName, boolean hasReturning)
   {
     outData.println(indent(1) + "[Serializable()]");
     String inherit = "";
@@ -734,7 +746,8 @@ public class CSNetCode extends Generator
     }
     outData.println(indent(1) + "}");
   }
-  public static void generateEnumOrdinals(Table table, PrintWriter outData)
+
+    public void generateEnumOrdinals(Table table, PrintWriter outData)
   {
     for (int i = 0; i < table.fields.size(); i++)
     {
@@ -773,7 +786,8 @@ public class CSNetCode extends Generator
       }
     }
   }
-  public static void generateStructs(Table table, PrintWriter outData)
+
+    public void generateStructs(Table table, PrintWriter outData)
   {
     if (table.fields.size() > 0)
     {
@@ -838,7 +852,8 @@ public class CSNetCode extends Generator
       }
     }
   }
-  public static void generateCode(Table table, PrintWriter outData)
+
+    public void generateCode(Table table, PrintWriter outData)
   {
     boolean firsttime = true;
     boolean isLoaded = true;
@@ -864,8 +879,10 @@ public class CSNetCode extends Generator
       generateCode(table, proc, outData);
     }
   }
-  static PlaceHolder placeHolder;
-  static void generateStoredProc(Proc proc, String storedProcName, Vector<?> lines)
+
+    PlaceHolder placeHolder;
+
+    void generateStoredProc(Proc proc, String storedProcName, Vector<?> lines)
   {
     //procData.println("IF EXISTS (SELECT * FROM SYSOBJECTS WHERE ID = OBJECT_ID('dbo." + storedProcName + "') AND SYSSTAT & 0xf = 4)");
     procData.println("IF OBJECT_ID('dbo." + storedProcName + "','P') IS NOT NULL");
@@ -896,7 +913,8 @@ public class CSNetCode extends Generator
     procData.println("GO");
     procData.println("");
   }
-  static void generateStoredProcCommand(Proc proc, PrintWriter outData)
+
+    void generateStoredProcCommand(Proc proc, PrintWriter outData)
   {
     placeHolder = new PlaceHolder(proc, PlaceHolder.AT, "");
     String storedProcName = proc.table.useName() + proc.upperFirst();
@@ -912,7 +930,8 @@ public class CSNetCode extends Generator
     outData.println(indent(3) + "return \"" + storedProcName + "\";");
     outData.println(indent(2) + "}");
   }
-  static void generateCommand(Proc proc, PrintWriter outData)
+
+    void generateCommand(Proc proc, PrintWriter outData)
   {
     if (proc.hasReturning)
     {
@@ -939,7 +958,8 @@ public class CSNetCode extends Generator
     outData.println(indent(4) + ";");
     outData.println(indent(2) + "}");
   }
-  static void generateNonQueryProc(Proc proc, String mainName, PrintWriter outData)
+
+    void generateNonQueryProc(Proc proc, String mainName, PrintWriter outData)
   {
     Field identity = null;
     for (int i = 0; i < proc.table.fields.size(); i++)
@@ -1036,7 +1056,7 @@ public class CSNetCode extends Generator
     }
   }
 
-  static void generateFunc(Proc proc, String mainName, PrintWriter outData)
+    void generateFunc(Proc proc, String mainName, PrintWriter outData)
   {
     String line, input = "", postfix = "";
     boolean isLoaded = false;
@@ -1200,7 +1220,8 @@ public class CSNetCode extends Generator
     }
 
   }
-  static void generateReturningProc(Proc proc, String mainName, PrintWriter outData)
+
+    void generateReturningProc(Proc proc, String mainName, PrintWriter outData)
   {
     Field identity = null;
     for (int i = 0; i < proc.table.fields.size(); i++)
@@ -1293,7 +1314,8 @@ public class CSNetCode extends Generator
     outData.println(indent(3) + "}");
     outData.println(indent(2) + "}");
   }
-  static void generateReadOneProc(Proc proc, String mainName, PrintWriter outData)
+
+    void generateReadOneProc(Proc proc, String mainName, PrintWriter outData)
   {
     outData.println(indent(2) + "public bool " + proc.upperFirst() + "(JConnect aConnect)");
     outData.println(indent(2) + "{");
@@ -1368,7 +1390,8 @@ public class CSNetCode extends Generator
     outData.println(indent(3) + "}");
     outData.println(indent(2) + "}");
   }
-  static String returning(Proc proc)
+
+    String returning(Proc proc)
   {
     if (proc.hasReturning == false)
       return "";
@@ -1385,23 +1408,24 @@ public class CSNetCode extends Generator
     }
     return "aConnect, \"" + tableName + "\", \"" + fieldName + "\"";
   }
-  /*static String returningField(Proc proc)
-  {
-    if (proc.hasReturning == false)
-      return "";
-    String fieldName = "";
-    for (int i = 0; i < proc.table.fields.size(); i++)
+
+    /*String returningField(Proc proc)
     {
-      Field field = (Field)proc.table.fields.elementAt(i);
-      if (field.isSequence == true)
+      if (proc.hasReturning == false)
+        return "";
+      String fieldName = "";
+      for (int i = 0; i < proc.table.fields.size(); i++)
       {
-        fieldName = field.useName();
-        break;
+        Field field = (Field)proc.table.fields.elementAt(i);
+        if (field.isSequence == true)
+        {
+          fieldName = field.useName();
+          break;
+        }
       }
-    }
-    return fieldName;
-  }*/
-  static void generateFetchProc(Proc proc, String mainName, PrintWriter outData, boolean isLoaded)
+      return fieldName;
+    }*/
+    void generateFetchProc(Proc proc, String mainName, PrintWriter outData, boolean isLoaded)
   {
     outData.println(indent(2) + "private void " + proc.upperFirst() + "(JConnect aConnect)");
     outData.println(indent(2) + "{");
@@ -1540,7 +1564,8 @@ public class CSNetCode extends Generator
       generateFetchProcDataTables(proc, mainName, outData);
   }
   }
-  static void generateFetchProcDataTables(Proc proc, String mainName, PrintWriter outData)
+
+    void generateFetchProcDataTables(Proc proc, String mainName, PrintWriter outData)
   {
     outData.println(indent(2) + "public " + proc.table.useName() + proc.upperFirst() + "DataTable " + proc.upperFirst() + "DataTable()");
     outData.println(indent(2) + "{");
@@ -1553,7 +1578,8 @@ public class CSNetCode extends Generator
     outData.println(indent(3) + "return " + proc.upperFirst() + "DataTable();");
     outData.println(indent(2) + "}");
   }
-  static void generateProcFunctions(Proc proc, String name, PrintWriter outData, boolean isLoaded)
+
+    void generateProcFunctions(Proc proc, String name, PrintWriter outData, boolean isLoaded)
   {
     if (proc.outputs.size() > 0 && !proc.isSingle)
       generateFetchProc(proc, name, outData, isLoaded);
@@ -1566,7 +1592,8 @@ public class CSNetCode extends Generator
     if (useFunc)
       generateFunc(proc, name, outData);
   }
-  static void generateCClassTop(Proc proc, String mainName, PrintWriter outData, boolean doCursor)
+
+    void generateCClassTop(Proc proc, String mainName, PrintWriter outData, boolean doCursor)
   {
     outData.println(indent(1) + "[Serializable()]");
     outData.println(indent(1) + "public " + (usePartials ? "partial " : "") + "class " + mainName);
@@ -1632,11 +1659,13 @@ public class CSNetCode extends Generator
       outData.println(indent(2) + "}");
     }
   }
-  static boolean doMSSqlStoredProcs(Proc proc)
+
+    boolean doMSSqlStoredProcs(Proc proc)
   {
     return (mSSqlStoredProcs == true && proc.dynamics.size() == 0) || (proc.isSProc == true && proc.dynamics.size() == 0);
   }
-  static void generateCode(Table table, Proc proc, PrintWriter outData)
+
+    void generateCode(Table table, Proc proc, PrintWriter outData)
   {
     if (proc.comments.size() > 0)
     {
@@ -1657,7 +1686,8 @@ public class CSNetCode extends Generator
     generateProcFunctions(proc, table.useName() + proc.upperFirst(), outData, true);
     outData.println(indent(1) + "}");
   }
-  static void generateStdCode(Table table, Proc proc, PrintWriter outData, boolean firsttime, boolean isLoaded)
+
+    void generateStdCode(Table table, Proc proc, PrintWriter outData, boolean firsttime, boolean isLoaded)
   {
     if (firsttime == true)
       generateCClassTop(proc, table.useName(), outData, table.hasCursorStdProc());
@@ -1677,7 +1707,8 @@ public class CSNetCode extends Generator
       generateCommand(proc, outData);
     generateProcFunctions(proc, table.useName(), outData, isLoaded);
   }
-  static String castOf(Field field)
+
+    String castOf(Field field)
   {
     switch (field.type)
     {
@@ -1688,7 +1719,8 @@ public class CSNetCode extends Generator
     }
     return "";
   }
-  static String validNull(Field field)
+
+    String validNull(Field field)
   {
     switch (field.type)
     {
@@ -1717,7 +1749,8 @@ public class CSNetCode extends Generator
     }
     return "null";
   }
-  static String cursorGet(Field field, int occurence)
+
+    String cursorGet(Field field, int occurence)
   {
     String tail = ")";
     if (field.isNull)
@@ -1779,7 +1812,8 @@ public class CSNetCode extends Generator
     }
     return "Get(" + occurence + tail;
   }
-  static String dataTableType(Field field)
+
+    String dataTableType(Field field)
   {
     switch (field.type)
     {
@@ -1838,7 +1872,8 @@ public class CSNetCode extends Generator
     }
     return "dataTableType";
   }
-  static String fieldDef(Field field, String temp)
+
+    String fieldDef(Field field, String temp)
   {
     StringBuffer maker = new StringBuffer();
     StringBuffer temp2 = new StringBuffer(temp);
@@ -1873,7 +1908,8 @@ public class CSNetCode extends Generator
            + indent(2) + "}";
     return ret;
   }
-  static String getDataType(Field field, StringBuffer maker, StringBuffer temp)
+
+    String getDataType(Field field, StringBuffer maker, StringBuffer temp)
   {
     String result;
     switch (field.type)
@@ -1946,7 +1982,7 @@ public class CSNetCode extends Generator
     return result;
   }
 
-  static String returnNullableDataType(Field field, StringBuffer maker, StringBuffer temp)
+    String returnNullableDataType(Field field, StringBuffer maker, StringBuffer temp)
   {
     String datatype = getDataType(field, maker, temp);
     if (getNullableType(field) && field.isNull)
@@ -1954,7 +1990,7 @@ public class CSNetCode extends Generator
     return datatype;
   }
 
-  static boolean getNullableType(Field field)
+    boolean getNullableType(Field field)
   {
     boolean nullableType;
     switch (field.type)
@@ -1986,7 +2022,7 @@ public class CSNetCode extends Generator
     return nullableType;
   }
 
-  static String fieldCastNo(Field field)
+    String fieldCastNo(Field field)
   {
     String result;
     switch (field.type)
@@ -2054,14 +2090,15 @@ public class CSNetCode extends Generator
     }
     return result;
   }
-  static String fieldCast(Field field)
+
+    String fieldCast(Field field)
   {
     return "(" + fieldCastNo(field) + ")";
   }
   /**
    * Translates field type to SQLServer SQL column types
    */
-  static String varType(Field field)
+  String varType(Field field)
   {
     switch (field.type)
     {
@@ -2118,7 +2155,8 @@ public class CSNetCode extends Generator
     }
     return "unknown";
   }
-  static String indent(int lvl)
+
+    String indent(int lvl)
   {
     if (lvl == 0)
     {

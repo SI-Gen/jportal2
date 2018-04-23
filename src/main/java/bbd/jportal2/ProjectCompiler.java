@@ -43,7 +43,7 @@ public class ProjectCompiler {
     }
 
 
-    public int compileAll() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    public int compileAll() throws Exception {
         List<String> allInputFiles = new ArrayList<>();
 
         addAllInputDirsToList(allInputFiles);

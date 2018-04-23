@@ -140,6 +140,19 @@
             <version>4.0.2</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.clapper</groupId>
+            <artifactId>javautil</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/net.sf.extcos/extcos -->
+        <dependency>
+            <groupId>net.sf.extcos</groupId>
+            <artifactId>extcos</artifactId>
+            <version>0.4b</version>
+        </dependency>
+
+
     </dependencies>
     <build>
         <pluginManagement>
