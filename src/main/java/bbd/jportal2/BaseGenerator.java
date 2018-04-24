@@ -5,14 +5,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Vector;
 
 public class BaseGenerator {
-    private static final Logger logger = LoggerFactory.getLogger(bbd.jportal2.CliCCode.class);
+    private static final Logger logger = LoggerFactory.getLogger(BaseGenerator.class);
 
     //A list of the generated output files that this generator has created.
     private Vector<Path> outputtedFiles = new Vector<>();

@@ -82,7 +82,7 @@ public class AllGeneratorsBasicTest {
         Set<Class<?>> classes = scanner.getClasses(new ComponentQuery() {
 
             protected void query() {
-                select().from("bbd.jportal2.generators").andStore(
+                select().from("bbd.jportal2").andStore(
                         thoseImplementing(T).into(foundClasses));
                 //thoseAnnotatedWith(SampleAnnotation.class).into(samples));
             }
