@@ -24,11 +24,9 @@ import static org.junit.Assert.assertEquals;
 public class AllGeneratorsBasicTest {
     private static final Logger logger = LoggerFactory.getLogger(AllGeneratorsBasicTest.class);
 
-    private final String INPUT_DIRS = "src/test/resources/freemarker_input_dirs/";
+    //private final String INPUT_DIRS = "src/test/resources/freemarker_input_dirs/";
 
-    private final String SI_FILE1 = "src/test/resources/example_si_files/Contingency.si";
-
-    private final String SI_DIR = "src/test/resources/example_si_files/";
+    private final String SI_DIR = "src/main/resources/example_si_files/";
     private final String OUTPUT_DIR = "target/test-all-generators-basic-test-out/";
     private final String TEMPLATE_DIR = "src/main/resources/generator_templates";
 
@@ -48,8 +46,7 @@ public class AllGeneratorsBasicTest {
         }
         pj.addBuiltinGenerators(builtinGenerators);
 
-        List<String> inputFiles = Arrays.asList(SI_FILE1);
-        pj.addInputFiles(inputFiles);
+        pj.addInputDir(SI_DIR);
         pj.compileAll();
     }
 
@@ -74,8 +71,7 @@ public class AllGeneratorsBasicTest {
         }
         pj.addTemplateGenerators(templateGenerators);
 
-        List<String> inputFiles = Arrays.asList(SI_FILE1);
-        pj.addInputFiles(inputFiles);
+        pj.addInputDir(SI_DIR);
         pj.compileAll();
     }
 

@@ -9,7 +9,9 @@ SERVER   PostgeSQL95
 
 //TODO: AnyDB doesn't want to compile without a table definition
 Table DBHealthCheck
-    stamp TIMESTAMP
+    dummy TIMESTAMP
+
+
 PROC TestDB
 INPUT
 OUTPUT

@@ -18,13 +18,13 @@ import java.util.Map;
 import java.util.Vector;
 
 public abstract interface TemplateBasedGenerator {
-    public abstract void generateTemplate(Database database, String templateBaseDir, String generatorName, File outputDirectory) throws Exception;
+    void generateTemplate(Database database, String templateBaseDir, String generatorName, File outputDirectory) throws Exception;
 
-    public abstract String documentation();
+    String documentation();
 
-    public abstract String description();
+    String description();
 
-    public abstract Vector<?> flags();
+    Vector<?> flags();
 
-    public abstract Path getTemplateFilesLocation();
+    Path getTemplateFilesLocation();
 }

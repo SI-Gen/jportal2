@@ -108,19 +108,16 @@ public class SingleFileCompiler {
         generatorDirectory = addTrailingSlash(generatorDirectory);
 
         Class<?> c;
-        Object instanceOfC;
+        Generator instanceOfC;
         try {
             c = Class.forName("bbd.jportal2.generators." + generatorName);
-            instanceOfC = c.newInstance();
+            instanceOfC = (Generator) c.newInstance();
         } catch (ClassNotFoundException cnf) {
             logger.error("Could not find generator {}. Make sure there is a class bbd.jportal2.generators.{}", generatorName);
             return true;
         }
 
-        Class<?> d[] = {database.getClass(), generatorDirectory.getClass()};
-        Method m = c.getMethod("generate", d);
-        Object o[] = {database, generatorDirectory};
-        m.invoke(instanceOfC, o);
+        instanceOfC.generate(database, generatorDirectory);
         return false;
     }
 

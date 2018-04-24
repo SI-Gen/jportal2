@@ -12,6 +12,7 @@
 
 package bbd.jportal2.generators.FreeMarker;
 
+import bbd.jportal2.BaseGenerator;
 import bbd.jportal2.TemplateBasedGenerator;
 import bbd.jportal2.Database;
 import bbd.jportal2.Main;
@@ -32,7 +33,7 @@ import java.util.HashMap;
 import java.util.Vector;
 
 
-public class FreeMarker implements TemplateBasedGenerator {
+public class FreeMarker extends BaseGenerator implements TemplateBasedGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
@@ -120,9 +121,8 @@ public class FreeMarker implements TemplateBasedGenerator {
         return cfg;
     }
 
-    private static void GenerateTemplate(String templateBaseDir, String generatorName, String templateName, File outputDir, Database database) throws TemplateException, IOException, ClassNotFoundException {
+    private void GenerateTemplate(String templateBaseDir, String generatorName, String templateName, File outputDir, Database database) throws TemplateException, IOException, ClassNotFoundException {
 
-        freemarker.log.Logger.selectLoggerLibrary(freemarker.log.Logger.LIBRARY_SLF4J);
         Configuration cfg = configure(new File(templateBaseDir));
 
 
@@ -192,8 +192,7 @@ public class FreeMarker implements TemplateBasedGenerator {
         Path templateFileFullLocation = Paths.get(generatorName, templateName);
         Template temp = cfg.getTemplate(templateFileFullLocation.toString());
         logger.info("\t [{}]: Generating [{}]", generatorName, fullDestinationFile.toString());
-        try (OutputStream outFile = new FileOutputStream(fullDestinationFile.toString())) {
-            PrintWriter outData = new PrintWriter(outFile);
+        try (PrintWriter outData = openOutputFileForGeneration(fullDestinationFile.toString(), "")) {
             temp.process(root, outData);
         }
 

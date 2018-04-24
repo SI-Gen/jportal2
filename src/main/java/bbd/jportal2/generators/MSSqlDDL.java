@@ -26,7 +26,7 @@ import java.io.PrintWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MSSqlDDL implements Generator
+public class MSSqlDDL extends BaseGenerator implements Generator
 {
 
   private static final Logger logger = LoggerFactory.getLogger(MSSqlDDL.class);
@@ -130,10 +130,8 @@ public class MSSqlDDL implements Generator
   /**
    * Generates the SQL for SQLServer Table creation.
    */
-  public void generate(Database database, String output)
+  public void generate(Database database, String output) throws Exception
   {
-    try
-    {
       setFlags(database);
       String fileName;
       if (database.output.length() > 0)
@@ -150,29 +148,16 @@ public class MSSqlDDL implements Generator
         tableOwner = "";
         tableSchema = "";
       }
-      logger.info("DDL: " + output + fileName + ".sql");
-      OutputStream outFile = new FileOutputStream(output + fileName + ".sql");
-      try
-      {
-        PrintWriter outputFile = new PrintWriter(outFile);
-        outputFile.println("USE " + database.name);
-        outputFile.println();
-        for (int i = 0; i < database.tables.size(); i++)
-          generateTable((Table) database.tables.elementAt(i), outputFile);
-        for (int i = 0; i < database.views.size(); i++)
-          generateView((View) database.views.elementAt(i), outputFile, "");
-        outputFile.flush();
-      }
-      finally
-      {
-        outFile.close();
+      try (PrintWriter outputFile = this.openOutputFileForGeneration(output + fileName + ".sql", "DDL")) {
+          outputFile.println("USE " + database.name);
+          outputFile.println();
+          for (int i = 0; i < database.tables.size(); i++)
+              generateTable((Table) database.tables.elementAt(i), outputFile);
+          for (int i = 0; i < database.views.size(); i++)
+              generateView((View) database.views.elementAt(i), outputFile, "");
+          outputFile.flush();
       }
     }
-    catch (IOException e1)
-    {
-      logger.error("Generate SQLServer SQL IO Error");
-    }
-  }
 
     void generateAuditTable(Table table, PrintWriter outData)
   {

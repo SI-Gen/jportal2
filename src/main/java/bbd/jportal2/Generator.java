@@ -11,10 +11,12 @@
 /// ------------------------------------------------------------------
 
 package bbd.jportal2;
+
+import java.nio.file.Path;
 import java.util.Vector;
 
 public interface Generator {
-    void generate(Database database, String output);
+    void generate(Database database, String output) throws Exception;
 
     String description();
 
@@ -24,9 +26,8 @@ public interface Generator {
         return new Vector<>();
     }
 
-    default Boolean toBoolean(Object value)
-  {
-    String s = value.toString();
-	  return s.toLowerCase().equals("true");
-  }
+    default Boolean toBoolean(Object value) {
+        String s = value.toString();
+        return s.toLowerCase().equals("true");
+    }
 }

@@ -59,7 +59,7 @@ public class ProjectCompiler {
 
         SingleFileCompiler sfCompiler = new SingleFileCompiler();
         for (String filename : allInputFiles) {
-            logger.info("Generating for: " + filename);
+            logger.info("Generating for SI File: " + filename);
             rc |= sfCompiler.compile(filename, compilerFlags, builtinGenerators, templateGenerators, templateLocations);
 
         }

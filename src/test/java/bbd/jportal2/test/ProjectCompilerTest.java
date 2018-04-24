@@ -31,9 +31,9 @@ public class ProjectCompilerTest {
 
     private final String INPUT_DIRS = "src/test/resources/freemarker_input_dirs/";
 
-    private final String SI_FILE1 = "src/test/resources/example_si_files/Contingency.si";
+    private final String SI_FILE1 = "src/main/resources/example_si_files/Contingency.si";
 
-    private final String SI_DIR = "src/test/resources/example_si_files/";
+    private final String SI_DIR = "src/main/resources/example_si_files/";
     private final Path OUTPUT_DIR = Paths.get("target", "test-freemarker-template-out");
     private final String TEMPLATE_DIR = "src/test/resources/freemarker_input_dirs";
     private final String FREEMARKER_GENERATOR1 = "testFreeMarkerSingleFileInDir:" + OUTPUT_DIR.toString() + "testFreeMarkerSingleFileInDir";
