@@ -14,7 +14,9 @@ package bbd.jportal2;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.util.Vector;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,6 +94,10 @@ public class Database implements Serializable
   public Vector<Sequence> sequences;
   public Vector<View> views;
   public Vector<String> imports;
+
+
+    public ArrayList<GeneratedFiles> generatedOutputFiles;
+
   public Database()
   {
     server = "";
@@ -101,11 +107,12 @@ public class Database implements Serializable
     userid = "";
     password = "";
     packageName = "";
-    tables = new Vector<Table>();
-    flags = new Vector<String>();
-    sequences = new Vector<Sequence>();
-    views = new Vector<View>();
-    imports = new Vector<String>();
+      tables = new Vector<>();
+      flags = new Vector<>();
+      sequences = new Vector<>();
+      views = new Vector<>();
+      imports = new Vector<>();
+      generatedOutputFiles = new ArrayList<>();
   }
   /**
    * Check for the existance of a table
@@ -317,6 +324,14 @@ public class Database implements Serializable
     }
     return output;
   }
+
+    public ArrayList<GeneratedFiles> getGeneratedOutputFiles() {
+        return generatedOutputFiles;
+    }
+
+    public void addGeneratedOutputFiles(GeneratedFiles generatedOutputFiles) {
+        this.generatedOutputFiles.add(generatedOutputFiles);
+    }
 }
 
 

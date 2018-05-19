@@ -12,19 +12,5 @@
 
 package bbd.jportal2;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.util.Map;
-import java.util.Vector;
-
-public abstract interface TemplateBasedGenerator {
-    public abstract void generateTemplate(Database database, String templateBaseDir, String generatorName, File outputDirectory) throws Exception;
-
-    public abstract String documentation();
-
-    public abstract String description();
-
-    public abstract Vector<?> flags();
-
-    public abstract Path getTemplateFilesLocation();
+public interface IBuiltInPostProcessor extends IPostProcessor, IBuiltInGenerator {
 }

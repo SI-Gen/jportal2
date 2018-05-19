@@ -20,7 +20,7 @@ public class CommandLineArgs {
   private String inputFile = "";
   
   //arity=2 allows us to do --generator CSNetCode cs/
-  @Parameter(names = { "--generator", "-d"}, description = "Generator to run", arity=2)
+  @Parameter(names = {"--generator", "-d"}, description = "IGenerator to run", arity = 2)
   private List<String> generators;
 
 //   @Parameter(names = "-groups", description = "Comma-separated list of group names to be run")

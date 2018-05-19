@@ -11,22 +11,16 @@
 /// ------------------------------------------------------------------
 
 package bbd.jportal2;
-import java.util.Vector;
 
-public interface Generator {
-    void generate(Database database, String output);
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-    String description();
+public interface ITemplateBasedSIProcessor extends ISIProcessor, ITemplateBasedGenerator {
+    //Location of the generator templates for the FreeMarkerGenerator
+    static final String SI_PROCESSOR_TEMPLATE_LOCATION = "/si_processor_templates";
 
-    String documentation();
-
-    default Vector<Flag> flags() {
-        return new Vector<>();
+    public default Path getSIProcessorTemplateFilesLocation() {
+        return Paths.get(this.SI_PROCESSOR_TEMPLATE_LOCATION);
     }
 
-    default Boolean toBoolean(Object value)
-  {
-    String s = value.toString();
-	  return s.toLowerCase().equals("true");
-  }
 }

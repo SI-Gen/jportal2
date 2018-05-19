@@ -5,17 +5,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.*;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class SingleFileCompiler {
     private static final Logger logger = LoggerFactory.getLogger(SingleFileCompiler.class);
     private List<String> templateLocations;
 
-    public int compile(String source, List<String> compilerFlags, List<String> builtinGenerators, List<String> templateGenerators, List<String> templateLocations)
+    public int compile(String source, List<String> compilerFlags, List<String> builtinSIProcessors, List<String> templateBasedSIProcessors, List<String> builtinPostProcessors, List<String> templateBasedPostProcessors, List<String> templateLocations)
             throws Exception {
         this.templateLocations = templateLocations;
 
@@ -41,19 +41,28 @@ public class SingleFileCompiler {
             database.flags.addElement(flag);
         }
 
-        for (String generator : builtinGenerators) {
-            if (ExecuteGenerator(database, generator)) return 1;
+        for (String generator : builtinSIProcessors) {
+            if (ExecuteBuiltinGenerator(database, generator)) return 1;
         }
 
 
-        for (String templateGenerator : templateGenerators) {
+        for (String templateGenerator : templateBasedSIProcessors) {
+            if (!ExecuteTemplateGenerator(database, templateGenerator)) return 1;
+        }
+
+        for (String generator : builtinPostProcessors) {
+            if (ExecuteBuiltinGenerator(database, generator)) return 1;
+        }
+
+
+        for (String templateGenerator : templateBasedPostProcessors) {
             if (!ExecuteTemplateGenerator(database, templateGenerator)) return 1;
         }
 
         return 0;
     }
 
-    private boolean ExecuteTemplateGenerator(Database database, String templateGenerator) {
+    private boolean ExecuteTemplateGenerator(Database database, String templateGenerator) throws Exception {
         if (!templateGenerator.contains(":") || templateGenerator.split(":").length < 2) {
             logger.error("Error in template-generator parameter. The correct format is --template-generator=<name>:<output_directory>, but --template-generator='{}' was specified instead.", templateGenerator);
             return false;
@@ -67,13 +76,16 @@ public class SingleFileCompiler {
         String templateBaseDir = null;
         for (String dirToSearch : this.templateLocations) {
             Path fullGeneratorPath = Paths.get(dirToSearch, generatorName);
-            if (Files.exists(fullGeneratorPath)) {
+            //if (Files.exists(fullGeneratorPath)) {
+            if (this.isTemplateOnDiskOrInJar(fullGeneratorPath.toString())) {
                 templateBaseDir = dirToSearch;
                 break;
             }
         }
+
         if (templateBaseDir == null) {
             StringBuilder templateLocationsAsString = new StringBuilder();
+            templateLocationsAsString.append('\n');
             templateLocations.forEach(name -> {
                 templateLocationsAsString.append(name);
                 templateLocationsAsString.append('\n');
@@ -90,6 +102,7 @@ public class SingleFileCompiler {
         try {
             FreeMarker fm = new FreeMarker();
             fm.generateTemplate(database, templateLocationFile.getAbsolutePath(), generatorName, new File(generatorDirectory));
+            database.addGeneratedOutputFiles(fm.getGeneratedOutputFiles());
         } catch (Exception e) {
             logger.error("Error executing {}", generatorName, e);
             return false;
@@ -97,7 +110,7 @@ public class SingleFileCompiler {
         return true;
     }
 
-    private boolean ExecuteGenerator(Database database, String generator) throws Exception {
+    private boolean ExecuteBuiltinGenerator(Database database, String generator) throws Exception {
         GeneratorParameters generatorParameters = new GeneratorParameters(generator).extractParametersFromOption();
         String generatorName = generatorParameters.getGeneratorName();
         String generatorDirectory = generatorParameters.getGeneratorDirectory();
@@ -108,19 +121,17 @@ public class SingleFileCompiler {
         generatorDirectory = addTrailingSlash(generatorDirectory);
 
         Class<?> c;
-        Object instanceOfC;
+        IBuiltInGenerator instanceOfC;
         try {
             c = Class.forName("bbd.jportal2.generators." + generatorName);
-            instanceOfC = c.newInstance();
+            instanceOfC = (IBuiltInGenerator) c.newInstance();
         } catch (ClassNotFoundException cnf) {
             logger.error("Could not find generator {}. Make sure there is a class bbd.jportal2.generators.{}", generatorName);
             return true;
         }
 
-        Class<?> d[] = {database.getClass(), generatorDirectory.getClass()};
-        Method m = c.getMethod("generate", d);
-        Object o[] = {database, generatorDirectory};
-        m.invoke(instanceOfC, o);
+        instanceOfC.generate(database, generatorDirectory);
+        database.addGeneratedOutputFiles(instanceOfC.getGeneratedOutputFiles());
         return false;
     }
 
@@ -172,4 +183,25 @@ public class SingleFileCompiler {
         }
     }
 
+    //Find directories in a JAR on on the disk
+    private Boolean isTemplateOnDiskOrInJar(String fullGeneratorPath) throws Exception {
+        if (Files.exists(Paths.get(fullGeneratorPath)))
+            return true;
+        URL url = getClass().getResource(fullGeneratorPath);
+        if (url != null) {
+            return true;
+        }
+        return false;
+//        Stream<Path> walk = Files.walk(template_generatorsPath).filter(Files::isDirectory);
+//        //Set<String> templateDirs = new HashSet<>();
+//        for (Iterator<Path> it = walk.iterator(); it.hasNext(); ) {
+//            Path item = it.next();
+//            if (item.toFile().isDirectory()
+//                    && !item.toFile().getName().equals(template_generatorsPath.getFileName().toString())    //Ignore the parent path
+//                    && !item.toFile().getName().equalsIgnoreCase("helpers"))    //Ignore the helpers dir
+//                return true;
+//        }
+//
+//        return false;
+    }
 }

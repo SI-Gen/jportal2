@@ -24,7 +24,7 @@ public class FreeMarkerTest {
     private static final Logger logger = LoggerFactory.getLogger(FreeMarkerTest.class);
 
     private final String INPUT_DIRS = "src/test/resources/freemarker_input_dirs/";
-    private final String SI_DIR = "src/test/resources/example_si_files/";
+    private final String SI_DIR = "src/main/resources/example_si_files/";
     private final String OUTPUT_DIR = "target/test-freemarker-template-out/";
     private final String TEMPLATE_DIR = "src/test/resources/freemarker_input_dirs";
 
