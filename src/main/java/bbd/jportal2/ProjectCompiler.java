@@ -1,13 +1,9 @@
 package bbd.jportal2;
 
-import bbd.jportal2.generators.FreeMarker.FreeMarker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -22,8 +18,10 @@ public class ProjectCompiler {
     private List<String> inputFiles = new ArrayList<>();
     private List<String> builtin = new ArrayList<>();
     private List<String> compilerFlags = new ArrayList<>();
-    private List<String> builtinGenerators = new ArrayList<>();
-    private List<String> templateGenerators = new ArrayList<>();
+    private List<String> builtinSIProcessors = new ArrayList<>();
+    private List<String> templateBasedSIProcessors = new ArrayList<>();
+    private List<String> builtinPostProcessors = new ArrayList<>();
+    private List<String> templateBasedPostProcessors = new ArrayList<>();
     private List<String> templateLocations = new ArrayList<>();
 
     public void addInputDirs(List<String> listOfInputDirs) {
@@ -49,10 +47,10 @@ public class ProjectCompiler {
         addAllInputDirsToList(allInputFiles);
         addAllInputFilesToList(allInputFiles);
         if (compilerFlags.size() == 0)
-            logger.info("No compiler flags detected.");
+            logger.info("No compiler getFlags detected.");
 
         int rc = 0;
-        if (builtinGenerators.size() == 0 && templateGenerators.size() == 0) {
+        if (builtinSIProcessors.size() == 0 && templateBasedSIProcessors.size() == 0) {
             logger.error("No generators were specified!\\nYou need to specify at least one builtin generator (using --generator) or one template-based generator (using --template-generator).");
             rc = 1;
         }
@@ -60,7 +58,7 @@ public class ProjectCompiler {
         SingleFileCompiler sfCompiler = new SingleFileCompiler();
         for (String filename : allInputFiles) {
             logger.info("Generating for SI File: " + filename);
-            rc |= sfCompiler.compile(filename, compilerFlags, builtinGenerators, templateGenerators, templateLocations);
+            rc |= sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations);
 
         }
         return rc;
@@ -105,20 +103,36 @@ public class ProjectCompiler {
         this.compilerFlags.addAll(compilerFlags);
     }
 
-    public void addBuiltinGenerators(List<String> builtinGenerators) {
-        this.builtinGenerators.addAll(builtinGenerators);
+    public void addBuiltinSIProcessors(List<String> builtinSIProcessors) {
+        this.builtinSIProcessors.addAll(builtinSIProcessors);
     }
 
-    public void addBuiltinGenerator(String builtinGenerator) {
-        this.builtinGenerators.add(builtinGenerator);
+    public void addBuiltinSIProcessor(String builtInSIProcessor) {
+        this.builtinSIProcessors.add(builtInSIProcessor);
     }
 
-    public void addTemplateGenerators(List<String> templateGenerators) {
-        this.templateGenerators.addAll(templateGenerators);
+    public void addTemplateBasedSIProcessors(List<String> templateBasedSIProcessors) {
+        this.templateBasedSIProcessors.addAll(templateBasedSIProcessors);
     }
 
-    public void addTemplateGenerator(String templateGenerator) {
-        this.templateGenerators.add(templateGenerator);
+    public void addTemplateBasedSIProcessor(String templateBasedSIProcessor) {
+        this.templateBasedSIProcessors.add(templateBasedSIProcessor);
+    }
+
+    public void addBuiltinPostProcessors(List<String> builtinPostProcessors) {
+        this.builtinSIProcessors.addAll(builtinPostProcessors);
+    }
+
+    public void addBuiltinPostProcessor(String builtInPostProcessor) {
+        this.builtinSIProcessors.add(builtInPostProcessor);
+    }
+
+    public void addTemplateBasedPostProcessors(List<String> templateBasedPostProcessors) {
+        this.templateBasedPostProcessors.addAll(templateBasedPostProcessors);
+    }
+
+    public void addTemplateBasedPostProcessor(String templateBasedPostProcessor) {
+        this.templateBasedPostProcessors.add(templateBasedPostProcessor);
     }
 
     public void addTemplateLocations(List<String> templateLocations) {

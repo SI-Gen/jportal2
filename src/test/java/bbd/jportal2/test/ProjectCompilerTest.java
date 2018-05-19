@@ -1,21 +1,14 @@
 package bbd.jportal2.test;
 
-import bbd.jportal2.Database;
-import bbd.jportal2.JPortal;
 import bbd.jportal2.SingleFileCompilerException;
 import bbd.jportal2.ProjectCompiler;
-import bbd.jportal2.generators.FreeMarker.FreeMarker;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -53,7 +46,7 @@ public class ProjectCompilerTest {
     public void testProjectCompilerThrowsExceptionIfGeneratorNotFound() throws Exception {
         ProjectCompiler pj = new ProjectCompiler();
         setupSimpleListsParameters(pj);
-        pj.addTemplateGenerator("NON_EXISTANT_GENERATOR:NON_EXISTANT_PATH");
+        pj.addTemplateBasedSIProcessor("NON_EXISTANT_GENERATOR:NON_EXISTANT_PATH");
         assertEquals(0, pj.compileAll());
     }
 
@@ -61,10 +54,10 @@ public class ProjectCompilerTest {
         pj.addTemplateLocation(TEMPLATE_DIR);
 
         List<String> templateGenerators = Arrays.asList(FREEMARKER_GENERATOR1, FREEMARKER_GENERATOR2);
-        pj.addTemplateGenerators(templateGenerators);
+        pj.addTemplateBasedSIProcessors(templateGenerators);
 
         List<String> builtinGenerators = Arrays.asList(BUILTIN_GENERATOR1, BUILTIN_GENERATOR2);
-        pj.addBuiltinGenerators(builtinGenerators);
+        pj.addBuiltinSIProcessors(builtinGenerators);
 
         List<String> inputFiles = Arrays.asList(SI_FILE1);
         pj.addInputFiles(inputFiles);

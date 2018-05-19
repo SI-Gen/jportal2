@@ -12,22 +12,5 @@
 
 package bbd.jportal2;
 
-import java.nio.file.Path;
-import java.util.Vector;
-
-public interface Generator {
-    void generate(Database database, String output) throws Exception;
-
-    String description();
-
-    String documentation();
-
-    default Vector<Flag> flags() {
-        return new Vector<>();
-    }
-
-    default Boolean toBoolean(Object value) {
-        String s = value.toString();
-        return s.toLowerCase().equals("true");
-    }
+public interface IBuiltInPostProcessor extends IPostProcessor, IBuiltInGenerator {
 }

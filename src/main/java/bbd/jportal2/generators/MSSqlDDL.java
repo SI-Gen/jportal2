@@ -12,24 +12,23 @@
 
 package bbd.jportal2.generators;
 import bbd.jportal2.Flag;
-import bbd.jportal2.Generator;
 import bbd.jportal2.*;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.OutputStream;
 import java.util.Vector;
 import java.io.PrintWriter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MSSqlDDL extends BaseGenerator implements Generator
+public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
 {
 
   private static final Logger logger = LoggerFactory.getLogger(MSSqlDDL.class);
+
+    public MSSqlDDL() {
+        super(MSSqlDDL.class);
+    }
+
 
     public String description()
   {
@@ -59,23 +58,23 @@ public class MSSqlDDL extends BaseGenerator implements Generator
     generate42 = false;
   }
 
-    public Vector<Flag> flags()
+    public Vector<Flag> getFlags()
   {
     if (flagsVector == null)
     {
       flagDefaults();
       flagsVector = new Vector<>();
-      flagsVector.addElement(new Flag("add timestamp", addTimestamp, "Add Timestamp - legacy flags"));
-      flagsVector.addElement(new Flag("use insert trigger", useInsertTrigger, "Use Insert Trigger - legacy flags"));
-      flagsVector.addElement(new Flag("use update trigger", new Boolean(useUpdateTrigger), "Use Update Trigger - legacy flags"));
-      flagsVector.addElement(new Flag("internal stamps", new Boolean(internalStamps), "Use Internal Stamps - legacy flags"));
-      flagsVector.addElement(new Flag("generate 4.2", new Boolean(generate42), "Generate for SqlServer 4.2 - legacy flags"));
+        flagsVector.addElement(new Flag("add timestamp", addTimestamp, "Add Timestamp - legacy getFlags"));
+        flagsVector.addElement(new Flag("use insert trigger", useInsertTrigger, "Use Insert Trigger - legacy getFlags"));
+        flagsVector.addElement(new Flag("use update trigger", new Boolean(useUpdateTrigger), "Use Update Trigger - legacy getFlags"));
+        flagsVector.addElement(new Flag("internal stamps", new Boolean(internalStamps), "Use Internal Stamps - legacy getFlags"));
+        flagsVector.addElement(new Flag("generate 4.2", new Boolean(generate42), "Generate for SqlServer 4.2 - legacy getFlags"));
       flagsVector.addElement(new Flag("auditTrigger", new Boolean(auditTrigger), "Generate Auditing Table and Triggers"));
     }
     return flagsVector;
   }
   /**
-   * Sets generation flags.
+   * Sets generation getFlags.
    */
   void setFlags(Database database)
   {
@@ -148,7 +147,7 @@ public class MSSqlDDL extends BaseGenerator implements Generator
         tableOwner = "";
         tableSchema = "";
       }
-      try (PrintWriter outputFile = this.openOutputFileForGeneration(output + fileName + ".sql", "DDL")) {
+      try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + fileName + ".sql")) {
           outputFile.println("USE " + database.name);
           outputFile.println();
           for (int i = 0; i < database.tables.size(); i++)

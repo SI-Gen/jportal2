@@ -16,9 +16,6 @@ import bbd.jportal2.*;
 import bbd.jportal2.Database;
 import bbd.jportal2.Enum;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Vector;
@@ -26,7 +23,12 @@ import java.util.Vector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CSNetCode extends BaseGenerator implements Generator {
+public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
+
+    public CSNetCode() {
+        super(CSNetCode.class);
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(CSNetCode.class);
 
     public String description() {
@@ -77,7 +79,7 @@ public class CSNetCode extends BaseGenerator implements Generator {
         useFunc = false;
     }
 
-    public Vector<Flag> flags() {
+    public Vector<Flag> getFlags() {
         if (flagsVector == null) {
             flagsVector = new Vector<Flag>();
             flagDefaults();
@@ -96,7 +98,7 @@ public class CSNetCode extends BaseGenerator implements Generator {
     }
 
     /**
-     * Sets generation flags.
+     * Sets generation getFlags.
      */
     void setFlags(Database database) {
         if (flagsVector != null) {
@@ -171,14 +173,14 @@ public class CSNetCode extends BaseGenerator implements Generator {
 
         if (useSeparate == true)
             added = "Structs";
-        PrintWriter outFile = this.openOutputFileForGeneration(openOutputStream(table, output, added), "Code");
+        PrintWriter outFile = this.openOutputFileForGeneration("cs", openOutputStream(table, output, added));
         hasStoredProcs = false;
         if (mSSqlStoredProcs == false && isStoredProcs(table)) {
             hasStoredProcs = true;
         }
 
         if (mSSqlStoredProcs == true || hasStoredProcs == true) {
-            try (PrintWriter procData = this.openOutputFileForGeneration(output + table.name + ".sproc.sql", "DDL")) {
+            try (PrintWriter procData = this.openOutputFileForGeneration("sproc.sql", output + table.name + ".sproc.sql")) {
                 procData.println("USE " + table.database.name);
                 procData.println();
             }
@@ -190,7 +192,7 @@ public class CSNetCode extends BaseGenerator implements Generator {
                 outFile.println("}");
                 outFile.flush();
                 outFile.close();
-                outFile = openOutputFileForGeneration(openOutputStream(table, output, "Tables"), "");
+                outFile = openOutputFileForGeneration("Tables.cs", openOutputStream(table, output, "Tables"));
                 openWriterPuttingTop(table, outFile);
             }
             generateDataTables(table, outFile);
@@ -199,7 +201,7 @@ public class CSNetCode extends BaseGenerator implements Generator {
             outFile.println("}");
             outFile.flush();
             outFile.close();
-            outFile = openOutputFileForGeneration(openOutputStream(table, output, ""), "");
+            outFile = openOutputFileForGeneration("cs", openOutputStream(table, output, ""));
             openWriterPuttingTop(table, outFile);
         }
         generateCode(table, outFile);

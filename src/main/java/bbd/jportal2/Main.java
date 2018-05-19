@@ -39,8 +39,8 @@ public class Main
     @Parameter(description = "InputFiles")
     private List<String> inputFiles = new ArrayList<>();
 
-    @Parameter(names = {"--generator", "-o"}, description = "Generator to run. Format is <generator_name>:<dest_dir> i.e. --generator=CSNetCode:./cs")
-    private List<String> builtinGenerators = new ArrayList<>();
+    @Parameter(names = {"--builtin-generator", "-o"}, description = "Built-In (Java-based) generatorName to run. Format is <generator_name>:<dest_dir> i.e. --generator=CSNetCode:./cs")
+    private List<String> builtinSIProcessors = new ArrayList<>();
 
     @Parameter(names = {"--template-generator", "-t"},
             description =
@@ -48,7 +48,18 @@ public class Main
                             + "Format is <free_marker_generator_name>:<dest_dir> i.e. "
                             + "'--template-generator=MyCustomGenerator:./output'. "
                             + "The template must exist as a directory under the location specified by --template-location.")
-    private List<String> templateGenerators = new ArrayList<>();
+    private List<String> templateSIProcessors = new ArrayList<>();
+
+    @Parameter(names = {"--builtin-postprocessor", "-bpp"}, description = "Built-In (Java-based) generatorName to run. Format is <generator_name>:<dest_dir> i.e. --generator=CSNetCode:./cs")
+    private List<String> builtinPostProcessors = new ArrayList<>();
+
+    @Parameter(names = {"--template-postprocessor", "-tpp"},
+            description =
+                    "FreeMarker-based post-processor to run."
+                            + "Format is <free_marker_generator_name>:<dest_dir> i.e. "
+                            + "'--template-postprocessor=MyCustomGenerator:./output'. "
+                            + "The template must exist as a directory under the location specified by --template-location.")
+    private List<String> templatePostProcessors = new ArrayList<>();
 
     @Parameter(names = {"--template-location", "-tl"}, description = "Freemarker template location. Default is <current_working_directory>/jportal2_templates")
     private List<String> templateLocations = Arrays.asList(Paths.get(System.getProperty("user.dir"), "jportal2_templates").toString());
@@ -108,9 +119,11 @@ public class Main
             pj.addInputDirs(main.inputDirs);
             pj.addInputFiles(main.inputFiles);
             pj.addCompilerFlags(main.flags);
-            pj.addBuiltinGenerators(main.builtinGenerators);
-            pj.addTemplateGenerators(main.templateGenerators);
+            pj.addBuiltinSIProcessors(main.builtinSIProcessors);
+            pj.addTemplateBasedSIProcessors(main.templateSIProcessors);
             pj.addTemplateLocations(main.templateLocations);
+            pj.addBuiltinPostProcessors(main.builtinPostProcessors);
+            pj.addTemplateBasedPostProcessors(main.templatePostProcessors);
             int rc = pj.compileAll();
             System.exit(rc);
         } catch (Exception e)

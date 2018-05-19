@@ -12,19 +12,15 @@
 
 package bbd.jportal2;
 
-import java.io.File;
 import java.nio.file.Path;
-import java.util.Map;
-import java.util.Vector;
+import java.nio.file.Paths;
 
-public abstract interface TemplateBasedGenerator {
-    void generateTemplate(Database database, String templateBaseDir, String generatorName, File outputDirectory) throws Exception;
+public interface ITemplateBasedSIProcessor extends ISIProcessor, ITemplateBasedGenerator {
+    //Location of the generator templates for the FreeMarkerGenerator
+    static final String SI_PROCESSOR_TEMPLATE_LOCATION = "/si_processor_templates";
 
-    String documentation();
+    public default Path getSIProcessorTemplateFilesLocation() {
+        return Paths.get(this.SI_PROCESSOR_TEMPLATE_LOCATION);
+    }
 
-    String description();
-
-    Vector<?> flags();
-
-    Path getTemplateFilesLocation();
 }
