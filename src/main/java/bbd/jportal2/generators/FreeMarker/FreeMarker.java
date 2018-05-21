@@ -206,7 +206,7 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
             return templateFilesLocation;
 
         //On windows, we need to convert the windows path to URL format
-        URI uri = getClass().getResource(templateFilesLocation.toString().replaceAll(File.separator, "/")).toURI();
+        URI uri = getClass().getResource(templateFilesLocation.toString().replace(File.separator, "/")).toURI();
         Path template_generatorsPath;
         if (uri.getScheme().equals("jar")) {
             FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.<String, Object>emptyMap());
