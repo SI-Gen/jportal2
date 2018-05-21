@@ -46,7 +46,7 @@ public class ProjectCompilerTest {
     public void testProjectCompilerThrowsExceptionIfGeneratorNotFound() throws Exception {
         ProjectCompiler pj = new ProjectCompiler();
         setupSimpleListsParameters(pj);
-        pj.addTemplateBasedSIProcessor("NON_EXISTANT_GENERATOR:NON_EXISTANT_PATH");
+        pj.addTemplateBasedSIProcessor("NON_EXISTENT_GENERATOR:NON_EXISTENT_PATH");
         assertEquals(0, pj.compileAll());
     }
 

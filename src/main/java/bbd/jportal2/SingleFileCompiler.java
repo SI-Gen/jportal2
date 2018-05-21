@@ -187,6 +187,10 @@ public class SingleFileCompiler {
     private Boolean isTemplateOnDiskOrInJar(String fullGeneratorPath) throws Exception {
         if (Files.exists(Paths.get(fullGeneratorPath)))
             return true;
+
+        //On windows, we need to convert the windows path to URL format
+        fullGeneratorPath = fullGeneratorPath.replaceAll(File.separator, "/");
+
         URL url = getClass().getResource(fullGeneratorPath);
         if (url != null) {
             return true;
