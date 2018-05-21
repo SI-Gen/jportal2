@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.net.URI;
 import java.nio.file.*;
 import java.util.*;
@@ -92,6 +93,8 @@ public class TestTemplateBasedProcessorsBaseClass<TYPE_TO_TEST extends ITemplate
         else
             templateFilesLocation = ((ITemplateBasedPostProcessor) generator).getPostProcessorTemplateFilesLocation().toString();
 
+        //On windows, we need to convert the windows path to URL format
+        templateFilesLocation = templateFilesLocation.replace(File.separator, "/");
 
         URI uri = ITemplateBasedGenerator.class.getResource(templateFilesLocation).toURI();
         Path template_generatorsPath;

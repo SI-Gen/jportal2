@@ -189,7 +189,7 @@ public class SingleFileCompiler {
             return true;
 
         //On windows, we need to convert the windows path to URL format
-        fullGeneratorPath = fullGeneratorPath.replaceAll(File.separator, "/");
+        fullGeneratorPath = fullGeneratorPath.replace(File.separator, "/");
 
         URL url = getClass().getResource(fullGeneratorPath);
         if (url != null) {
