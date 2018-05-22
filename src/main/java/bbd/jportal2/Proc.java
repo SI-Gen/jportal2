@@ -30,6 +30,143 @@ public class Proc implements Serializable
   private static final long serialVersionUID = 1L;
   /** parent table */
   public Table   table;
+
+    public String getName() {
+        return name;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
+    public String getWhere() {
+        return where;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public int getNoRows() {
+        return noRows;
+    }
+
+    public Vector<Field> getInputs() {
+        return inputs;
+    }
+
+    public Vector<Field> getOutputs() {
+        return outputs;
+    }
+
+    public Vector<String> getDynamics() {
+        return dynamics;
+    }
+
+    public Vector<Integer> getDynamicSizes() {
+        return dynamicSizes;
+    }
+
+    public Vector<Boolean> getDynamicStrung() {
+        return dynamicStrung;
+    }
+
+    public Vector<String> getPlaceHolders() {
+        return placeHolders;
+    }
+
+    public Vector<Line> getLines() {
+        return lines;
+    }
+
+    public Vector<String> getComments() {
+        return comments;
+    }
+
+    public Vector<String> getOptions() {
+        return options;
+    }
+
+    public Vector<String> getFields() {
+        return fields;
+    }
+
+    public Vector<String> getUpdateFields() {
+        return updateFields;
+    }
+
+    public Vector<String> getOrderFields() {
+        return orderFields;
+    }
+
+    public boolean isProc() {
+        return isProc;
+    }
+
+    public boolean isSProc() {
+        return isSProc;
+    }
+
+    public boolean isData() {
+        return isData;
+    }
+
+    public boolean isIdlCode() {
+        return isIdlCode;
+    }
+
+    public boolean isSql() {
+        return isSql;
+    }
+
+    public boolean isSingle() {
+        return isSingle;
+    }
+
+    public boolean isUpdate() {
+        return isUpdate;
+    }
+
+    public boolean isAction() {
+        return isAction;
+    }
+
+    public boolean isStd() {
+        return isStd;
+    }
+
+    public boolean isUseStd() {
+        return useStd;
+    }
+
+    public boolean isExtendsStd() {
+        return extendsStd;
+    }
+
+    public boolean isUseKey() {
+        return useKey;
+    }
+
+    public boolean isHasImage() {
+        return hasImage;
+    }
+
+    public boolean isMultipleInput() {
+        return isMultipleInput;
+    }
+
+    public boolean isInsert() {
+        return isInsert;
+    }
+
+    public boolean isHasReturning() {
+        return hasReturning;
+    }
+
+    public boolean isHasUpdates() {
+        return hasUpdates;
+    }
+
   /** name of procedure */
   public String  name;
   /** name of procedure */
