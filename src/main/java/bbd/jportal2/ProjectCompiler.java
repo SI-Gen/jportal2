@@ -1,5 +1,6 @@
 package bbd.jportal2;
 
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,15 +52,22 @@ public class ProjectCompiler {
 
         int rc = 0;
         if (builtinSIProcessors.size() == 0 && templateBasedSIProcessors.size() == 0) {
-            logger.error("No generators were specified!\\nYou need to specify at least one builtin generator (using --generator) or one template-based generator (using --template-generator).");
+            //\n does not get expanded. put the log and two calls to get formating on the console right
+            logger.error("No generators were specified!");
+            logger.error("You need to specify at least one builtin generator (using --generator) or one template-based generator (using --template-generator).");
             rc = 1;
         }
-
-        SingleFileCompiler sfCompiler = new SingleFileCompiler();
-        for (String filename : allInputFiles) {
-            logger.info("Generating for SI File: " + filename);
-            rc |= sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations);
-
+        
+        //Only run if return code is still 0
+        if (rc == 0)
+        {
+            SingleFileCompiler sfCompiler = new SingleFileCompiler();
+            for (String filename : allInputFiles) {
+                if ("si".compareTo(FilenameUtils.getExtension(filename)) == 0) {
+                    logger.info("Generating for SI File: " + filename);
+                    rc |= sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations);
+                }
+            }
         }
         return rc;
     }

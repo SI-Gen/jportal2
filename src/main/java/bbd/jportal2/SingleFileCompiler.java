@@ -75,6 +75,9 @@ public class SingleFileCompiler {
         logger.info("Executing: " + generatorName);
         String templateBaseDir = null;
         for (String dirToSearch : this.templateLocations) {
+            //git rid of the extension in a generator name
+            if (generatorName.indexOf(".") > 0)
+                generatorName = generatorName.substring(0, generatorName.lastIndexOf("."));
             Path fullGeneratorPath = Paths.get(dirToSearch, generatorName);
             //if (Files.exists(fullGeneratorPath)) {
             if (this.isTemplateOnDiskOrInJar(fullGeneratorPath.toString())) {
@@ -177,9 +180,17 @@ public class SingleFileCompiler {
         }
 
         GeneratorParameters extractParametersFromOption() {
-            generatorName = generator.split(":")[0];
-            generatorDirectory = generator.split(":")[1];
-            return this;
+            //split causes absolute paths on windows to fail.
+            //get the index of the first : in the generator. split by that. the first index is the generator name 
+            // everything else after that we treat as a path
+            int strchr = generator.indexOf(':');
+            if (strchr != -1)
+            {
+                generatorName = generator.substring(0, strchr);
+                generatorDirectory = generator.substring(strchr + 1, generator.length());
+                return this;
+            }
+            throw new RuntimeException();
         }
     }
 
