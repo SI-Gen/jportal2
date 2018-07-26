@@ -225,7 +225,7 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
 
     void generateTable(Table table, PrintWriter outData)
   {
-    String tableName = tableOwner + table.name;
+    String tableName = tableOwner + "." + table.name;
     String comma = "  ";
     outData.println("IF OBJECT_ID('" + tableName + "','U') IS NOT NULL");
     outData.println("    DROP TABLE " + tableName);

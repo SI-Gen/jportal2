@@ -561,8 +561,8 @@ public class Table implements Serializable
       else
         return name;
     if (isLiteral)
-      return database.schema + "" + literalName;
-    return database.schema + "" + name;
+      return database.schema + "." + literalName;
+    return database.schema + "." + name;
   }
   /**
    * Builds a merge proc generated as part of standard record class
@@ -688,7 +688,7 @@ public class Table implements Serializable
         proc.outputs.addElement(field);
         proc.isSingle = true;
         proc.hasUpdates = true;
-        proc.lines.addElement(new Line("_ret.checkUse(\"" + line + field.useLiteral() + comma + "\")", true));
+        proc.lines.addElement(new Line("(\"" + line + field.useLiteral() + comma + "\")", true));
         continue;
       }
       else if (isSequence(field) == true && proc.isMultipleInput == true)
