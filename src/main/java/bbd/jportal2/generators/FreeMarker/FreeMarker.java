@@ -61,8 +61,8 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
         this.getGeneratedOutputFiles().setGeneratorName(generatorName);
 
         final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.ftl");
-        //Path fullGeneratorPath = Paths.get(templateBaseDir, generatorName);
-        Path fullGeneratorPath = findTemplateDirectory(templateBaseDir, generatorName);
+        Path fullGeneratorPath = Paths.get(templateBaseDir, generatorName);
+        //Path fullGeneratorPath = findTemplateDirectory(templateBaseDir, generatorName);
         Files.walkFileTree(Paths.get(fullGeneratorPath.toString()), new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
@@ -162,7 +162,7 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
         String destFileName;
         Path templateRelativePath = Paths.get(templateName);
         destFileName = templateRelativePath.toFile().getName().replaceAll(".ftl", "");
-
+        
         //Replace variables in filename with correct values
         Template fileNameTemplate = new Template("fileNameTemplate", new StringReader(destFileName), cfg);
         Writer fileNameOut = new StringWriter();
