@@ -162,11 +162,7 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
         String destFileName;
         Path templateRelativePath = Paths.get(templateName);
         destFileName = templateRelativePath.toFile().getName().replaceAll(".ftl", "");
-        // We should add a check if a user does not specify a unique template name
-        //using {database[0.table.tablename]} to default to table name 
-        //Append table name to dest file name so we can output to unique files.
-        // destFileName = destFileName + "_" + database.tables.firstElement().name;
-
+        
         //Replace variables in filename with correct values
         Template fileNameTemplate = new Template("fileNameTemplate", new StringReader(destFileName), cfg);
         Writer fileNameOut = new StringWriter();
