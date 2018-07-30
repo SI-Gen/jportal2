@@ -1004,8 +1004,6 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
             outData.print(strcat + check(l));
         else
         {
-            if (l.startsWith("\"/* PROC ") && l.endsWith("*/\""))
-                l = "\"SET NOCOUNT ON;\"\n                     " + l;
             outData.print(strcat + l);
         }
         if (l.charAt(0) == '"')
