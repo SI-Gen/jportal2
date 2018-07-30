@@ -9,7 +9,7 @@ JPortal2 is the newest version of the JPortal SI-file based generator.
 ### JPortal
 JPortal was originally developed in the early 1990's by Vincent Risi (https://github.com/VincentRisi) as a standardised way to generate a Data Access Layer (DAL) for multiple databases and target languages. SI Files allow the definition of a SQL table with columns, as well as SQL Queries to be run against the table. It then allows the generation of a DAL in a number of languages. Being developed in the 90's, the first languages that were supported, were Java, C++, C and Visual Basic. Original database support was for Oracle.
 
-Over the years the tool has grown into a suite of tools to include generators DAL's, RPC client and server generators and for a number of languages including C# and Python, and database support for Oracle, SQL Server, MySQL, PostgreSQL and SQLite.
+Over the years the tool has grown into a suite of tools to include generators DAL's, RPC client and server generators and for a number of languages including C# and Python, and database support for Oracle, SQL Server, MySQL, PostgreSQL, DB2 and SQLite.
 
 
 ### JPortal2
