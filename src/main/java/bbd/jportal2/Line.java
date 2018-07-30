@@ -16,6 +16,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.PublicKey;
 
 /** Lines of SQL Code */
 public class Line implements Serializable
@@ -45,7 +46,10 @@ public class Line implements Serializable
     ods.writeUTF(line);
     ods.writeBoolean(isVar);
   }
+  public String getlineval()
+  {
+    line = line.replaceAll("\\:{1}\\w*", "?");
+    line = line.replace("\"", "\\\"");
+    return line;
+  }
 }
-
-
-

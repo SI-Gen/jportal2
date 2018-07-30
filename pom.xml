@@ -45,6 +45,17 @@
             </roles>
             <timezone>GMT +2</timezone>
         </developer>
+        <developer>
+            <id>keeganc</id>
+            <name>Keegan Cowle</name>
+            <email>keeganc@bbd.co.za</email>
+            <organization>BBD</organization>
+            <organizationUrl>http://bbd.co.za</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>GMT +2</timezone>
+        </developer>
     </developers>
 
     <name>JPortal2</name>
@@ -52,17 +63,6 @@
 
     <dependencies>
 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jul-to-slf4j</artifactId>
-            <version>1.7.25</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/https://mvnrepository.com/artifact/com.beust/jcommander -->
         <dependency>
             <groupId>com.beust</groupId>
@@ -356,7 +356,6 @@
                     </plugin>
                 </plugins>
             </build>
-
         </profile>
     </profiles>
 </project>

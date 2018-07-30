@@ -18,12 +18,13 @@ import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.bridge.SLF4JBridgeHandler;
 
 
 import java.io.BufferedReader;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 @Parameters(separators = "=")
 public class Main
@@ -39,7 +40,7 @@ public class Main
     @Parameter(description = "InputFiles")
     private List<String> inputFiles = new ArrayList<>();
 
-    @Parameter(names = {"--builtin-generator", "-o"}, description = "Built-In (Java-based) generatorName to run. Format is <generator_name>:<dest_dir> i.e. --generator=CSNetCode:./cs")
+    @Parameter(names = {"--builtin-generator", "-o"}, description = "Built-In (Java-based) generatorName to run. Format is <generator_name>:<dest_dir> i.e. --builtin-generator=CSNetCode:./cs")
     private List<String> builtinSIProcessors = new ArrayList<>();
 
     @Parameter(names = {"--template-generator", "-t"},
@@ -50,7 +51,7 @@ public class Main
                             + "The template must exist as a directory under the location specified by --template-location.")
     private List<String> templateSIProcessors = new ArrayList<>();
 
-    @Parameter(names = {"--builtin-postprocessor", "-bpp"}, description = "Built-In (Java-based) generatorName to run. Format is <generator_name>:<dest_dir> i.e. --generator=CSNetCode:./cs")
+    @Parameter(names = {"--builtin-postprocessor", "-bpp"}, description = "Built-In (Java-based) generatorName to run. Format is <generator_name>:<dest_dir> i.e. --builtin-postprocessor=CSNetCode:./cs")
     private List<String> builtinPostProcessors = new ArrayList<>();
 
     @Parameter(names = {"--template-postprocessor", "-tpp"},
@@ -81,11 +82,6 @@ public class Main
      */
     public static void main(String args[])
     {
-
-
-        SLF4JBridgeHandler.removeHandlersForRootLogger();
-        SLF4JBridgeHandler.install();
-
         Main main = new Main();
 
         try 
