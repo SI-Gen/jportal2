@@ -352,7 +352,7 @@ public class IdlCode extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println("  q.Exec(*rec);");
         else
             outData.println("  q.Exec();");
-        if (proc.hasReturning) {
+        if (proc.hasReturning && proc.outputs.size() > 0) {
             outData.println("  if (q.Fetch())");
             outData.println("    *rec = *q.DRec();");
         } else if (proc.hasModifieds())

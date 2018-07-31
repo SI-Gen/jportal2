@@ -42,7 +42,7 @@ public class SingleFileCompiler {
         }
 
         for (String generator : builtinSIProcessors) {
-            if (ExecuteBuiltinGenerator(database, generator)) return 1;
+            if (!ExecuteBuiltinGenerator(database, generator)) return 1;
         }
 
 
@@ -51,7 +51,7 @@ public class SingleFileCompiler {
         }
 
         for (String generator : builtinPostProcessors) {
-            if (ExecuteBuiltinGenerator(database, generator)) return 1;
+            if (!ExecuteBuiltinGenerator(database, generator)) return 1;
         }
 
 
@@ -130,12 +130,12 @@ public class SingleFileCompiler {
             instanceOfC = (IBuiltInGenerator) c.newInstance();
         } catch (ClassNotFoundException cnf) {
             logger.error("Could not find generator {}. Make sure there is a class bbd.jportal2.generators.{}", generatorName);
-            return true;
+            return false;
         }
 
         instanceOfC.generate(database, generatorDirectory);
         database.addGeneratedOutputFiles(instanceOfC.getGeneratedOutputFiles());
-        return false;
+        return true;
     }
 
     private String addTrailingSlash(String generatorDirectory) {
