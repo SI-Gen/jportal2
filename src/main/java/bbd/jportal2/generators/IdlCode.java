@@ -200,7 +200,7 @@ public class IdlCode extends BaseGenerator implements IBuiltInSIProcessor {
      */
     private void generate(Table table, String output) throws Exception {
         try (PrintWriter outData = this.openOutputFileForGeneration("ii", output + table.useName().toLowerCase() + ".ii")) {
-            String packageName = "bbd.idl2.jportal";
+            String packageName = "Bbd.Idl2.jportal";
             if (usePackage == true)
                 packageName = table.database.packageName;
             outData.println("// This code was generated, do not modify it, modify it at source and regenerate it.");
@@ -352,7 +352,7 @@ public class IdlCode extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println("  q.Exec(*rec);");
         else
             outData.println("  q.Exec();");
-        if (proc.hasReturning) {
+        if (proc.hasReturning && proc.outputs.size() > 0) {
             outData.println("  if (q.Fetch())");
             outData.println("    *rec = *q.DRec();");
         } else if (proc.hasModifieds())
@@ -440,8 +440,8 @@ public class IdlCode extends BaseGenerator implements IBuiltInSIProcessor {
     private void generateStructs(Table table, String output) throws Exception {
         try (PrintWriter outData = this.openOutputFileForGeneration("cs", output + table.useName() + ".cs")) {
             outData.println("using System;");
-            outData.println("using bbd.idl2;");
-            String packageName = "bbd.idl2.jportal";
+            outData.println("using Bbd.Idl2;");
+            String packageName = "Bbd.Idl2.jportal";
             if (usePackage == true)
                 packageName = table.database.packageName;
             if (useSchema == true && table.database.schema.length() > 0)
