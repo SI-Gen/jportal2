@@ -210,7 +210,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       outData.println("  q.Exec(*rec);");
     else
       outData.println("  q.Exec();");
-    if (proc.hasReturning)
+    if (proc.hasReturning && proc.outputs.size() > 0)
     {
       outData.println("  if (q.Fetch())");
       outData.println("    *rec = *q.DRec();");
@@ -509,13 +509,13 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       outData.println("    " + front + "XRec.ampappend(" + str + ");" + back);
     }
     outData.println("  }");
-    outData.println("  void ToXML(TBAmp &XRec, char* Attr, char* Outer)");
+    outData.println("  void ToXML(TBAmp &XRec, const char* Attr, const char* Outer)");
     outData.println("  {");
     outData.println("    XRec.append(\"<\");XRec.append(Outer);if (Attr) XRec.append(Attr);XRec.append(\">\\n\");");
     outData.println("    _toXML(XRec);");
     outData.println("    XRec.append(\"</\");XRec.append(Outer);XRec.append(\">\\n\");");
     outData.println("  }");
-    outData.println("  void ToXML(TBAmp &XRec, char* Attr) {ToXML(XRec, Attr, \"" + useName + "\");}");
+    outData.println("  void ToXML(TBAmp &XRec, const char* Attr) {ToXML(XRec, Attr, \"" + useName + "\");}");
     outData.println("  void ToXML(TBAmp &XRec) {ToXML(XRec, 0);}");
     outData.println("  #endif");
     outData.println("  #if defined(__XMLRECORD_H__)");
@@ -598,7 +598,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       outData.println("    dBuild.add(\"" + str + "\", " + str + ");");
     }
     outData.println("  }");
-    outData.println("  void BuildData(DataBuilder &dBuild, char *name)");
+    outData.println("  void BuildData(DataBuilder &dBuild, const char* name)");
     outData.println("  {");
     outData.println("    dBuild.name(name);");
     outData.println("    _buildAdds(dBuild);");
@@ -624,7 +624,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       outData.println("    dBuild.set(\"" + str + "\", " + str + ", sizeof(" + str + "));");
     }
     outData.println("  }");
-    outData.println("  void SetData(DataBuilder &dBuild, char *name)");
+    outData.println("  void SetData(DataBuilder &dBuild, const char* name)");
     outData.println("  {");
     outData.println("    dBuild.name(name);");
     outData.println("    _buildSets(dBuild);");
@@ -663,7 +663,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       outData.println("{");
       outData.println("  TJQuery q_;");
       outData.println("  void Exec();");
-      outData.println("  T" + table.useName() + proc.upperFirst() + "(TJConnector &conn, char *aFile=__FILE__, long aLine=__LINE__)");
+      outData.println("  T" + table.useName() + proc.upperFirst() + "(TJConnector &conn, const char* aFile=__FILE__, long aLine=__LINE__)");
       outData.println("  : q_(conn)");
       outData.println("  {q_.FileAndLine(aFile,aLine);}");
       outData.println("};");
@@ -988,7 +988,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     }
     if (isBulkSequence == true)
     {
-      outData.println("  struct cpp_ret {char* head; char *output; char *sequence; char* tail; cpp_ret(){head = output = sequence = tail = \"\";}} _ret;");
+      outData.println("  struct cpp_ret {const char* head; const char *output; const char *sequence; const char* tail; cpp_ret(){head = output = sequence = tail = \"\";}} _ret;");
       outData.println("  _ret.sequence = \"" + sequencer + ",\";");
     }
     String strcat = "  strcat(q_.command, ";
@@ -1168,7 +1168,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     }
     if (proc.outputs.size() > 0)
       outData.println("  bool Fetch();");
-    outData.println("  T" + table.useName() + proc.upperFirst() + "(TJConnector &conn, char *aFile=__FILE__, long aLine=__LINE__)");
+    outData.println("  T" + table.useName() + proc.upperFirst() + "(TJConnector &conn, const char* aFile=__FILE__, long aLine=__LINE__)");
     outData.println("  : q_(conn)");
     outData.println("  {Clear();q_.FileAndLine(aFile,aLine);}");
     outData.println("  " + dataStruct + "* DRec() {return this;}");
@@ -1207,7 +1207,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
         }
         outData.println("};");
         outData.println();
-        outData.println("inline char *" + table.useName() + field.useName() + "Lookup(int no)");
+        outData.println("inline const char* " + table.useName() + field.useName() + "Lookup(int no)");
         outData.println("{");
         outData.println("  switch(no)");
         outData.println("  {");

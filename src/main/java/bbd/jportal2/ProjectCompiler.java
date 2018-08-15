@@ -52,7 +52,7 @@ public class ProjectCompiler {
 
         int rc = 0;
         if (builtinSIProcessors.size() == 0 && templateBasedSIProcessors.size() == 0) {
-            //\n does not get expanded. put the log and two calls to get formating on the console right
+            //\n does not get expanded. put the log and two calls to get formatting on the console right
             logger.error("No generators were specified!");
             logger.error("You need to specify at least one builtin generator (using --generator) or one template-based generator (using --template-generator).");
             rc = 1;

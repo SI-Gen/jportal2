@@ -547,6 +547,23 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
 
     void generateEnums(String baseName, Field field, PrintWriter outData) {
         if (field.enums.size() > 0) {
+            outData.println("class " + field.useName() + "Enum(object):");
+            for (int j = 0; j < field.enums.size(); j++)
+            {
+                Enum entry = (Enum) field.enums.elementAt(j);
+                String entryName = entry.name;
+                if(entryName.equals("None")) {
+                    entryName = "None_";
+                }
+                if(varName(field) == "int") {
+                    outData.println("    " + entryName + " = " + entry.value);
+                }
+                else {
+                    outData.println("    " + entryName + " = '" + entry.value + "'");
+                }
+            }
+            outData.println();
+
             outData.println(baseName + " = {}");
             for (int j = 0; j < field.enums.size(); j++) {
                 Enum entry = (Enum) field.enums.elementAt(j);
