@@ -15,6 +15,7 @@ package bbd.jportal2.generators;
 import bbd.jportal2.*;
 import bbd.jportal2.Enum;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Vector;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -57,6 +58,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       outData.println("#include <stddef.h>");
       outData.println("#include \"padgen.h\"");
       outData.println("#include \"mssapi.h\"");
+      outData.println("#include \"swapbytes.h\"");
       outData.println();
       if (table.hasStdProcs)
         generateStdOutputRec(table, outData);
@@ -927,7 +929,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
   {
     boolean isReturning = false;
     boolean isBulkSequence = false;
-    String front = "", back = "", sequencer = "";
+    String front = "", back = "", sequencer = "", output = "";
     Vector lines = placeHolder.getLines();
     int size = 1;
     if (proc.isInsert == true && proc.hasReturning == true && proc.outputs.size() == 1)
@@ -936,9 +938,10 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       if (field.isSequence == true)
       {
         isReturning = true;
-        front = "select " + field.useName() + " from new table(";
-        back = ")";
-        sequencer = "nextval for " + proc.table.tableName() + "seq";
+        //front = "select " + field.useName() + " from new table(";
+        output = field.useName();
+        // back = ")";
+        //sequencer = "nextval for " + proc.table.tableName() + "seq";
         size += front.length();
         size += back.length();
         size += sequencer.length();
@@ -975,9 +978,13 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     if (isReturning == true)
     {
       outData.println("  struct cpp_ret {char* head; char *output; char *sequence; char* tail; cpp_ret(){head = output = sequence = tail = \"\";}} _ret;");
-      outData.println("  _ret.sequence = \"" + sequencer + ",\";");
-      outData.println("  _ret.head = \"" + front + "\";");
-      outData.println("  _ret.tail = \"" + back + "\";");
+      if (!sequencer.isEmpty())
+        outData.println("  _ret.sequence = \"" + sequencer + ",\";");
+      if (!front.isEmpty())
+        outData.println("  _ret.head = \"" + front + "\";");
+      if (!back.isEmpty())
+        outData.println("  _ret.tail = \"" + back + "\";");
+      outData.println("  _ret.output = \"OUTPUT Inserted." + output + "\";\n");
     }
     if (isBulkSequence == true)
     {
@@ -1348,7 +1355,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       if (field.isNull == true)
         return ", 1, 1";
       else
-        return ", 1, 0";
+        return ", 0, 0";
     return ", 0, 0";
   }
   static boolean isNull(Field field)

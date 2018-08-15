@@ -663,8 +663,8 @@ public class Table implements Serializable
     proc.isStd = true;
     proc.isSql = true;
     proc.isInsert = true;
-    if (proc.hasReturning)
-      proc.lines.add(new Line("_ret.head", true));
+//    if (proc.hasReturning)
+//      proc.lines.add(new Line("_ret.head", true));
     String identityName = "";
     proc.lines.addElement(new Line("/* PROC " + proc.name + " */"));
     proc.lines.addElement(new Line("insert into " + name + " ("));
@@ -688,7 +688,7 @@ public class Table implements Serializable
         proc.outputs.addElement(field);
         proc.isSingle = true;
         proc.hasUpdates = true;
-        proc.lines.addElement(new Line("(\"" + line + field.useLiteral() + comma + "\")", true));
+        //proc.lines.addElement(new Line("(\"" + line + field.useLiteral() + comma + "\")", true));
         continue;
       }
       else if (isSequence(field) == true && proc.isMultipleInput == true)
