@@ -14,6 +14,10 @@ package bbd.jportal2.generators;
 import bbd.jportal2.Flag;
 import bbd.jportal2.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.util.Vector;
 import java.io.PrintWriter;
 
@@ -238,7 +242,14 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
       Field field = (Field) table.fields.elementAt(i);
       outData.print(comma + varType(field, false, table.hasSequenceReturning));
       if (field.defaultValue.length() > 0)
-        outData.print(" CONSTRAINT  DF_" + tableName + "_" + field.name + " DEFAULT " + field.defaultValue);
+      {
+        int [] b = new int[] {4, 5, 6, 17, 18, 21, 23};
+        outData.print(" CONSTRAINT  DF_" + tableOwner + "_" + table.name + "_" + field.name + " DEFAULT ");
+        if (ArrayUtils.contains(b, Integer.valueOf(field.type).intValue()))
+            outData.print("'" + field.defaultValue + "'");
+        else
+            outData.print(field.defaultValue);
+      }
       if (!field.isNull)
         outData.println(" NOT NULL");
       else

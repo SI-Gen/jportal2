@@ -99,7 +99,8 @@ public class Link implements Serializable
   public String useName()
   {
     String n = name;
-    n = replaceAll(n, "", "_");
+    n = replaceAll(n, " ", "_");
+    n = replaceAll(n, ".", "_");
     return n;
   }
 
