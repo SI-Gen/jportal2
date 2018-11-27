@@ -156,11 +156,11 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
             outData.println();
             outData.println("def _validate(s, attr, name):");
             outData.println("    if attr[0] in (_CHAR, _ANSICHAR, _DATE, _DATETIME, _TIME, _TIMESTAMP, _USERSTAMP, _XML):");
-            outData.println("        if len(s) > attr[1]: raise AssertionError, '%s:Length exceeds %d' % (name, attr[1])");
+            outData.println("        if len(s) > attr[1]: raise AssertionError('%s:Length exceeds %d' % (name, attr[1]))");
             outData.println("    elif attr[0] in (_DOUBLE, _FLOAT) and attr[2] > 15:");
-            outData.println("        if len(s) > attr[2]+2: raise AssertionError, '%s:Length exceeds %d' % (name, attr[2]+2)");
+            outData.println("        if len(s) > attr[2]+2: raise AssertionError('%s:Length exceeds %d' % (name, attr[2]+2))");
             outData.println("    elif attr[0] == _MONEY:");
-            outData.println("        if len(s) > 20: raise AssertionError, '%s:Length exceeds %d' % (name, 20)");
+            outData.println("        if len(s) > 20: raise AssertionError('%s:Length exceeds %d' % (name, 20))");
             outData.println("    return s");
             outData.println();
             outData.println("def _str(s, attr, name):");
