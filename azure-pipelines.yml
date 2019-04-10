@@ -32,7 +32,7 @@ steps:
   displayName: 'Prepare analysis on SonarQube'
   inputs:
     SonarQube: 'SonarCloud'
-    projectKey: xxxxxxxxxxxxxxxxxxx
+    projectKey: $(SonarSource-JPortal2-ID)
     projectName: MigrationPlayground
     projectVersion: '$(AssemblyVersion)'
     extraProperties: |
