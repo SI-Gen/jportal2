@@ -28,16 +28,23 @@ steps:
 #     summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/site/jacoco/jacoco.xml'
 #     reportDirectory: '$(System.DefaultWorkingDirectory)/**/site/jacoco'
 #     failIfCoverageEmpty: true
-- task: SonarSource.sonarqube.15B84CA1-B62F-4A2A-A403-89B77A063157.SonarQubePrepare@4
-  displayName: 'Prepare analysis on SonarQube'
+steps:
+- task: SonarSource.sonarcloud.14d9cde6-c1da-4d55-aa01-2965cd301255.SonarCloudPrepare@1
+  displayName: 'Prepare analysis on SonarCloud'
   inputs:
-    SonarQube: 'SonarCloud'
-    projectKey: $(SonarSource-JPortal2-ID)
-    projectName: SI-Gen_jportal2
-    projectVersion: '$(AssemblyVersion)'
-    extraProperties: |
-     sonar.organization=si-gen
-     sonar.branch.name=$(Build.SourceBranchName)
+    SonarCloud: 'SonarSource Global'
+    organization: 'si-gen'
+    scannerMode: CLI
+    #SonarQube: 'SonarCloud'
+    #projectKey: $(SonarSource-JPortal2-ID)
+    #projectName: SI-Gen_jportal2
+    #projectVersion: '$(AssemblyVersion)'
+    #extraProperties: |
+    # sonar.organization=si-gen
+    # sonar.branch.name=$(Build.SourceBranchName)
+steps:
+- task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
+  displayName: 'Run Code Analysis'
 # - task: CopyFiles@2
 #   inputs:
 #     contents: '**/*.war'
@@ -47,3 +54,6 @@ steps:
 #   inputs:
 #     artifactName: 'war'
 #     pathToPublish: '$(build.artifactStagingDirectory)'
+steps:
+- task: SonarSource.sonarcloud.38b27399-a642-40af-bb7d-9971f69712e8.SonarCloudPublish@1
+  displayName: 'Publish Quality Gate Result'
