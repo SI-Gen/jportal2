@@ -9,10 +9,6 @@ trigger:
 pool:
   vmImage: 'Ubuntu-16.04'
 
-variables:
-- group: JPortal2SensitiveVariables
-
-
 steps:
 - task: Maven@3
   inputs:
@@ -24,6 +20,10 @@ steps:
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     goals: 'package'
+
+variables:
+- group: JPortal2SensitiveVariables
+
 
 # Publish Cobertura or JaCoCo code coverage results from a build
 # - task: PublishCodeCoverageResults@1
@@ -41,12 +41,14 @@ steps:
     organization: 'si-gen'
     scannerMode: CLI
     #SonarQube: 'SonarCloud'
-    projectKey: $MY_MAPPED_SONARKEY_VAR
+    #projectKey: $(MY_MAPPED_SONARKEY_VAR)
     projectName: SI-Gen_jportal2
     projectVersion: '$(AssemblyVersion)'
-    #extraProperties: |
+    extraProperties: |
+    sonar.projectKey: $(MY_MAPPED_SONARKEY_VAR)
     # sonar.organization=si-gen
     # sonar.branch.name=$(Build.SourceBranchName)
+    
 - task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
   displayName: 'Run Code Analysis'
 # - task: CopyFiles@2
