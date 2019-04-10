@@ -42,7 +42,7 @@ steps:
     cliProjectKey: '$(SonarSource-JPortal2-ID)'
     projectName: SI-Gen_jportal2
     cliSources: src/main
-    extraProperties: 
+    extraProperties: |
       # Additional properties that will be passed to the scanner, 
       # Put one key=value per line, example:
       sonar.sources=src/main/java
