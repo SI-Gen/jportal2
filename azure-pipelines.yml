@@ -41,9 +41,9 @@ steps:
     organization: 'si-gen'
     scannerMode: CLI
     #SonarQube: 'SonarCloud'
-    projectKey: $env:MY_MAPPED_SONARKEY_VAR
-    #projectName: SI-Gen_jportal2
-    #projectVersion: '$(AssemblyVersion)'
+    projectKey: $MY_MAPPED_SONARKEY_VAR
+    projectName: SI-Gen_jportal2
+    projectVersion: '$(AssemblyVersion)'
     #extraProperties: |
     # sonar.organization=si-gen
     # sonar.branch.name=$(Build.SourceBranchName)
