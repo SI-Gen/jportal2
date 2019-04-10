@@ -38,7 +38,7 @@ steps:
     organization: 'si-gen'
     scannerMode: CLI
     #SonarQube: 'SonarCloud'
-    projectKey: $(SonarSource-JPortal2-ID)
+    projectKey: $(JPortal2 Sensitive Variables/SonarSource-JPortal2-ID)
     #projectName: SI-Gen_jportal2
     #projectVersion: '$(AssemblyVersion)'
     #extraProperties: |
