@@ -33,10 +33,10 @@ steps:
   inputs:
     SonarQube: 'SonarCloud'
     projectKey: $(SonarSource-JPortal2-ID)
-    projectName: MigrationPlayground
+    projectName: SI-Gen_jportal2
     projectVersion: '$(AssemblyVersion)'
     extraProperties: |
-     sonar.organization=alkampfergit-github
+     sonar.organization=si-gen
      sonar.branch.name=$(Build.SourceBranchName)
 # - task: CopyFiles@2
 #   inputs:
