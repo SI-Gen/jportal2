@@ -12,8 +12,6 @@ pool:
 variables:
 - group: JPortal2SensitiveVariables
 
-env:
-  MY_MAPPED_SONARKEY_VAR: $(SonarSource-JPortal2-ID)
 
 steps:
 - task: Maven@3
@@ -35,6 +33,8 @@ steps:
 #     reportDirectory: '$(System.DefaultWorkingDirectory)/**/site/jacoco'
 #     failIfCoverageEmpty: true
 - task: SonarSource.sonarcloud.14d9cde6-c1da-4d55-aa01-2965cd301255.SonarCloudPrepare@1
+  env:
+    MY_MAPPED_SONARKEY_VAR: $(SonarSource-JPortal2-ID)
   displayName: 'Prepare analysis on SonarCloud'
   inputs:
     SonarCloud: 'SonarSource Global'
