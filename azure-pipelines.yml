@@ -44,7 +44,7 @@ steps:
     projectName: SI-Gen_jportal2
     projectVersion: '$(AssemblyVersion)'
     extraProperties: |
-      sonar.projectKey: $(MY_MAPPED_SONARKEY_VAR)
+      sonar.projectKey: XXX$(MY_MAPPED_SONARKEY_VAR)
     # sonar.organization=si-gen
     # sonar.branch.name=$(Build.SourceBranchName)
 
