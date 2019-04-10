@@ -12,6 +12,9 @@ pool:
 variables:
 - group: JPortal2SensitiveVariables
 
+env:
+  MY_MAPPED_SONARKEY_VAR: $(SonarSource-JPortal2-ID)
+
 steps:
 - task: Maven@3
   inputs:
@@ -38,7 +41,7 @@ steps:
     organization: 'si-gen'
     scannerMode: CLI
     #SonarQube: 'SonarCloud'
-    projectKey: $JPortal2SensitiveVariables/SonarSource-JPortal2-ID
+    projectKey: $env:MY_MAPPED_SONARKEY_VAR
     #projectName: SI-Gen_jportal2
     #projectVersion: '$(AssemblyVersion)'
     #extraProperties: |
