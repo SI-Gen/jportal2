@@ -37,10 +37,10 @@ steps:
     SonarCloud: 'SonarSource Global'
     organization: 'si-gen'
     scannerMode: CLI
-    #SonarQube: 'SonarCloud'
-    projectKey: $(SonarSource-JPortal2-ID)
+    projectKey: XXX$(SonarSource-JPortal2-ID)
     projectName: SI-Gen_jportal2
     projectVersion: '$(AssemblyVersion)'
+    #SonarQube: 
     #extraProperties: |
     #  sonar.projectKey: $(SonarSource-JPortal2-ID)
     # sonar.organization=si-gen
