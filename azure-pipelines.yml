@@ -48,7 +48,7 @@ steps:
       sonar.sources=src/main/java
       sonar.java.binaries=target/classes
       #java version used by source files:
-      sonar.java.source=1.6
+      sonar.java.source=1.8
       # # sonar.exclusions=**/*.bin
       # #sonar.projectKey=XXX$(SonarSource-JPortal2-ID)
 
