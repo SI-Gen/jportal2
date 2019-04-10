@@ -9,6 +9,9 @@ trigger:
 pool:
   vmImage: 'Ubuntu-16.04'
 
+variables:
+- group: JPortal2 Sensitive Variables
+
 steps:
 - task: Maven@3
   inputs:
