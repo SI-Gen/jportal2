@@ -1,8 +1,9 @@
 # Compiled class file
 *.class
 
-#Maven output
+# Maven output
 target/
+dependency-reduced-pom.xml
 
 # Log file
 *.log
@@ -21,8 +22,15 @@ target/
 *.tar.gz
 *.rar
 
-#Intelli-J
+# Intelli-J
 .idea
+**/*.iml
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+# Generated Files
+PythonDB
+
+# MacOS
+.DS_Store
