@@ -57,7 +57,7 @@ public class ProjectCompiler {
             logger.error("You need to specify at least one builtin generator (using --generator) or one template-based generator (using --template-generator).");
             rc = 1;
         }
-        
+
         //Only run if return code is still 0
         if (rc == 0)
         {
