@@ -125,6 +125,7 @@ public class SingleFileCompiler {
 
         Class<?> c;
         IBuiltInGenerator instanceOfC;
+
         try {
             c = Class.forName("bbd.jportal2.generators." + generatorName);
             instanceOfC = (IBuiltInGenerator) c.newInstance();
@@ -181,7 +182,7 @@ public class SingleFileCompiler {
 
         GeneratorParameters extractParametersFromOption() {
             //split causes absolute paths on windows to fail.
-            //get the index of the first : in the generator. split by that. the first index is the generator name 
+            //get the index of the first : in the generator. split by that. the first index is the generator name
             // everything else after that we treat as a path
             int strchr = generator.indexOf(':');
             if (strchr != -1)
