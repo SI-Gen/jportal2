@@ -30,7 +30,7 @@ public class BaseGenerator {
 
     public Boolean toBoolean(Object value) {
         String s = value.toString();
-        return s.toLowerCase().equals("true");
+        return s.equalsIgnoreCase("true");
     }
 
 

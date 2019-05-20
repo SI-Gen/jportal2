@@ -37,11 +37,11 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
                 fileName = database.name;
             }
 
-            logger.info("DDL: " + output + fileName + ".sql");
+            logger.info("DDL: {}{} .sql", output, fileName);
             FileOutputStream outFile = new FileOutputStream(output + fileName + ".sql");
 
-            try {
-                PrintWriter outData = new PrintWriter(outFile);
+            try (PrintWriter outData = new PrintWriter(outFile)) {
+
                 if (database.schema.length() > 0) {
                     tableOwner = database.schema + ".";
                 } else if (database.userid.length() > 0) {
@@ -55,33 +55,32 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
                 int i;
                 for (i = 0; i < database.tables.size(); ++i) {
-                    generate((Table) database.tables.elementAt(i), outData);
+                    generate(database.tables.elementAt(i), outData);
                 }
 
                 for (i = 0; i < database.views.size(); ++i) {
-                    generate((View) database.views.elementAt(i), outData, "", tableOwner);
+                    generate(database.views.elementAt(i), outData, "", tableOwner);
                 }
 
                 for (i = 0; i < database.sequences.size(); ++i) {
-                    generate((Sequence) database.sequences.elementAt(i), outData, tableOwner);
+                    generate(database.sequences.elementAt(i), outData, tableOwner);
                 }
 
                 outData.flush();
-            } finally {
-                outFile.close();
             }
+
         } catch (IOException ex) {
             logger.error("Generate Oracle SQL IO Error", ex);
         }
 
     }
 
-    static String bSO(int i) {
+    private String bSO(int i) {
         String x = "" + (101 + i);
         return x.substring(1);
     }
 
-    static void generate(Table table, PrintWriter outData) {
+    private void generate(Table table, PrintWriter outData) {
         String tableOwner = "";
         if (table.database.userid.length() > 0) {
             tableOwner = table.database.userid + ".";
@@ -92,13 +91,14 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
         int i;
         Field field;
         int j;
-        if (table.fields.size() > 0) {
+
+        if (!table.fields.isEmpty()) {
             outData.println("DROP TABLE " + tableOwner + table.name + " CASCADE CONSTRAINTS;");
             outData.println();
             outData.println("CREATE TABLE " + tableOwner + table.name);
 
-            for (i = 0; i < table.fields.size(); comma = ", ") {
-                field = (Field) table.fields.elementAt(i);
+            for (i = 0; i < table.fields.size(); comma = ", ", ++i) {
+                field = table.fields.elementAt(i);
                 outData.println(comma + field.name + " " + varType(field));
                 if (field.defaultValue.length() > 0) {
                     hasNotNull = true;
@@ -110,13 +110,12 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
                     hasNotNull = true;
                 }
 
-                ++i;
             }
 
             outData.print(")");
-            if (table.options.size() > 0) {
+            if (!table.options.isEmpty()) {
                 for (i = 0; i < table.options.size(); ++i) {
-                    String option = (String) table.options.elementAt(i);
+                    String option = table.options.elementAt(i);
                     outData.println();
                     outData.print(option);
                 }
@@ -147,11 +146,11 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
                 outData.println();
                 outData.println("CREATE PUBLIC SYNONYM " + table.name + "SEQ FOR " + tableOwner + table.name + "SEQ;");
                 outData.println();
-                if (table.grants.size() > 0) {
+                if (!table.grants.isEmpty()) {
                     Grant grant = table.grants.elementAt(0);
 
                     for (j = 0; j < grant.users.size(); ++j) {
-                        String user = (String) grant.users.elementAt(j);
+                        String user = grant.users.elementAt(j);
                         outData.println("GRANT SELECT ON " + tableOwner + table.name + "SEQ TO " + user + ";");
                         outData.println();
                     }
@@ -176,8 +175,8 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println("MODIFY");
             comma = "( ";
 
-            for (i = 0; i < table.fields.size(); comma = ", ") {
-                field = (Field) table.fields.elementAt(i);
+            for (i = 0; i < table.fields.size(); comma = ", ", ++i) {
+                field = table.fields.elementAt(i);
                 if (!field.isNull || field.defaultValue.length() != 0 || field.checkValue.length() != 0) {
                     outData.print(comma + field.name + " CONSTRAINT " + table.name + "_NN" + bSO(i));
                     if (field.defaultValue.length() > 0) {
@@ -192,8 +191,6 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
                     outData.println();
                 }
-
-                ++i;
             }
 
             outData.println(");");
@@ -201,13 +198,13 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
         }
 
         String mComma;
-        if (table.keys.size() > 0) {
+        if (!table.keys.isEmpty()) {
             mComma = "( ";
             outData.println("ALTER TABLE " + tableOwner + table.name);
             outData.println("ADD");
 
             for (j = 0; j < table.keys.size(); ++j) {
-                Key key = (Key) table.keys.elementAt(j);
+                Key key = table.keys.elementAt(j);
                 if (key.isPrimary) {
                     generatePrimary(table, key, outData, mComma);
                 } else if (key.isUnique) {
@@ -221,7 +218,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println();
         }
 
-        if (table.links.size() > 0) {
+        if (!table.links.isEmpty()) {
             mComma = "( ";
             outData.println("ALTER TABLE " + tableOwner + table.name);
             outData.println("ADD");
@@ -241,7 +238,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
         }
 
         for (i = 0; i < table.procs.size(); ++i) {
-            Proc proc = (Proc) table.procs.elementAt(i);
+            Proc proc = table.procs.elementAt(i);
             if (proc.isData) {
                 generate(proc, outData);
             }
@@ -249,7 +246,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
     }
 
-    static void generatePrimary(Table table, Key key, PrintWriter outData, String mcomma) {
+    private void generatePrimary(Table table, Key key, PrintWriter outData, String mcomma) {
         String comma = "  ( ";
         String keyname = key.name.toUpperCase();
         if (!keyname.contains(table.name.toUpperCase())) {
@@ -260,10 +257,9 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
         int i;
         String option;
-        for (i = 0; i < key.fields.size(); comma = "  , ") {
+        for (i = 0; i < key.fields.size(); comma = "  , ", ++i) {
             option = key.fields.elementAt(i);
             outData.println(comma + option);
-            ++i;
         }
 
         outData.println("  )");
@@ -275,7 +271,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
     }
 
-    static void generateUnique(Table table, Key key, PrintWriter outData, String mcomma) {
+    private void generateUnique(Table table, Key key, PrintWriter outData, String mcomma) {
         String comma = "  ( ";
         String keyname = key.name.toUpperCase();
         if (!keyname.contains(table.name.toUpperCase())) {
@@ -286,10 +282,9 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
         int i;
         String option;
-        for (i = 0; i < key.fields.size(); comma = "  , ") {
+        for (i = 0; i < key.fields.size(); comma = "  , ", ++i) {
             option = key.fields.elementAt(i);
             outData.println(comma + option);
-            ++i;
         }
 
         outData.println("  )");
@@ -301,7 +296,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
     }
 
-    private static void generateIndex(Table table, Key key, PrintWriter outData) {
+    private void generateIndex(Table table, Key key, PrintWriter outData) {
         String tableOwner = "";
         if (table.database.userid.length() > 0) {
             tableOwner = table.database.userid + ".";
@@ -319,10 +314,9 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
         int i;
         String option;
-        for (i = 0; i < key.fields.size(); comma = ", ") {
+        for (i = 0; i < key.fields.size(); comma = ", ", ++i) {
             option = key.fields.elementAt(i);
             outData.println(comma + option);
-            ++i;
         }
 
         outData.print(")");
@@ -337,20 +331,19 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
         outData.println();
     }
 
-    static void generate(Link link, PrintWriter outData, String mComma) {
+    private void generate(Link link, PrintWriter outData, String mComma) {
         String comma = "  ( ";
         outData.println(mComma + "CONSTRAINT " + link.linkName + " FOREIGN KEY");
 
-        for (int i = 0; i < link.fields.size(); comma = "  , ") {
+        for (int i = 0; i < link.fields.size(); comma = "  , ", ++i) {
             String name = link.fields.elementAt(i);
             outData.println(comma + name);
-            ++i;
         }
 
         outData.println("  ) REFERENCES " + link.name);
     }
 
-    static void generate(Grant grant, PrintWriter outData, String object) {
+    private void generate(Grant grant, PrintWriter outData, String object) {
         for (int i = 0; i < grant.perms.size(); ++i) {
             String perm = grant.perms.elementAt(i);
 
@@ -363,7 +356,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
     }
 
-    static void generate(View view, PrintWriter outData, String tableName, String tableOwner) {
+    private void generate(View view, PrintWriter outData, String tableName, String tableOwner) {
         outData.println("CREATE OR REPLACE FORCE VIEW " + tableName + view.name);
         String comma = "( ";
 
@@ -398,7 +391,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
         outData.println();
     }
 
-    static void generate(Proc proc, PrintWriter outData) {
+    private void generate(Proc proc, PrintWriter outData) {
 
         for (Line line : proc.getLines()) {
             outData.println(line);
@@ -407,7 +400,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
         outData.println();
     }
 
-    static void generate(Sequence sequence, PrintWriter outData, String tableOwner) {
+    private  void generate(Sequence sequence, PrintWriter outData, String tableOwner) {
         outData.println("DROP SEQUENCE " + sequence.name + ";");
         outData.println();
         outData.println("CREATE SEQUENCE " + sequence.name);
@@ -434,11 +427,6 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
         switch (field.type) {
             case 1:
                 return "BLOB";
-            case 2:
-            case 8:
-            case 16:
-            default:
-                return "unknown";
             case 3:
                 return "NUMBER(3)";
             case 4:
@@ -479,6 +467,11 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
                 return "VARCHAR2(8)";
             case 21:
                 return "CHAR(" + field.length + ")";
+            case 2:
+            case 8:
+            case 16:
+            default:
+                return "unknown";
         }
     }
 }

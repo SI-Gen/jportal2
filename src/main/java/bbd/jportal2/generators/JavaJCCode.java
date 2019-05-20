@@ -16,13 +16,13 @@ import bbd.jportal2.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Vector;
 
 public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
+
+    public static final String GENERATE_PROCS_IO_ERROR = "Generate Procs IO Error";
 
     public JavaJCCode() {
         super(JavaJCCode.class);
@@ -41,7 +41,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     }
 
     /**
-     * Generates the procedue classes for each trable present.
+     * Generates the procedure classes for each table present.
      *
      * @param database
      * @param output
@@ -63,7 +63,11 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
 
     private void generateStdProcStruct(Table table, String output) {
         try {
-            logger.info("Code: " + output + table.useName() + "Struct.java");
+
+            if (logger.isInfoEnabled()) {
+                logger.info("Code: {}{}Struct.java", output, table.useName());
+            }
+
             try (PrintWriter outData = openOutputFileForGeneration("Java",
                     output + table.useName() + "Struct.java")) {
                 if (table.database.packageName.length() > 0) {
@@ -76,7 +80,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData.println();
                 outData.println("/**");
                 for (int i = 0; i < table.comments.size(); i++) {
-                    String s = (String) table.comments.elementAt(i);
+                    String s = table.comments.elementAt(i);
                     outData.println(" *" + s);
                 }
                 outData.println(" * This code was generated, do not modify it, modify it at source and regenerate it.");
@@ -85,11 +89,11 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData.println("public class " + table.useName() + "Struct implements Serializable");
                 outData.println("{");
                 for (int i = 0; i < table.fields.size(); i++) {
-                    Field field = (Field) table.fields.elementAt(i);
-                    if (field.comments.size() > 0) {
+                    Field field = table.fields.elementAt(i);
+                    if (!field.comments.isEmpty()) {
                         outData.println("  /**");
                         for (int c = 0; c < field.comments.size(); c++) {
-                            String s = (String) field.comments.elementAt(c);
+                            String s = field.comments.elementAt(c);
                             outData.println("   *" + s);
                         }
                         outData.println("   */");
@@ -101,7 +105,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData.println("  {");
                 int maxSize = 0;
                 for (int i = 0; i < table.fields.size(); i++) {
-                    Field field = (Field) table.fields.elementAt(i);
+                    Field field = table.fields.elementAt(i);
                     if (field.useName().length() > maxSize)
                         maxSize = field.useName().length();
                     outData.println("    " + initJavaVar(field));
@@ -110,13 +114,13 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
 
                 outData.println("  public String toString()");
                 outData.println("  {");
-                outData.println("    String CRLF = (String) System.getProperty(\"line.separator\");");
+                outData.println("    String CRLF = System.lineSeparator();");
                 for (int i = 0; i < table.fields.size(); i++) {
                     if (i == 0)
                         outData.print("    return ");
                     else
                         outData.print("         + ");
-                    Field field = (Field) table.fields.elementAt(i);
+                    Field field = table.fields.elementAt(i);
                     int no = maxSize - field.useName().length();
                     outData.println("\"  " + field.useName() + padded(no + 1) + ": \" + " + field.useName() + " + CRLF");
                 }
@@ -126,13 +130,13 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData.flush();
             }
         } catch (IOException e1) {
-            logger.error("Generate Procs IO Error");
+            logger.error(GENERATE_PROCS_IO_ERROR);
         }
     }
 
     private void generateOtherProcStructs(Table table, String output) {
         for (int i = 0; i < table.procs.size(); i++) {
-            Proc proc = (Proc) table.procs.elementAt(i);
+            Proc proc = table.procs.elementAt(i);
             if (proc.isData)
                 continue;
             if (!proc.isStd && !proc.hasNoData())
@@ -142,7 +146,9 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
 
     private void generateOtherProcStruct(Table table, Proc proc, String output) {
         try {
-            logger.info("Code: " + output + table.useName() + proc.upperFirst() + "Struct.java");
+            if (logger.isInfoEnabled()){
+                logger.info("Code: {}Struct.java", output + table.useName() + proc.upperFirst());
+            }
 
             try (PrintWriter outData2 = openOutputFileForGeneration("java",
                     output + table.useName() + proc.upperFirst() + "Struct.java")) {
@@ -156,7 +162,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData2.println();
                 outData2.println("/**");
                 for (int j = 0; j < proc.comments.size(); j++) {
-                    String comment = (String) proc.comments.elementAt(j);
+                    String comment = proc.comments.elementAt(j);
                     outData2.println(" *" + comment);
                 }
                 outData2.println(" */");
@@ -164,12 +170,12 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData2.println("{");
                 int maxSize = 0;
                 for (int j = 0; j < proc.inputs.size(); j++) {
-                    Field field = (Field) proc.inputs.elementAt(j);
+                    Field field = proc.inputs.elementAt(j);
                     if (field.useName().length() > maxSize)
                         maxSize = field.useName().length();
                     outData2.println("  /**");
                     for (int c = 0; c < field.comments.size(); c++) {
-                        String s = (String) field.comments.elementAt(c);
+                        String s = field.comments.elementAt(c);
                         outData2.println("   *" + s);
                     }
                     if (!proc.hasOutput(field.name))
@@ -181,13 +187,13 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                     outData2.println("  public " + getterSetter(field));
                 }
                 for (int j = 0; j < proc.outputs.size(); j++) {
-                    Field field = (Field) proc.outputs.elementAt(j);
+                    Field field = proc.outputs.elementAt(j);
                     if (field.useName().length() > maxSize)
                         maxSize = field.useName().length();
                     if (!proc.hasInput(field.name)) {
                         outData2.println("  /**");
                         for (int c = 0; c < field.comments.size(); c++) {
-                            String s = (String) field.comments.elementAt(c);
+                            String s = field.comments.elementAt(c);
                             outData2.println("   *" + s);
                         }
                         outData2.println("   * (output)");
@@ -197,7 +203,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                     }
                 }
                 for (int j = 0; j < proc.dynamics.size(); j++) {
-                    String s = (String) proc.dynamics.elementAt(j);
+                    String s = proc.dynamics.elementAt(j);
                     if (s.length() > maxSize)
                         maxSize = s.length();
                     outData2.println("  /**");
@@ -208,32 +214,32 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData2.println("  public " + table.useName() + proc.upperFirst() + "Struct()");
                 outData2.println("  {");
                 for (int j = 0; j < proc.inputs.size(); j++) {
-                    Field field = (Field) proc.inputs.elementAt(j);
+                    Field field = proc.inputs.elementAt(j);
                     outData2.println("    " + initJavaVar(field));
                 }
                 for (int j = 0; j < proc.outputs.size(); j++) {
-                    Field field = (Field) proc.outputs.elementAt(j);
+                    Field field = proc.outputs.elementAt(j);
                     if (!proc.hasInput(field.name))
                         outData2.println("    " + initJavaVar(field));
                 }
                 for (int j = 0; j < proc.dynamics.size(); j++) {
-                    String s = (String) proc.dynamics.elementAt(j);
+                    String s = proc.dynamics.elementAt(j);
                     outData2.println("    " + s + " = \"\";");
                 }
                 outData2.println("  }");
                 outData2.println("  public String toString()");
                 outData2.println("  {");
-                outData2.println("    String CRLF = (String) System.getProperty(\"line.separator\");");
+                outData2.println("    String CRLF = System.lineSeparator();");
                 String ret = "    return ";
                 for (int j = 0; j < proc.inputs.size(); j++) {
                     outData2.print(ret);
                     ret = "         + ";
-                    Field field = (Field) proc.inputs.elementAt(j);
+                    Field field = proc.inputs.elementAt(j);
                     int no = maxSize - field.useName().length();
                     outData2.println("\"  " + field.useName() + padded(no + 1) + ": \" + " + field.useName() + " + CRLF");
                 }
                 for (int j = 0; j < proc.outputs.size(); j++) {
-                    Field field = (Field) proc.outputs.elementAt(j);
+                    Field field = proc.outputs.elementAt(j);
                     if (!proc.hasInput(field.name)) {
                         outData2.print(ret);
                         ret = "         + ";
@@ -254,7 +260,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData2.flush();
             }
         } catch (IOException e1) {
-            logger.error("Generate Procs IO Error");
+            logger.error(GENERATE_PROCS_IO_ERROR);
         }
     }
 
@@ -269,11 +275,15 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     /**
      * Build of all required standard procedures
      */
-    static private String extendsName;
+    private String extendsName;
 
     private void generateStdProcs(Table table, String output) {
         try {
-            logger.info("Code: " + output + table.useName() + ".java");
+
+            if (logger.isInfoEnabled()) {
+                logger.info("Code: {}{}.java", output, table.useName());
+            }
+
             try (PrintWriter outData = openOutputFileForGeneration("java", output + table.useName() + ".java")) {
 
                 if (table.database.packageName.length() > 0) {
@@ -287,7 +297,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData.println("");
                 outData.println("/**");
                 for (int i = 0; i < table.comments.size(); i++) {
-                    String s = (String) table.comments.elementAt(i);
+                    String s = table.comments.elementAt(i);
                     outData.println(" *" + s);
                 }
                 outData.println(" * This code was generated, do not modify it, modify it at source and regenerate it.");
@@ -319,7 +329,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData.println("    connection = connector.connection;");
                 outData.println("  }");
                 for (int i = 0; i < table.procs.size(); i++) {
-                    Proc proc = (Proc) table.procs.elementAt(i);
+                    Proc proc = table.procs.elementAt(i);
                     if (proc.isData)
                         continue;
                     if (proc.isStd)
@@ -331,7 +341,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData.flush();
             }
         } catch (IOException e1) {
-            logger.error("Generate Procs IO Error");
+            logger.error(GENERATE_PROCS_IO_ERROR);
         }
     }
 
@@ -340,7 +350,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
      */
     private void generateOtherProcs(Table table, String output) {
         for (int i = 0; i < table.procs.size(); i++) {
-            Proc proc = (Proc) table.procs.elementAt(i);
+            Proc proc = table.procs.elementAt(i);
             if (proc.isData)
                 continue;
             if (!proc.isStd && !proc.hasNoData())
@@ -350,9 +360,13 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
 
     private void generateOtherProc(Table table, Proc proc, String output) {
         try {
-            logger.info("Code: " + output + table.useName() + proc.upperFirst() + ".java");
+
+            if (logger.isInfoEnabled()) {
+                logger.info("Code: {}.java", output + table.useName() + proc.upperFirst());
+            }
+
             try (PrintWriter outData = openOutputFileForGeneration("java",
-                    output + table.useName() + proc.upperFirst() + ".java")){
+                    output + table.useName() + proc.upperFirst() + ".java")) {
                 if (table.database.packageName.length() > 0) {
                     outData.println("package " + table.database.packageName + ";");
                     outData.println("");
@@ -396,14 +410,14 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData.flush();
             }
         } catch (IOException e1) {
-            logger.error("Generate Procs IO Error");
+            logger.error(GENERATE_PROCS_IO_ERROR);
         }
     }
 
     /**
      *
      */
-    static PlaceHolder placeHolders;
+    private PlaceHolder placeHolders;
 
     /**
      * Emits a static or class method
@@ -433,15 +447,15 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     /**
      * Emits class method for processing the database activity
      */
-    private void emitProc(Proc proc, PrintWriter outData) {              //  12345
+    private void emitProc(Proc proc, PrintWriter outData) {
         outData.println("  /**");
-        if (proc.comments.size() > 0) {
+        if (!proc.comments.isEmpty()) {
             for (int i = 0; i < proc.comments.size(); i++) {
                 String comment = proc.comments.elementAt(i);
                 outData.println("    *" + comment);
             }
         }
-        if (proc.outputs.size() == 0)
+        if (proc.outputs.isEmpty())
             outData.println("   * Returns no output.");
         else if (proc.isSingle) {
             outData.println("   * Returns at most one record.");
@@ -453,7 +467,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
         outData.println("   * @exception SQLException is passed through");
         outData.println("   */");
         String procName = proc.lowerFirst();
-        if (proc.outputs.size() == 0)
+        if (proc.outputs.isEmpty())
             outData.println("  public void " + procName + "() throws SQLException");
         else if (proc.isSingle)
             outData.println("  public boolean " + procName + "() throws SQLException");
@@ -505,7 +519,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             outData.print(i + 1);
             outData.println(", " + field.useName() + ");");
         }
-        if (proc.outputs.size() > 0) {
+        if (!proc.outputs.isEmpty()) {
             outData.println("    ResultSet result = prep.executeQuery();");
             if (!proc.isSingle) {
                 outData.println("    Query query = new Query(prep, result);");
@@ -552,7 +566,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
         }
         outData.println("  }");
 
-        if (proc.outputs.size() > 0 && !proc.isSingle) {
+        if (!proc.outputs.isEmpty() && !proc.isSingle) {
             outData.println("  /**");
             outData.println("   * Returns all the records in a result set as array of " + extendsName + ".");
             outData.println("   * @return array of " + extendsName + ".");
@@ -577,9 +591,9 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println("    return result;");
             outData.println("  }");
         }
-        if (proc.inputs.size() > 0 || proc.dynamics.size() > 0) {
+        if (!proc.inputs.isEmpty() || !proc.dynamics.isEmpty()) {
             outData.println("  /**");
-            if (proc.outputs.size() == 0)
+            if (proc.outputs.isEmpty())
                 outData.println("   * Returns no records.");
             else if (proc.isSingle) {
                 outData.println("   * Returns at most one record.");
@@ -612,7 +626,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData.println("   * @param " + proc.name + " dynamic input.");
             outData.println("   * @exception SQLException is passed through");
             outData.println("   */");
-            if (proc.outputs.size() == 0)
+            if (proc.outputs.isEmpty())
                 outData.println("  public void " + procName + "(");
             else if (proc.isSingle)
                 outData.println("  public boolean " + procName + "(");
@@ -661,7 +675,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 String name = proc.dynamics.elementAt(i);
                 outData.println("    this." + name + " = " + name + ";");
             }
-            if (proc.outputs.size() > 0)
+            if (!proc.outputs.isEmpty())
                 outData.println("    return " + procName + "();");
             else
                 outData.println("    " + procName + "();");
@@ -707,8 +721,9 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 return "BigDecimal " + field.useName();
             case Field.USERSTAMP:
                 return "String " + field.useName();
+            default:
+                return "unknown";
         }
-        return "unknown";
     }
 
     /**
@@ -858,11 +873,8 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
         return "unknown";
     }
 
-    static String padString = "                                                         ";
-    private static PrintWriter outData;
-    private static PrintWriter outData2;
-
     private static String padded(int size) {
+        String padString = "                                                         ";
         if (size == 0)
             return "";
         if (size > padString.length())

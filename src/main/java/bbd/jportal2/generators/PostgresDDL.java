@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 
 public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
-    private static String tableOwner;
+    private String tableOwner;
     private static final Logger logger = LoggerFactory.getLogger(PostgresDDL.class);
 
     public PostgresDDL() {
@@ -36,13 +36,13 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
                 fileName = database.name;
             }
 
-            logger.info("DDL: " + output + fileName + ".sql");
+            logger.info("DDL: {}{}.sql", output, fileName);
 
             try (PrintWriter outData = openOutputFileForGeneration("sql",
                     output + fileName + ".sql")) {
 
                 for (int i = 0; i < database.tables.size(); ++i) {
-                    generateTable(database, (Table) database.tables.elementAt(i), outData);
+                    generateTable(database, database.tables.elementAt(i), outData);
                 }
 
                 outData.flush();
@@ -65,12 +65,12 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
         boolean hasNotNull = false;
         int i;
         Key key;
-        if (table.fields.size() > 0) {
+        if (!table.fields.isEmpty()) {
             outData.println("DROP TABLE " + tableOwner + table.name + " CASCADE;");
             outData.println();
             outData.println("CREATE TABLE " + tableOwner + table.name);
 
-            for (i = 0; i < table.fields.size(); comma = ", ") {
+            for (i = 0; i < table.fields.size(); comma = ", ", ++i) {
                 Field field = table.fields.elementAt(i);
                 outData.println(comma + field.name + " " + varType(field));
                 if (field.defaultValue.length() > 0) {
@@ -82,8 +82,6 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
                 } else if (!field.isNull) {
                     hasNotNull = true;
                 }
-
-                ++i;
             }
 
             outData.print(")");
@@ -141,7 +139,7 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println();
         }
 
-        if (table.keys.size() > 0) {
+        if (!table.keys.isEmpty()) {
             for (i = 0; i < table.keys.size(); ++i) {
                 key = table.keys.elementAt(i);
                 if (key.isPrimary) {
@@ -158,7 +156,7 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println();
         }
 
-        if (table.links.size() > 0) {
+        if (!table.links.isEmpty()) {
             for (i = 0; i < table.links.size(); ++i) {
                 Link link = table.links.elementAt(i);
                 outData.println("ALTER TABLE " + tableOwner + table.name);
@@ -195,10 +193,9 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
         String comma = "  ( ";
         outData.println(" ADD CONSTRAINT " + link.linkName + " FOREIGN KEY");
 
-        for (int i = 0; i < link.fields.size(); comma = "  , ") {
+        for (int i = 0; i < link.fields.size(); comma = "  , ", ++i) {
             String name = link.fields.elementAt(i);
             outData.println(comma + name);
-            ++i;
         }
 
         outData.println("  ) REFERENCES " + tableOwner + link.name + " MATCH FULL");
@@ -207,16 +204,15 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
     private void generateUnique(Table table, Key key, PrintWriter outData) {
         String comma = "  ( ";
         String keyname = key.name.toUpperCase();
-        if (keyname.indexOf(table.name.toUpperCase()) == -1) {
+        if (!keyname.contains(table.name.toUpperCase())) {
             keyname = table.name.toUpperCase() + "_" + keyname;
         }
 
         outData.println(" ADD CONSTRAINT " + keyname + " UNIQUE");
 
-        for (int i = 0; i < key.fields.size(); comma = "  , ") {
+        for (int i = 0; i < key.fields.size(); comma = "  , ", ++i) {
             String name = key.fields.elementAt(i);
             outData.println(comma + name);
-            ++i;
         }
 
         outData.println("  )");
@@ -225,7 +221,7 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
     private void generatePrimary(Table table, Key key, PrintWriter outData) {
         String comma = "  ( ";
         String keyname = key.name.toUpperCase();
-        if (keyname.indexOf(table.name.toUpperCase()) == -1) {
+        if (!keyname.contains(table.name.toUpperCase())) {
             keyname = table.name.toUpperCase() + "_" + keyname;
         }
 
@@ -233,10 +229,9 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
         int i;
         String option;
-        for (i = 0; i < key.fields.size(); comma = "  , ") {
+        for (i = 0; i < key.fields.size(); comma = "  , ", ++i) {
             option = key.fields.elementAt(i);
             outData.println(comma + option);
-            ++i;
         }
 
         outData.print("  )");
@@ -258,7 +253,7 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
     private void generateView(View view, PrintWriter outData, String tableName, String tableOwner) {
         outData.println("CREATE OR REPLACE VIEW " + tableOwner + tableName + view.name);
-        if (view.aliases.size() > 0) {
+        if (!view.aliases.isEmpty()) {
             String comma = "( ";
 
             for (int i = 0; i < view.aliases.size(); ++i) {
@@ -293,7 +288,7 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
     private void generateIndex(Table table, Key key, PrintWriter outData) {
         String comma = "( ";
         String keyname = key.name.toUpperCase();
-        if (keyname.indexOf(table.name.toUpperCase()) == -1) {
+        if (!keyname.contains(table.name.toUpperCase())) {
             keyname = table.name.toUpperCase() + "_" + keyname;
         }
 
@@ -303,10 +298,9 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
         int i;
         String option;
-        for (i = 0; i < key.fields.size(); comma = ", ") {
+        for (i = 0; i < key.fields.size(); comma = ", ", ++i) {
             option = key.fields.elementAt(i);
             outData.println(comma + option);
-            ++i;
         }
 
         outData.print(")");
@@ -348,7 +342,7 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
             case 3:
                 return "smallint";
             case 4:
-                return "varchar(" + String.valueOf(field.length) + ")";
+                return "varchar(" + field.length + ")";
             case 5:
                 return "date";
             case 6:
