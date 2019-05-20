@@ -54,10 +54,11 @@ steps:
 
 - task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
   displayName: 'Run Code Analysis'
-# - task: CopyFiles@2
-#   inputs:
-#     contents: '**/*.war'
-#     targetFolder: '$(build.artifactStagingDirectory)'
+
+- task: CopyFiles@2
+  inputs:
+    contents: '**/jportal2*.jar'
+    targetFolder: '$(build.artifactStagingDirectory)'
 
 # - task: PublishBuildArtifacts@1
 #   inputs:
