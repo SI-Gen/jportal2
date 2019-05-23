@@ -1,34 +1,11 @@
-trigger:
-  branches:
-    include:
-      - master
-
-pool:
-  vmImage: 'Ubuntu-16.04'
-
-variables:
-- group: JPortal2SensitiveVariables
-
 steps:
-- task: Maven@3
-  inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m -Pincrement-develop-major-version'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.11'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'clean install'
-
 # Publish Cobertura or JaCoCo code coverage results from a build
-# - task: PublishCodeCoverageResults@1
-#   inputs:
-#     codeCoverageTool: 'JaCoCo'
-#     summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/site/jacoco/jacoco.xml'
-#     reportDirectory: '$(System.DefaultWorkingDirectory)/**/site/jacoco'
-#     failIfCoverageEmpty: true
-
+#- task: PublishCodeCoverageResults@1
+# inputs:
+#   codeCoverageTool: 'JaCoCo'
+#   summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/site/jacoco/jacoco.xml'
+#   reportDirectory: '$(System.DefaultWorkingDirectory)/**/site/jacoco'
+#   failIfCoverageEmpty: true
 - task: SonarSource.sonarcloud.14d9cde6-c1da-4d55-aa01-2965cd301255.SonarCloudPrepare@1
   displayName: 'Prepare analysis on SonarCloud'
   inputs:
