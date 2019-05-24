@@ -1,0 +1,36 @@
+variables:
+  - group: JPortal2SensitiveVariables
+
+trigger: none
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+
+steps:
+# Dummy step, remove; keep condition
+- task: Maven@3
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+  displayName: 'Maven deploy snapshot'
+  inputs:
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.8'
+    jdkArchitectureOption: 'x64'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    goals: 'clean verify'
+# Replace with logic below
+# if release
+#    reset patch version
+#    if major release
+#      bump major version 
+#      reset minor
+#    create tag with CICD version
+#    bump minor version <- for next dev cycle
+# else if hotfix
+#    bump patch <- think about this
+#    create tag with CICD version
+#    (want want to make hotfixes manual)
+# push tag to remote
+

@@ -22,6 +22,7 @@ public class BaseGenerator {
 
     public BaseGenerator(Class inheritedGeneratorClass) {
         generatedOutputFiles = new GeneratedFiles(inheritedGeneratorClass.getSimpleName());
+
     }
 
     public Vector<Flag> getFlags() {
