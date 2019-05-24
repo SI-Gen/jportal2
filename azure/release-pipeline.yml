@@ -1,14 +1,21 @@
+variables:
+  - group: JPortal2SensitiveVariables
+
 trigger:
   branches:
     include:
-    - hotfix/*
-    - bugfix/*
+      - 'refs/tags/*'
 
 pool:
   vmImage: 'Ubuntu-16.04'
 
 steps:
+# 1. Get version from tag name
+# 2. Update pom version with maven
+# 3. run mvn deploy
+# 4. Create github release
 - task: Maven@3
+  displayName: 'Maven deploy release'
   inputs:
     mavenPomFile: 'pom.xml'
     mavenOptions: '-Xmx3072m'

@@ -1,15 +1,26 @@
+variables:
+  - group: JPortal2SensitiveVariables
+
 trigger:
   branches:
     include:
+      - feature/*
+      - bugfix/*
+      - hotfix/*
       - master
 
-pr: none
+pr:
+  branches:
+    include:
+      - develop
+      - master
 
 pool:
   vmImage: 'Ubuntu-16.04'
 
 steps:
 - task: Maven@3
+  displayName: 'Maven verify'
   inputs:
     mavenPomFile: 'pom.xml'
     mavenOptions: '-Xmx3072m'

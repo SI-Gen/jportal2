@@ -4,18 +4,18 @@ variables:
 trigger:
   branches:
     include:
-      - feature/*
-
-pr:
-  branches:
-    include:
       - develop
+
+pr: none
 
 pool:
   vmImage: 'Ubuntu-16.04'
 
 steps:
+# 1. Update pom version with maven to current CICD version
+# 2. mvn deploy
 - task: Maven@3
+  displayName: 'Maven deploy snapshot'
   inputs:
     mavenPomFile: 'pom.xml'
     mavenOptions: '-Xmx3072m'
