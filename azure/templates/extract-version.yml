@@ -1,0 +1,6 @@
+steps:
+- bash: |
+    project_version=$(mvn -o help:evaluate -Dexpression=project.version -q -DforceStdout | cut -d- -f1 )
+    echo "##vso[task.setvariable variable=project.version]$project_version"
+  displayName: 'Extract current project version'
+  failOnStderr: true 
