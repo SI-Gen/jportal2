@@ -1,48 +1,50 @@
-variables:
-  - group: JPortal2SensitiveVariables
-condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
 trigger:
   branches:
     include:
       - develop
 pr: none
-pool:
-  vmImage: 'Ubuntu-16.04'
-steps:
-- checkout: self
-  persistCredentials: true
-- task: DownloadSecureFile@1
-  displayName: Download private signing key file
-  inputs:
-    secureFile: privatekey.gpg
-  name: privateKeyRing
-- task: Maven@3
-  displayName: 'Maven verify'
-  inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'clean verify'
-- template: templates/analysis-steps.yml
-- task: Maven@3
-  displayName: 'Maven deploy snapshot and increment minor version'
-  inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'deploy -Pincrement-minor-version,release-oss-maven-central -Dgpg.secretKeyring=$(privateKeyRing.secureFilePath)'
-- template: templates/extract-version.yml
-- bash: |
-    git add 'pom.xml'
-    git commit -m "CICD: New development version - ${project_version}-SNAPSHOT"
-    # have to push changes here
-  displayName: 'Git commit and push changes to POM'
-  failOnStderr: true  
+jobs:
+- job: publish_snapshot
+  variables:
+    - group: JPortal2SensitiveVariables
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - checkout: self
+    persistCredentials: true
+  - task: DownloadSecureFile@1
+    displayName: Download private signing key file
+    inputs:
+      secureFile: privatekey.gpg
+    name: privateKeyRing
+  - task: Maven@3
+    displayName: 'Maven verify'
+    inputs:
+      mavenPomFile: 'pom.xml'
+      mavenOptions: '-Xmx3072m'
+      javaHomeOption: 'JDKVersion'
+      jdkVersionOption: '1.8'
+      jdkArchitectureOption: 'x64'
+      publishJUnitResults: true
+      testResultsFiles: '**/surefire-reports/TEST-*.xml'
+      goals: 'clean verify'
+  - template: templates/analysis-steps.yml
+  - task: Maven@3
+    displayName: 'Maven deploy snapshot and increment minor version'
+    inputs:
+      mavenPomFile: 'pom.xml'
+      mavenOptions: '-Xmx3072m'
+      javaHomeOption: 'JDKVersion'
+      jdkVersionOption: '1.8'
+      jdkArchitectureOption: 'x64'
+      publishJUnitResults: true
+      testResultsFiles: '**/surefire-reports/TEST-*.xml'
+      goals: 'deploy -Pincrement-minor-version,release-oss-maven-central -Dgpg.secretKeyring=$(privateKeyRing.secureFilePath)'
+  - template: templates/extract-version.yml
+  - bash: |
+      git add 'pom.xml'
+      git commit -m "CICD: New development version - ${project_version}-SNAPSHOT"
+      # have to push changes here
+    displayName: 'Git commit and push changes to POM'
+    failOnStderr: true  

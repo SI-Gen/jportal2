@@ -1,46 +1,50 @@
-variables:
-  - group: JPortal2SensitiveVariables
-  - name: is_hotfix
-    value: false
-  - name: version_hotfix
-    value: null
-condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master')) 
 trigger: none
-pool:
-  vmImage: 'Ubuntu-16.04'
-steps:
-- checkout: self
-  persistCredentials: true
-- task: Maven@3
-  displayName: 'Maven verify'
-  inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'clean verify'
-- template: templates/extract-version.yml
-- bash: |
-    echo "${project_version}-RELEASE"
-  displayName: 'Git tag release'
-  condition: and(succeeded(), not(variables['is_hotfix']))
-  failOnStderr: true 
-- bash: |
-    set -e
-    echo "Validating format of supplied hotfix version"
-    echo "Shell will exit with nonzero code if validation failed..."
-    echo "$version_hotfix" | grep -P "\d+?\.\d+?.\d+?"
-  displayName: 'Validate hotfix version'
-  condition: and(succeeded(), variables['is_hotfix']))
-  failOnStderr: true  
-- bash: |
-   echo "well formatted hotfix version, ${project_version}-hotfix" 
-  displayName: 'Git tag hotfix'
-  condition: and(succeeded(), variables['is_hotfix']))
-  failOnStderr: true 
+variables:
+  bool: false
+jobs:
+- job: tag_release
+  variables:
+    - group: JPortal2SensitiveVariables
+    - name: is_hotfix
+      value: false
+    - name: version_hotfix
+      value: null
+  # condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master')) 
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - checkout: self
+    persistCredentials: true
+  - task: Maven@3
+    displayName: 'Maven verify'
+    inputs:
+      mavenPomFile: 'pom.xml'
+      mavenOptions: '-Xmx3072m'
+      javaHomeOption: 'JDKVersion'
+      jdkVersionOption: '1.8'
+      jdkArchitectureOption: 'x64'
+      publishJUnitResults: true
+      testResultsFiles: '**/surefire-reports/TEST-*.xml'
+      goals: 'clean verify'
+  - template: templates/extract-version.yml
+  - bash: |
+      echo "${project_version}-RELEASE"
+    displayName: 'Git tag release'
+    condition: and(succeeded(), not(variables['bool']))
+    failOnStderr: true 
+  - bash: |
+      set -e
+      echo "Validating format of supplied hotfix version"
+      echo "Shell will exit with nonzero code if validation failed..."
+      echo "$version_hotfix" | grep -P "\d+?\.\d+?.\d+?"
+    displayName: 'Validate hotfix version'
+    condition: and(succeeded(), variables['is_hotfix'])
+    failOnStderr: true  
+  - bash: |
+      echo "well formatted hotfix version, ${project_version}-hotfix" 
+    displayName: 'Git tag hotfix'
+    condition: and(succeeded(), variables['is_hotfix'])
+    failOnStderr: true 
 
 # Add logic below
 # if release
