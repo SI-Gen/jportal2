@@ -19,15 +19,5 @@ pool:
   vmImage: 'Ubuntu-16.04'
 
 steps:
-- task: Maven@3
-  displayName: 'Maven verify'
-  inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'clean verify'
+- template: templates/maven.yml
 - template: templates/analysis-steps.yml

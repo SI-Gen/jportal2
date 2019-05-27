@@ -4,6 +4,7 @@ trigger:
       - 'refs/tags/*'
 jobs:
 - job: publish_release
+  displayName: Build and Publish Release
   variables:
     - group: JPortal2SensitiveVariables
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/')) 
@@ -14,15 +15,5 @@ jobs:
   # 2. Update pom version with maven
   # 3. run mvn deploy
   # 4. Create github release
-  - task: Maven@3
-    displayName: 'Maven deploy release'
-    inputs:
-      mavenPomFile: 'pom.xml'
-      mavenOptions: '-Xmx3072m'
-      javaHomeOption: 'JDKVersion'
-      jdkVersionOption: '1.8'
-      jdkArchitectureOption: 'x64'
-      publishJUnitResults: true
-      testResultsFiles: '**/surefire-reports/TEST-*.xml'
-      goals: 'clean verify'
+  - template: templates/maven.yml
   - template: templates/analysis-steps.yml

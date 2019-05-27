@@ -1,62 +1,45 @@
 trigger: none
 variables:
-  bool: false
+- group: JPortal2SensitiveVariables
 jobs:
 - job: tag_release
-  variables:
-    - group: JPortal2SensitiveVariables
-    - name: is_hotfix
-      value: false
-    - name: version_hotfix
-      value: null
-  # condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master')) 
+  displayName: Tag Release
+  condition: and(succeeded(), and(eq(variables['is_hotfix'], 'false'), true))
+  # eq(variables['Build.SourceBranch'], 'refs/heads/master')))
   pool:
     vmImage: 'Ubuntu-16.04'
   steps:
   - checkout: self
     persistCredentials: true
-  - task: Maven@3
-    displayName: 'Maven verify'
-    inputs:
-      mavenPomFile: 'pom.xml'
-      mavenOptions: '-Xmx3072m'
-      javaHomeOption: 'JDKVersion'
-      jdkVersionOption: '1.8'
-      jdkArchitectureOption: 'x64'
-      publishJUnitResults: true
-      testResultsFiles: '**/surefire-reports/TEST-*.xml'
-      goals: 'clean verify'
+  - template: templates/maven.yml
   - template: templates/extract-version.yml
   - bash: |
-      echo "${project_version}-RELEASE"
+      git tag ${PROJECT_VERSION}-release
+      git tag
     displayName: 'Git tag release'
-    condition: and(succeeded(), not(variables['bool']))
     failOnStderr: true 
+- job: tag_hotfix
+  displayName: Tag Hotfix
+  condition: and(succeeded(), and(eq(variables['is_hotfix'], 'true'), true))
+  # eq(variables['Build.SourceBranch'], 'refs/heads/master')))
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - checkout: self
+    persistCredentials: true
   - bash: |
-      set -e
-      echo "Validating format of supplied hotfix version"
-      echo "Shell will exit with nonzero code if validation failed..."
-      echo "$version_hotfix" | grep -P "\d+?\.\d+?.\d+?"
+      echo "Validating format of supplied hotfix version..."
+      echo "$HOTFIX_VERSION" | grep -P "^[1-9]\d*?\.\d+?.[1-9]\d*?$"
+      if [ $? -ne 0 ]; then
+        echo "Invalid version $HOTFIX_VERSION - Please supply a version in major.minor.patch format, 1.0.1 at the least."
+        exit 1
+      fi
     displayName: 'Validate hotfix version'
-    condition: and(succeeded(), variables['is_hotfix'])
     failOnStderr: true  
+  - template: templates/maven.yml
   - bash: |
-      echo "well formatted hotfix version, ${project_version}-hotfix" 
+      git tag ${HOTFIX_VERSION}-hotfix
+      git tag
     displayName: 'Git tag hotfix'
-    condition: and(succeeded(), variables['is_hotfix'])
-    failOnStderr: true 
-
-# Add logic below
-# if release
-#    reset patch version
-#    if major release
-#      bump major version 
-#      reset minor
-#    create tag with CICD version
-#    bump minor version <- for next dev cycle
-# else if hotfix
-#    bump patch <- think about this
-#    create tag with CICD version
-#    (want want to make hotfixes manual)
-# push tag to remote
+    failOnStderr: true
 
