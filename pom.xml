@@ -10,7 +10,8 @@
         <slf4j.version>1.7.25</slf4j.version>
         <logback.version>1.2.3</logback.version>
     </properties>
-    <description>Database, Module and Application code generators for varying platforms, vendors and languages.</description>
+    <description>Database, Module and Application code generators for varying platforms, vendors and languages.
+    </description>
     <scm>
         <url>https://github.com/SI-Gen/jportal2</url>
     </scm>
@@ -90,9 +91,9 @@
         </dependency>
         <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.sonatype.plugins/nexus-staging-maven-plugin &ndash;&gt;-->
         <!--<dependency>-->
-            <!--<groupId>org.sonatype.plugins</groupId>-->
-            <!--<artifactId>nexus-staging-maven-plugin</artifactId>-->
-            <!--<version>1.6.8</version>-->
+        <!--<groupId>org.sonatype.plugins</groupId>-->
+        <!--<artifactId>nexus-staging-maven-plugin</artifactId>-->
+        <!--<version>1.6.8</version>-->
         <!--</dependency>-->
         <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-source-plugin -->
         <dependency>
@@ -287,7 +288,8 @@
                         <configuration>
                             <transformers>
                                 <!-- add Main-Class to manifest file -->
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>bbd.jportal2.Main</mainClass>
                                 </transformer>
                             </transformers>
@@ -313,16 +315,29 @@
             </distributionManagement>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>force-dependency-convergence</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <!--<plugin>-->
-                        <!--<groupId>org.sonatype.plugins</groupId>-->
-                        <!--<artifactId>nexus-staging-maven-plugin</artifactId>-->
-                        <!--<version>1.6.8</version>-->
-                        <!--<extensions>true</extensions>-->
-                        <!--<configuration>-->
-                            <!--<serverId>ossrh</serverId>-->
-                            <!--<nexusUrl>https://oss.sonatype.org/</nexusUrl>-->
-                            <!--<autoReleaseAfterClose>true</autoReleaseAfterClose>-->
-                        <!--</configuration>-->
+                    <!--<groupId>org.sonatype.plugins</groupId>-->
+                    <!--<artifactId>nexus-staging-maven-plugin</artifactId>-->
+                    <!--<version>1.6.8</version>-->
+                    <!--<extensions>true</extensions>-->
+                    <!--<configuration>-->
+                    <!--<serverId>ossrh</serverId>-->
+                    <!--<nexusUrl>https://oss.sonatype.org/</nexusUrl>-->
+                    <!--<autoReleaseAfterClose>true</autoReleaseAfterClose>-->
+                    <!--</configuration>-->
                     <!--</plugin>-->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -369,72 +384,9 @@
             </build>
         </profile>
         <profile>
-            <id>increment-develop-major-version</id>
+            <id>increment-minor-version</id>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>versions-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>set-project-version</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>set</goal>
-                                </goals>
-                                <configuration>
-                                    <newVersion>${parsedVersion.nextMajorVersion}.0.0-SNAPSHOT</newVersion>
-                                    <generateBackupPoms>false</generateBackupPoms>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>increment-master-incremental-version</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>versions-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>set-version</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>set</goal>
-                                </goals>
-                                <configuration>
-                                    <newVersion>
-                                        ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${build.number}-RELEASE
-                                    </newVersion>
-                                    <generateBackupPoms>false</generateBackupPoms>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>increment-release-minor-version</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-enforcer-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>force-dependency-convergence</id>
-                                <goals>
-                                    <goal>enforce</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>versions-maven-plugin</artifactId>
@@ -446,7 +398,9 @@
                                     <goal>set</goal>
                                 </goals>
                                 <configuration>
-                                    <newVersion>${parsedVersion.majorVersion}.${build.number}.0-RELEASE</newVersion>
+                                    <newVersion>
+                                        ${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.0-SNAPSHOT
+                                    </newVersion>
                                     <generateBackupPoms>false</generateBackupPoms>
                                 </configuration>
                             </execution>
@@ -465,20 +419,18 @@
                         <executions>
                             <execution>
                                 <id>set-version</id>
-                                <phase>initialize</phase>
+                                <phase>validate</phase>
                                 <goals>
                                     <goal>set</goal>
                                 </goals>
                                 <configuration>
-                                    <newVersion>${parsedVersion.majorVersion}.0.0-RELEASE</newVersion>
+                                    <newVersion>
+                                        ${releaseVersion}
+                                    </newVersion>
                                     <generateBackupPoms>false</generateBackupPoms>
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>

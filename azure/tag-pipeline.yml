@@ -32,7 +32,15 @@ steps:
 - bash: |
     echo "${project_version}-hotfix"
   displayName: 'Git tag hotfix'
-  condition: and(succeeded(), and(eq(variables['Build.SourceBranch'], 'refs/heads/master'), variables['isHotfix']))
+  condition: and(succeeded(), not(variables['isHotfix'])) #remove not
+  # and(succeeded(), and(eq(variables['Build.SourceBranch'], 'refs/heads/master'), variables['isHotfix']))
+  failOnStderr: true  
+- bash: |
+    echo "${project_version}-release"
+  displayName: 'Git tag release'
+  condition: and(succeeded(), not(variables['isHotfix']))
+  # and(succeeded(), and(eq(variables['Build.SourceBranch'], 'refs/heads/master'), not(variables['isHotfix'])))
+  failOnStderr: true 
 
 # Add logic below
 # if release

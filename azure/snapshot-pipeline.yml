@@ -12,8 +12,8 @@ pool:
   vmImage: 'Ubuntu-16.04'
 
 steps:
-# 1. Update pom version with maven to current CICD version
-# 2. mvn deploy
+- checkout: self
+  persistCredentials: true
 - task: Maven@3
   displayName: 'Maven deploy snapshot'
   inputs:
@@ -24,5 +24,12 @@ steps:
     jdkArchitectureOption: 'x64'
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'clean verify'
-- template: templates/analysis-steps.yml
+    goals: 'clean deploy -Pincrement-minor-version,release-oss-maven-central'
+- template: templates/analysis-steps.yml #Might want to check status of this step
+- template: templates/extract-version.yml
+- bash: |
+    git add 'pom.xml'
+    git commit -m "CICD: Minor version bump - ${project_version}"
+    # have to push changes here
+  displayName: 'Git commit POM updates'
+  failOnStderr: true  
