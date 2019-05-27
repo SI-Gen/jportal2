@@ -1,14 +1,12 @@
 variables:
   - group: JPortal2SensitiveVariables
-
+condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/')) 
 trigger:
   branches:
     include:
       - 'refs/tags/*'
-
 pool:
   vmImage: 'Ubuntu-16.04'
-
 steps:
 # 1. Get version from tag name
 # 2. Update pom version with maven

@@ -1,18 +1,17 @@
 variables:
   - group: JPortal2SensitiveVariables
-  - name: isHotfix
+  - name: is_hotfix
     value: false
-
+  - name: version_hotfix
+    value: null
+condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master')) 
 trigger: none
-
 pool:
   vmImage: 'Ubuntu-16.04'
-
 steps:
 - checkout: self
   persistCredentials: true
 - task: Maven@3
-  condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
   displayName: 'Maven verify'
   inputs:
     mavenPomFile: 'pom.xml'
@@ -23,23 +22,24 @@ steps:
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     goals: 'clean verify'
+- template: templates/extract-version.yml
 - bash: |
-    project_version=$(mvn -o help:evaluate -Dexpression=project.version -q -DforceStdout | cut -d- -f1 )
-    echo "##vso[task.setvariable variable=project.version]$project_version"
-  displayName: 'Extract current project version'
-  # condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
-  failOnStderr: true  
-- bash: |
-    echo "${project_version}-hotfix"
-  displayName: 'Git tag hotfix'
-  condition: and(succeeded(), not(variables['isHotfix'])) #remove not
-  # and(succeeded(), and(eq(variables['Build.SourceBranch'], 'refs/heads/master'), variables['isHotfix']))
-  failOnStderr: true  
-- bash: |
-    echo "${project_version}-release"
+    echo "${project_version}-RELEASE"
   displayName: 'Git tag release'
-  condition: and(succeeded(), not(variables['isHotfix']))
-  # and(succeeded(), and(eq(variables['Build.SourceBranch'], 'refs/heads/master'), not(variables['isHotfix'])))
+  condition: and(succeeded(), not(variables['is_hotfix']))
+  failOnStderr: true 
+- bash: |
+    set -e
+    echo "Validating format of supplied hotfix version"
+    echo "Shell will exit with nonzero code if validation failed..."
+    echo "$version_hotfix" | grep -P "\d+?\.\d+?.\d+?"
+  displayName: 'Validate hotfix version'
+  condition: and(succeeded(), variables['is_hotfix']))
+  failOnStderr: true  
+- bash: |
+   echo "well formatted hotfix version, ${project_version}-hotfix" 
+  displayName: 'Git tag hotfix'
+  condition: and(succeeded(), variables['is_hotfix']))
   failOnStderr: true 
 
 # Add logic below
