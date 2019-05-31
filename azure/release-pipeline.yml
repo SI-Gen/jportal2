@@ -11,9 +11,20 @@ jobs:
   pool:
     vmImage: 'Ubuntu-16.04'
   steps:
-  # 1. Get version from tag name
-  # 2. Update pom version with maven
-  # 3. run mvn deploy
-  # 4. Create github release
+  - checkout: self
+    persistCredentials: true
   - template: templates/maven.yml
-  - template: templates/analysis-steps.yml
+  - template: templates/analyse.yml
+  - bash: |
+      extracted_version=$(echo "$BUILD_SOURCEBRANCH" | rev | cut -d/ -f1 | rev)
+      echo "##vso[task.setvariable variable=project_version]$extracted_version"
+    displayName: 'Extract version from Git tag'
+    failOnStderr: true  
+  - template: templates/download-secure-files.yml
+  - template: templates/maven.yml
+    parameters:
+      displayName: 'Maven deploy release version'
+      goals: | 
+        --settings=$(mavenSettings.secureFilePath) deploy -Pcreate-release-version,release-oss-maven-central 
+        -DreleaseVersion=$(project_version)-RELEASE -Dgpg.secretKeyring=$(privateKeyRing.secureFilePath) -Dgpg.keyname=REPLACE_ME
+  # 4. Create github release

@@ -14,10 +14,22 @@ jobs:
   - template: templates/maven.yml
   - template: templates/extract-version.yml
   - bash: |
-      git tag ${PROJECT_VERSION}-release
+      git tag ${PROJECT_VERSION}
       git tag
-    displayName: 'Git tag release'
+      # push tag here
+    displayName: 'Git tag release $(project_version)'
     failOnStderr: true 
+  - template: templates/maven.yml
+    parameters:
+      displayName: 'Maven increment minor version'
+      goals: 'validate -Pincrement-minor-version'
+  - template: templates/extract-version.yml
+  - bash: |
+      git add 'pom.xml'
+      git commit -m "CICD: New development version - ${PROJECT_VERSION}-SNAPSHOT [skip ci]"
+      # have to push changes here
+    displayName: 'Git commit and push new POM version'
+    failOnStderr: true  
 - job: tag_hotfix
   displayName: Tag Hotfix
   condition: and(succeeded(), and(eq(variables['is_hotfix'], 'true'), true))
@@ -25,21 +37,21 @@ jobs:
   pool:
     vmImage: 'Ubuntu-16.04'
   steps:
-  - checkout: self
-    persistCredentials: true
   - bash: |
       echo "Validating format of supplied hotfix version..."
       echo "$HOTFIX_VERSION" | grep -P "^[1-9]\d*?\.\d+?.[1-9]\d*?$"
       if [ $? -ne 0 ]; then
-        echo "Invalid version $HOTFIX_VERSION - Please supply a version in major.minor.patch format, 1.0.1 at the least."
+        echo "Invalid version $HOTFIX_VERSION - Please supply a version in major.minor.patch format (1.0.1 at the least)."
         exit 1
       fi
     displayName: 'Validate hotfix version'
     failOnStderr: true  
+  - checkout: self
+    persistCredentials: true
   - template: templates/maven.yml
   - bash: |
-      git tag ${HOTFIX_VERSION}-hotfix
+      git tag ${HOTFIX_VERSION}
       git tag
-    displayName: 'Git tag hotfix'
+    displayName: 'Git tag hotfix $(hotfix_version)'
     failOnStderr: true
 

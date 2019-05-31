@@ -12,23 +12,13 @@ jobs:
   pool:
     vmImage: 'Ubuntu-16.04'
   steps:
-  - checkout: self
-    persistCredentials: true
-  - task: DownloadSecureFile@1
-    displayName: Download private signing key file
-    inputs:
-      secureFile: privatekey.gpg
-    name: privateKeyRing
+  - template: templates/download-secure-files.yml
   - template: templates/maven.yml
-  - template: templates/analysis-steps.yml
+  - template: templates/analyse.yml
   - template: templates/maven.yml
     parameters:
-      displayName: 'Maven deploy snapshot and increment minor version'
-      goals: 'deploy -Pincrement-minor-version,release-oss-maven-central -Dgpg.secretKeyring=$(privateKeyRing.secureFilePath)'
-  - template: templates/extract-version.yml
-  - bash: |
-      git add 'pom.xml'
-      git commit -m "CICD: New development version - ${PROJECT_VERSION}-SNAPSHOT"
-      # have to push changes here
-    displayName: 'Git commit and push changes to POM'
-    failOnStderr: true  
+      displayName: 'Maven deploy snapshot version'
+      goals: | 
+        --settings=$(mavenSettings.secureFilePath) deploy -Prelease-oss-maven-central 
+        -Dgpg.secretKeyring=$(privateKeyRing.secureFilePath) -Dgpg.keyname=REPLACE_ME
+  
