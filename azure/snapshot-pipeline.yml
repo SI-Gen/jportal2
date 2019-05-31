@@ -8,17 +8,16 @@ jobs:
   displayName: Build and Publish Snapshot
   variables:
     - group: JPortal2SensitiveVariables
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+  # condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
   pool:
     vmImage: 'Ubuntu-16.04'
   steps:
-  - template: templates/download-secure-files.yml
   - template: templates/maven.yml
   - template: templates/analyse.yml
+  - template: templates/download-secure-files.yml
   - template: templates/maven.yml
     parameters:
       displayName: 'Maven deploy snapshot version'
       goals: | 
-        --settings=$(mavenSettings.secureFilePath) deploy -Prelease-oss-maven-central 
-        -Dgpg.secretKeyring=$(privateKeyRing.secureFilePath) -Dgpg.keyname=REPLACE_ME
+        --settings=$(mavenSettings.secureFilePath) -Prelease-oss-maven-central -Dgpg.publicKeyring=$(publicKeyRing.secureFilePath) -Dgpg.secretKeyring=$(privateKeyRing.secureFilePath) deploy
   

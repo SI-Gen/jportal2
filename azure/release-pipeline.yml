@@ -25,6 +25,5 @@ jobs:
     parameters:
       displayName: 'Maven deploy release version'
       goals: | 
-        --settings=$(mavenSettings.secureFilePath) deploy -Pcreate-release-version,release-oss-maven-central 
-        -DreleaseVersion=$(project_version)-RELEASE -Dgpg.secretKeyring=$(privateKeyRing.secureFilePath) -Dgpg.keyname=REPLACE_ME
+        --settings=$(mavenSettings.secureFilePath) -Pcreate-release-version,release-oss-maven-central  -DreleaseVersion=$(project_version)-RELEASE -Dgpg.publicKeyring=$(publicKeyRing.secureFilePath) -Dgpg.secretKeyring=$(privateKeyRing.secureFilePath) deploy
   # 4. Create github release

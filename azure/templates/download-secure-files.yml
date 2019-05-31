@@ -5,6 +5,11 @@
       secureFile: privatekey.gpg
     name: privateKeyRing
   - task: DownloadSecureFile@1
+    displayName: Download public signing key file
+    inputs:
+      secureFile: publickey.gpg
+    name: publicKeyRing
+  - task: DownloadSecureFile@1
     displayName: Download maven settings.xml
     inputs:
       secureFile: maven-settings.xml
