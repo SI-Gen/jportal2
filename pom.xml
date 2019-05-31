@@ -56,6 +56,17 @@
             </roles>
             <timezone>GMT +2</timezone>
         </developer>
+        <developer>
+            <id>zoranpavlovic</id>
+            <name>Zoran Pavlovic</name>
+            <email>zoran.pavlovic.eng@gmail.com</email>
+            <organization>SI-Gen</organization>
+            <organizationUrl>https://github.com/SI-Gen</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>GMT +2</timezone>
+        </developer>
     </developers>
 
     <name>JPortal2</name>

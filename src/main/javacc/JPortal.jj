@@ -14,6 +14,7 @@ PARSER_BEGIN(JPortal)
 /// Contributors:
 ///    Vincent Risi, Hennie Hammann
 ///    Dieter Rosch
+///    Zoran Pavlovic
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 package bbd.jportal2;
 
@@ -22,6 +23,8 @@ import java.io.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static bbd.jportal2.util.Misc.GenerateProcNameComment;
 
 
 /**
@@ -2233,7 +2236,7 @@ void jUserProc() :
   s = jIdent()
   {
     proc.name = s;
-    Line l1 = new Line("/* PROC " + proc.name + " */");
+    Line l1 = new Line(GenerateProcNameComment(proc));
     proc.lines.addElement(l1);
   }
   (
