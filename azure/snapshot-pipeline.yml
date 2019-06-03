@@ -8,10 +8,12 @@ jobs:
   displayName: Build and Publish Snapshot
   variables:
     - group: JPortal2SensitiveVariables
-  # condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
   pool:
     vmImage: 'Ubuntu-16.04'
   steps:
+  - checkout: self
+    clean: true
   - template: templates/maven.yml
   - template: templates/analyse.yml
   - template: templates/download-secure-files.yml
