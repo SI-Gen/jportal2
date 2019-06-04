@@ -25,6 +25,17 @@
     </licenses>
     <developers>
         <developer>
+            <id>abrievanaardt</id>
+            <name>Abrie van Aardt</name>
+            <email>vanaardta@bbd.co.za</email>
+            <organization>BBD</organization>
+            <organizationUrl>http://bbd.co.za</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>GMT +2</timezone>
+        </developer>
+        <developer>
             <id>wmostert</id>
             <name>Werner Mostert</name>
             <email>wernerm@bbd.co.za</email>
