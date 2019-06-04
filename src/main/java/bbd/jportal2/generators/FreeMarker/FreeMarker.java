@@ -99,9 +99,10 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
         //templates (inside of src/main/resources/si_processor_templates/ and src/main/resources/postprocessor_templates/
         //as well as the location specified by the user
         FileTemplateLoader ftl1 = new FileTemplateLoader(templateDir);
+        FileTemplateLoader ftl2 = new FileTemplateLoader(new File(Paths.get("").toAbsolutePath().toString()));
         ClassTemplateLoader ctl1 = new ClassTemplateLoader(FreeMarker.class, this.getSIProcessorTemplateFilesLocation().toString());
         ClassTemplateLoader ctl2 = new ClassTemplateLoader(FreeMarker.class, this.getPostProcessorTemplateFilesLocation().toString());
-        MultiTemplateLoader mtl = new MultiTemplateLoader(new TemplateLoader[]{ftl1, ctl1, ctl2});
+        MultiTemplateLoader mtl = new MultiTemplateLoader(new TemplateLoader[]{ftl1, ctl1, ctl2, ftl2});
         cfg.setTemplateLoader(mtl);
 
 
