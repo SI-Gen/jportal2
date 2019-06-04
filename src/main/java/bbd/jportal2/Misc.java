@@ -1,4 +1,4 @@
-package bbd.jportal2.util;
+package bbd.jportal2;
 
 import bbd.jportal2.Proc;
 
