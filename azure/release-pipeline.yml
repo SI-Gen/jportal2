@@ -1,0 +1,19 @@
+trigger:
+  branches:
+    include:
+      - 'refs/tags/*'
+jobs:
+- job: publish_release
+  displayName: Build and Publish Release
+  variables:
+    - group: JPortal2SensitiveVariables
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/')) 
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  # 1. Get version from tag name
+  # 2. Update pom version with maven
+  # 3. run mvn deploy
+  # 4. Create github release
+  - template: templates/maven.yml
+  - template: templates/analysis-steps.yml

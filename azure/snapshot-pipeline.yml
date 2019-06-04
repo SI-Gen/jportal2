@@ -1,0 +1,34 @@
+trigger:
+  branches:
+    include:
+      - develop
+pr: none
+jobs:
+- job: publish_snapshot
+  displayName: Build and Publish Snapshot
+  variables:
+    - group: JPortal2SensitiveVariables
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - checkout: self
+    persistCredentials: true
+  - task: DownloadSecureFile@1
+    displayName: Download private signing key file
+    inputs:
+      secureFile: privatekey.gpg
+    name: privateKeyRing
+  - template: templates/maven.yml
+  - template: templates/analysis-steps.yml
+  - template: templates/maven.yml
+    parameters:
+      displayName: 'Maven deploy snapshot and increment minor version'
+      goals: 'deploy -Pincrement-minor-version,release-oss-maven-central -Dgpg.secretKeyring=$(privateKeyRing.secureFilePath)'
+  - template: templates/extract-version.yml
+  - bash: |
+      git add 'pom.xml'
+      git commit -m "CICD: New development version - ${PROJECT_VERSION}-SNAPSHOT"
+      # have to push changes here
+    displayName: 'Git commit and push changes to POM'
+    failOnStderr: true  

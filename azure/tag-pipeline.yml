@@ -1,0 +1,45 @@
+trigger: none
+variables:
+- group: JPortal2SensitiveVariables
+jobs:
+- job: tag_release
+  displayName: Tag Release
+  condition: and(succeeded(), and(eq(variables['is_hotfix'], 'false'), true))
+  # eq(variables['Build.SourceBranch'], 'refs/heads/master')))
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - checkout: self
+    persistCredentials: true
+  - template: templates/maven.yml
+  - template: templates/extract-version.yml
+  - bash: |
+      git tag ${PROJECT_VERSION}-release
+      git tag
+    displayName: 'Git tag release'
+    failOnStderr: true 
+- job: tag_hotfix
+  displayName: Tag Hotfix
+  condition: and(succeeded(), and(eq(variables['is_hotfix'], 'true'), true))
+  # eq(variables['Build.SourceBranch'], 'refs/heads/master')))
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - checkout: self
+    persistCredentials: true
+  - bash: |
+      echo "Validating format of supplied hotfix version..."
+      echo "$HOTFIX_VERSION" | grep -P "^[1-9]\d*?\.\d+?.[1-9]\d*?$"
+      if [ $? -ne 0 ]; then
+        echo "Invalid version $HOTFIX_VERSION - Please supply a version in major.minor.patch format, 1.0.1 at the least."
+        exit 1
+      fi
+    displayName: 'Validate hotfix version'
+    failOnStderr: true  
+  - template: templates/maven.yml
+  - bash: |
+      git tag ${HOTFIX_VERSION}-hotfix
+      git tag
+    displayName: 'Git tag hotfix'
+    failOnStderr: true
+
