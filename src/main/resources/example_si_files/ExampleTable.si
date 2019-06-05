@@ -29,7 +29,7 @@ PROC SelectOne
 PROC Update
 PROC Insert Returning
 
-PROC SelectForUpdateByUniqueInt (standard)
+PROC SelectForUpdateByUniqueInt (STANDARD)
 INPUT
     UniqueInt           =
 OUTPUT (SINGLE)
@@ -52,6 +52,20 @@ SQLCODE
     WHERE UniqueInt = :UniqueInt
     FOR UPDATE
 ENDCODE
+
+
+PROC GetByUniqueInt
+INPUT
+    UniqueInt      =
+OUTPUT (SINGLE)
+SQLCODE
+    SELECT
+            ID
+    FROM
+        ExampleTable
+    WHERE UniqueInt = :UniqueInt
+ENDCODE
+
 
 PROC SelectBy UniqueInt For Update AS SelectByUniqueInt2
 
