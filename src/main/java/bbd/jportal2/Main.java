@@ -28,6 +28,9 @@ public class Main {
     public static void main(String[] args) {
         JPortal2Arguments arguments = JPortal2ArgumentParser.parse(args);
 
+        if (arguments == null)
+            System.exit(0);
+
         //Set this before the logger starts.
         if (arguments.getLogFileName() != null){
             System.setProperty("log.name", arguments.getLogFileName());

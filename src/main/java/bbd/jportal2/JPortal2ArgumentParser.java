@@ -37,7 +37,8 @@ public class JPortal2ArgumentParser {
     }
 
     public static JPortal2Arguments parse(String[] args) {
-        return parse(args, new JPortal2Arguments());
+        JPortal2Arguments jpArgs = new JPortal2Arguments();
+        return parse(args, jpArgs);
     }
 
 }
