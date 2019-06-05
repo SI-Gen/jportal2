@@ -126,6 +126,7 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
         //Set up FreeMarker object maps
         java.util.Map<String, Object> root = new HashMap<>();
         root.put("database", database);
+        root.put("table", database.tables.get(0));
 
         // Create the builder:
         //BeansWrapperBuilder builder = new BeansWrapperBuilder(Configuration.VERSION_2_3_23);
@@ -161,38 +162,37 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
 
         String destFileName;
         Path templateRelativePath = Paths.get(templateName);
-        destFileName = templateRelativePath.toFile().getName().replaceAll(".ftl", "");
-        
-        //Replace variables in filename with correct values
-        Template fileNameTemplate = new Template("fileNameTemplate", new StringReader(destFileName), cfg);
-        Writer fileNameOut = new StringWriter();
-        fileNameTemplate.process(root, fileNameOut);
+        String strRelativePath = templateRelativePath.toString();
 
+        HashSet<String> doneFiles = new HashSet<String>();
+        for (Proc proc : database.tables.get(0).procs)
+        {
+            root.put("proc", proc);
+            if (strRelativePath.endsWith(".ftl"))
+                strRelativePath = strRelativePath.substring(0, strRelativePath.length() - 4);
 
-        Path destDir;
-        Path fullGeneratorPath = Paths.get(templateBaseDir, generatorName);
-        if (templateRelativePath.getParent() == null)
-            destDir = Paths.get("");
-        else
-            destDir = templateRelativePath.getParent();
+            destFileName = strRelativePath;
 
+            Template fileNameTemplate = new Template("fileNameTemplate_" + templateRelativePath.toString(), new StringReader(destFileName), cfg);
+            Writer fileNameOut = new StringWriter();
+            fileNameTemplate.process(root, fileNameOut);
 
-        destFileName = fileNameOut.toString();
+            destFileName = fileNameOut.toString();
 
-        //Create directory if it doesn't exist.
-        Path fullDestinationPath = Paths.get(outputDir.toString(), destDir.toString());
-        fullDestinationPath.toFile().mkdirs();
+            if (doneFiles.contains(destFileName))
+                continue; //File template is less specific than proc/table level, already generated.
 
+            Path fullDestinationFile = Paths.get(outputDir.toString(), destFileName);
 
-        Path fullTemplatePath = Paths.get(fullGeneratorPath.toString(), templateName);
-        Path fullDestinationFile = Paths.get(fullDestinationPath.toString(), destFileName);
+            fullDestinationFile.getParent().toFile().mkdirs();
 
-        //Path templateFileFullLocation = Paths.get(generatorName, templateName);
-        //Template temp = cfg.getTemplate(templateFileFullLocation.toString());
-        Template temp = cfg.getTemplate(templateName);
-        logger.info("\t [{}]: Generating [{}]", generatorName, fullDestinationFile.toString());
-        try (PrintWriter outData = openOutputFileForGeneration(generatorName, fullDestinationFile.toString())) {
-            temp.process(root, outData);
+            Template temp = cfg.getTemplate(templateName);
+            logger.info("\t [{}]: Generating [{}]", generatorName, fullDestinationFile.toString());
+            doneFiles.add(destFileName);
+            try (PrintWriter outData = openOutputFileForGeneration(generatorName, fullDestinationFile.toString())) {
+                temp.process(root, outData);
+            }
+
         }
 
     }
