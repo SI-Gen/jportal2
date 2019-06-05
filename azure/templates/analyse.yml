@@ -17,11 +17,8 @@ steps:
     projectName: SI-Gen_jportal2
     cliSources: src/main
     extraProperties: |
-      # Additional properties that will be passed to the scanner,
-      # Put one key=value per line, example:
       sonar.sources=src/main/java
       sonar.java.binaries=target/classes
-      #java version used by source files:
       sonar.java.source=1.8
       # # sonar.exclusions=**/*.bin
       # #sonar.projectKey=XXX$(SonarSource-JPortal2-ID)
