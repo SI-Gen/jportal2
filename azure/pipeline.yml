@@ -20,4 +20,4 @@ pool:
 
 steps:
 - template: templates/maven.yml
-- template: templates/analysis-steps.yml
+- template: templates/analyse.yml
