@@ -1,3 +1,8 @@
+trigger:
+  branches:
+    include:
+      - develop
+pr: none
 jobs:
 - job: publish_snapshot
   displayName: Build and Publish Snapshot
