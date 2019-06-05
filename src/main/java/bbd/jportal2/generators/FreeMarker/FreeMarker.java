@@ -164,7 +164,7 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
         Path templateRelativePath = Paths.get(templateName);
         String strRelativePath = templateRelativePath.toString();
 
-        HashSet<String> doneFiles = new HashSet<String>();
+        HashSet<String> doneFiles = new HashSet<>();
         for (Proc proc : database.tables.get(0).procs)
         {
             root.put("proc", proc);
