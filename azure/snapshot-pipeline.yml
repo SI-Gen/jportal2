@@ -1,7 +1,7 @@
 trigger:
   branches:
     include:
-      - develop
+      - feature/*
 pr: none
 jobs:
 - job: publish_snapshot
