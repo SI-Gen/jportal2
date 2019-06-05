@@ -88,6 +88,8 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData.println(" */");
                 outData.println("public class " + table.useName() + "Struct implements Serializable");
                 outData.println("{");
+                outData.println("  private static final long serialVersionUID = 1L;");
+                generateEnum(table, outData);
                 for (int i = 0; i < table.fields.size(); i++) {
                     Field field = table.fields.elementAt(i);
                     if (!field.comments.isEmpty()) {
@@ -414,6 +416,74 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
         }
     }
 
+    private void generateEnum(Table table, PrintWriter outData) {
+        for (int i = 0; i < table.fields.size(); i++) {
+            Field field = (Field) table.fields.elementAt(i);
+            if (field.enums.size() > 0) {
+                outData.println("  public static enum " + getEnumTypeName(field));
+                outData.println("  {");
+                for (int j = 0; j < field.enums.size(); j++) {
+                    bbd.jportal2.Enum element = field.enums.elementAt(j);
+                    String evalue = "" + element.value;
+                    if (field.type == Field.ANSICHAR && field.length == 1)
+                        evalue = "'" + (char) element.value + "'";
+                    String keyName = underScoreWords(element.name).toUpperCase();
+                    outData.println("    " + keyName + "(" + evalue + ", \"" + splitWords(element.name) + "\")" + (((j + 1) < field.enums.size()) ? "," : ";"));
+                }
+                outData.println("    public int key;");
+                outData.println("    public String value;");
+                outData.println("    E" + field.useUpperName() + "(int key, String value)");
+                outData.println("    {");
+                outData.println("      this.key = key;");
+                outData.println("      this.value = value;");
+                outData.println("    }");
+                outData.println("    public static E" + field.useUpperName() + " get(int key)");
+                outData.println("    {");
+                outData.println("      for (E" + field.useUpperName() + " op : values())");
+                outData.println("        if (op.key == key) return op;");
+                outData.println("      return null;");
+                outData.println("    }");
+                outData.println("    public String toString()");
+                outData.println("    {");
+                outData.println("      return value;");
+                outData.println("    }");
+                outData.println("  }");
+            }
+        }
+    }
+
+    private String underScoreWords(String input) {
+        char[] bits = input.toCharArray();
+        StringBuffer buffer = new StringBuffer();
+        buffer.append(bits[0]);
+        for (int i = 1; i < bits.length; i++) {
+            if ("ABCDEFGHIJKLMNOPQRSTUVWXYZ".indexOf(bits[i]) >= 0
+                    && bits[i - 1] != ' ') {
+                buffer.append('_');
+                buffer.append(bits[i]);
+            } else
+                buffer.append(bits[i]);
+        }
+        return buffer.toString();
+    }
+
+    private String splitWords(String input) {
+        char[] bits = underScoreWords(input).toCharArray();
+        StringBuffer buffer = new StringBuffer();
+        buffer.append(bits[0]);
+        for (int i = 1; i < bits.length; i++) {
+            if (bits[i] == '_')
+                buffer.append(' ');
+            else
+                buffer.append(bits[i]);
+        }
+        return buffer.toString();
+    }
+
+    private String getEnumTypeName(Field field){
+        return "E" + field.useUpperName();
+    }
+
     /**
      *
      */
@@ -686,7 +756,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     /**
      * Translates field type to java data member type
      */
-    private static String javaVar(Field field) {
+    private String javaVar(Field field) {
         switch (field.type) {
             case Field.BYTE:
                 return "Byte " + field.useName();

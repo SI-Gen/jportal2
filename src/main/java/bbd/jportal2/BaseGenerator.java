@@ -34,7 +34,6 @@ public class BaseGenerator {
         return s.equalsIgnoreCase("true");
     }
 
-
     protected void addFileToOutputtedFilesList(String fileType, Path generatedFile) {
         GeneratedFileGroup fg = generatedOutputFiles.getFileGroups().stream()
                 .filter(f -> f.getFileGroupName().equalsIgnoreCase(fileType))

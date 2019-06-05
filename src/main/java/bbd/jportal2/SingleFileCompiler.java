@@ -5,11 +5,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.net.URI;
 import java.net.URL;
-import java.nio.file.*;
-import java.util.*;
-import java.util.stream.Stream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 public class SingleFileCompiler {
     private static final Logger logger = LoggerFactory.getLogger(SingleFileCompiler.class);
@@ -185,8 +185,7 @@ public class SingleFileCompiler {
             //get the index of the first : in the generator. split by that. the first index is the generator name
             // everything else after that we treat as a path
             int strchr = generator.indexOf(':');
-            if (strchr != -1)
-            {
+            if (strchr != -1) {
                 generatorName = generator.substring(0, strchr);
                 generatorDirectory = generator.substring(strchr + 1, generator.length());
                 return this;
