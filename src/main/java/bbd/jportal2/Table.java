@@ -676,61 +676,62 @@ public class Table implements Serializable {
         proc.isStd = true;
         proc.isSql = true;
         proc.isInsert = true;
-//    if (proc.hasReturning)
-//      proc.lines.add(new Line("_ret.head", true));
         String identityName = "";
         proc.lines.addElement(new Line("/* PROC " + proc.name + " */"));
         proc.lines.addElement(new Line("insert into " + name + " ("));
         for (i = 0; i < fields.size(); i++) {
             String comma = i + 1 < fields.size() ? "," : "";
             Field field = fields.elementAt(i);
+
             if (field.isCalc)
                 continue;
-            if (isIdentity(field) == true) {
+
+            if (isIdentity(field)) {
                 hasIdentity = true;
                 identityName = field.name;
                 proc.outputs.addElement(field);
                 proc.isSingle = true;
                 proc.hasUpdates = true;
-                continue;
+            } else if (isSequence(field)) {
+                proc.lines.addElement(new Line(line + field.name + comma));
+
+                if (!proc.isMultipleInput) {
+                    proc.hasUpdates = true;
+                    proc.isSingle = true;
+
+                    if (proc.hasReturning) {
+                        proc.outputs.addElement(field);
+                    }
+                }
+            } else {
+                proc.inputs.addElement(field);
+                proc.lines.addElement(new Line(line + field.useLiteral() + comma));
             }
-            if (isSequence(field) == true && proc.hasReturning == true) {
-                proc.outputs.addElement(field);
-                proc.isSingle = true;
-                proc.hasUpdates = true;
-                //proc.lines.addElement(new Line("(\"" + line + field.useLiteral() + comma + "\")", true));
-                continue;
-            } else if (isSequence(field) == true && proc.isMultipleInput == true) {
-                continue;
-            } else if (isSequence(field) == true && proc.hasReturning == false) {
-                proc.outputs.addElement(field);
-                proc.isSingle = true;
-                proc.hasUpdates = true;
-                continue;
-            }
-            proc.inputs.addElement(field);
-            proc.lines.addElement(new Line(line + field.useLiteral() + comma));
+
         }
+
         proc.lines.addElement(new Line(" ) "));
-        if (hasIdentity == true)
+
+        if (hasIdentity == true) {
             proc.lines.addElement(new Line(" output inserted." + identityName));
-        else if (proc.hasReturning)
+        } else if (proc.hasReturning) {
             proc.lines.addElement(new Line("_ret.output", true));
+        }
         proc.lines.addElement(new Line(" values ("));
         for (i = 0; i < fields.size(); i++) {
             String comma = i + 1 < fields.size() ? "," : "";
             Field field = fields.elementAt(i);
-            if (isIdentity(field) == true || field.isCalc)
+
+            if (isIdentity(field) || field.isCalc)
                 continue;
-            if (isSequence(field) == true && proc.hasReturning == true)
-                proc.lines.addElement(new Line("_ret.sequence", true));
-            else if (isSequence(field) == true && proc.isMultipleInput == true)
-                continue;
-            else if (isSequence(field) == true && proc.hasReturning == false)
-                continue;
-            else
+
+            if (isSequence(field)) {
+                if (proc.hasReturning && !proc.isMultipleInput) {
+                    proc.lines.addElement(new Line("_ret.sequence", true));
+                }
+            } else {
                 proc.lines.addElement(new Line(line + "?" + comma));
-            line = "  ";
+            }
         }
         proc.lines.addElement(new Line(" )"));
         if (proc.hasReturning)
