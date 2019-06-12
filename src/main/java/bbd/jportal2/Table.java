@@ -29,6 +29,136 @@ public class Table implements Serializable {
     private static final Logger logger = LoggerFactory.getLogger(Table.class);
 
     private static final long serialVersionUID = 1L;
+    public Database database;
+    public String literalName;
+    public String name;
+    public String alias;
+    public String check;
+    public Vector<Field> fields;
+    public Vector<Key> keys;
+    public Vector<Link> links;
+    public Vector<Grant> grants;
+    public Vector<View> views;
+    public Vector<Proc> procs;
+    public Vector<String> comments;
+    public Vector<String> options;
+    public Vector<String> allUsers;
+    public Vector<Parameter> parameters;
+    public Vector<Const> consts;
+    public boolean hasPrimaryKey;
+    public boolean hasSequence;
+    public boolean hasTimeStamp;
+    public boolean hasAutoTimeStamp;
+    public boolean hasUserStamp;
+    public boolean hasExecute;
+    public boolean hasSelect;
+    public boolean hasInsert;
+    public boolean hasDelete;
+    public boolean hasUpdate;
+    public boolean hasStdProcs;
+    public boolean hasIdentity;
+    public boolean hasSequenceReturning;
+    public boolean hasBigXML;
+    public boolean isStoredProc;
+    public boolean isLiteral;
+    public int start;
+
+    public Table() {
+        name = "";
+        alias = "";
+        check = "";
+        literalName = "";
+        fields = new Vector<Field>();
+        keys = new Vector<Key>();
+        links = new Vector<Link>();
+        grants = new Vector<Grant>();
+        views = new Vector<View>();
+        procs = new Vector<Proc>();
+        comments = new Vector<String>();
+        options = new Vector<String>();
+        allUsers = new Vector<String>();
+        parameters = new Vector<Parameter>();
+        consts = new Vector<Const>();
+        hasExecute = false;
+        hasSelect = false;
+        hasInsert = false;
+        hasDelete = false;
+        hasUpdate = false;
+        hasPrimaryKey = false;
+        hasSequence = false;
+        hasTimeStamp = false;
+        hasAutoTimeStamp = false;
+        hasUserStamp = false;
+        hasStdProcs = false;
+        hasIdentity = false;
+        hasSequenceReturning = false;
+        hasBigXML = false;
+        isStoredProc = false;
+        isLiteral = false;
+        start = 0;
+    }
+
+    static boolean isIdentity(Field field) {
+        return field.type == Field.BIGIDENTITY || field.type == Field.IDENTITY;
+    }
+
+    static boolean isSequence(Field field) {
+        return field.type == Field.BIGSEQUENCE || field.type == Field.SEQUENCE;
+    }
+
+    /**
+     * Translates field type to DB2 SQL column types
+     */
+    static String varType(Field field) {
+        switch (field.type) {
+            case Field.BYTE:
+                return "SMALLINT";
+            case Field.SHORT:
+                return "SMALLINT";
+            case Field.INT:
+            case Field.SEQUENCE:
+            case Field.IDENTITY:
+                return "INT";
+            case Field.LONG:
+            case Field.BIGSEQUENCE:
+            case Field.BIGIDENTITY:
+                return "BIGINT";
+            case Field.CHAR:
+                if (field.length > 32762)
+                    return "CLOB(" + String.valueOf(field.length) + ")";
+                else
+                    return "VARCHAR(" + String.valueOf(field.length) + ")";
+            case Field.ANSICHAR:
+                return "CHAR(" + String.valueOf(field.length) + ")";
+            case Field.DATE:
+                return "DATE";
+            case Field.DATETIME:
+                return "TIMESTAMP";
+            case Field.TIME:
+                return "TIME";
+            case Field.TIMESTAMP:
+            case Field.AUTOTIMESTAMP:
+                return "TIMESTAMP";
+            case Field.FLOAT:
+            case Field.DOUBLE:
+                if (field.scale != 0)
+                    return "DECIMAL(" + String.valueOf(field.precision) + ", " + String.valueOf(field.scale) + ")";
+                else if (field.precision != 0)
+                    return "DECIMAL(" + String.valueOf(field.precision) + ", 0)";
+                return "DOUBLE";
+            case Field.BLOB:
+                return "BLOB(" + String.valueOf(field.length) + ")";
+            case Field.TLOB:
+                return "CLOB(" + String.valueOf(field.length) + ")";
+            case Field.MONEY:
+                return "DECIMAL(18,2)";
+            case Field.USERSTAMP:
+                return "VARCHAR(50)";
+            case Field.XML:
+                return "XML";
+        }
+        return "unknown";
+    }
 
     public Database getDatabase() {
         return database;
@@ -156,75 +286,6 @@ public class Table implements Serializable {
 
     public boolean isLiteral() {
         return isLiteral;
-    }
-
-    public Database database;
-    public String literalName;
-    public String name;
-    public String alias;
-    public String check;
-    public Vector<Field> fields;
-    public Vector<Key> keys;
-    public Vector<Link> links;
-    public Vector<Grant> grants;
-    public Vector<View> views;
-    public Vector<Proc> procs;
-    public Vector<String> comments;
-    public Vector<String> options;
-    public Vector<String> allUsers;
-    public Vector<Parameter> parameters;
-    public Vector<Const> consts;
-    public boolean hasPrimaryKey;
-    public boolean hasSequence;
-    public boolean hasTimeStamp;
-    public boolean hasAutoTimeStamp;
-    public boolean hasUserStamp;
-    public boolean hasExecute;
-    public boolean hasSelect;
-    public boolean hasInsert;
-    public boolean hasDelete;
-    public boolean hasUpdate;
-    public boolean hasStdProcs;
-    public boolean hasIdentity;
-    public boolean hasSequenceReturning;
-    public boolean hasBigXML;
-    public boolean isStoredProc;
-    public boolean isLiteral;
-    public int start;
-
-    public Table() {
-        name = "";
-        alias = "";
-        check = "";
-        literalName = "";
-        fields = new Vector<Field>();
-        keys = new Vector<Key>();
-        links = new Vector<Link>();
-        grants = new Vector<Grant>();
-        views = new Vector<View>();
-        procs = new Vector<Proc>();
-        comments = new Vector<String>();
-        options = new Vector<String>();
-        allUsers = new Vector<String>();
-        parameters = new Vector<Parameter>();
-        consts = new Vector<Const>();
-        hasExecute = false;
-        hasSelect = false;
-        hasInsert = false;
-        hasDelete = false;
-        hasUpdate = false;
-        hasPrimaryKey = false;
-        hasSequence = false;
-        hasTimeStamp = false;
-        hasAutoTimeStamp = false;
-        hasUserStamp = false;
-        hasStdProcs = false;
-        hasIdentity = false;
-        hasSequenceReturning = false;
-        hasBigXML = false;
-        isStoredProc = false;
-        isLiteral = false;
-        start = 0;
     }
 
     public void reader(DataInputStream ids) throws IOException {
@@ -606,14 +667,6 @@ public class Table implements Serializable {
         proc.lines.addElement(new Line("  )"));
     }
 
-    static boolean isIdentity(Field field) {
-        return field.type == Field.BIGIDENTITY || field.type == Field.IDENTITY;
-    }
-
-    static boolean isSequence(Field field) {
-        return field.type == Field.BIGSEQUENCE || field.type == Field.SEQUENCE;
-    }
-
     /**
      * Builds an insert proc generated as part of standard record class
      */
@@ -662,8 +715,7 @@ public class Table implements Serializable {
 
         if (hasIdentity == true) {
             proc.lines.addElement(new Line(" output inserted." + identityName));
-        }
-        else if (proc.hasReturning) {
+        } else if (proc.hasReturning) {
             proc.lines.addElement(new Line("_ret.output", true));
         }
         proc.lines.addElement(new Line(" values ("));
@@ -675,7 +727,7 @@ public class Table implements Serializable {
                 continue;
 
             if (isSequence(field)) {
-                if (proc.hasReturning && !proc.isMultipleInput){
+                if (proc.hasReturning && !proc.isMultipleInput) {
                     proc.lines.addElement(new Line("_ret.sequence", true));
                 }
             } else {
@@ -1352,59 +1404,5 @@ public class Table implements Serializable {
                 return true;
         }
         return false;
-    }
-
-    /**
-     * Translates field type to DB2 SQL column types
-     */
-    static String varType(Field field) {
-        switch (field.type) {
-            case Field.BYTE:
-                return "SMALLINT";
-            case Field.SHORT:
-                return "SMALLINT";
-            case Field.INT:
-            case Field.SEQUENCE:
-            case Field.IDENTITY:
-                return "INT";
-            case Field.LONG:
-            case Field.BIGSEQUENCE:
-            case Field.BIGIDENTITY:
-                return "BIGINT";
-            case Field.CHAR:
-                if (field.length > 32762)
-                    return "CLOB(" + String.valueOf(field.length) + ")";
-                else
-                    return "VARCHAR(" + String.valueOf(field.length) + ")";
-            case Field.ANSICHAR:
-                return "CHAR(" + String.valueOf(field.length) + ")";
-            case Field.DATE:
-                return "DATE";
-            case Field.DATETIME:
-                return "TIMESTAMP";
-            case Field.TIME:
-                return "TIME";
-            case Field.TIMESTAMP:
-            case Field.AUTOTIMESTAMP:
-                return "TIMESTAMP";
-            case Field.FLOAT:
-            case Field.DOUBLE:
-                if (field.scale != 0)
-                    return "DECIMAL(" + String.valueOf(field.precision) + ", " + String.valueOf(field.scale) + ")";
-                else if (field.precision != 0)
-                    return "DECIMAL(" + String.valueOf(field.precision) + ", 0)";
-                return "DOUBLE";
-            case Field.BLOB:
-                return "BLOB(" + String.valueOf(field.length) + ")";
-            case Field.TLOB:
-                return "CLOB(" + String.valueOf(field.length) + ")";
-            case Field.MONEY:
-                return "DECIMAL(18,2)";
-            case Field.USERSTAMP:
-                return "VARCHAR(50)";
-            case Field.XML:
-                return "XML";
-        }
-        return "unknown";
     }
 }
