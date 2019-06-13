@@ -1023,8 +1023,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
 
 
     private boolean hasEnums(Table table) {
-        return table.getFields().stream().anyMatch(field -> field.getEnums() != null
-                && !field.getEnums().isEmpty());
+        return table.getFields().stream().anyMatch(this::hasEnums);
     }
 
     public List<Field> getAllEnumFields(Table table) {
