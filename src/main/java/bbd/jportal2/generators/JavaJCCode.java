@@ -19,14 +19,26 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
+/**
+ * <p>Generates Java code for JDBC and Crackle consumption </p>
+ *
+ * <h3>Supported Flags</h3>
+ * <ul>
+ * <li><code>utilizeEnums</code> - Not only generates Enum types but also uses them on generated fields and
+ * method parameters and return values.
+ * </li>
+ * </ul>
+ */
 public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(JavaJCCode.class);
     public static final String GENERATE_PROCS_IO_ERROR = "Generate Procs IO Error";
     public static final String FLAG_UTILIZE_ENUMS = "utilizeEnums";
-    public static final String ENTITY_CLASS_SUFFIX = "Entity";
+    public static final String ENTITY_CLASS_SUFFIX = "Struct";
 
     private boolean utilizeEnums = false;
 
@@ -72,70 +84,6 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
         generateOtherProcStructs(table, output);
     }
 
-    private String underScoreWords(String input) {
-        char[] bits = input.toCharArray();
-        StringBuilder builder = new StringBuilder();
-        builder.append(bits[0]);
-        for (int i = 1; i < bits.length; i++) {
-            if ("ABCDEFGHIJKLMNOPQRSTUVWXYZ".indexOf(bits[i]) >= 0
-                    && bits[i - 1] != ' ') {
-                builder.append('_');
-                builder.append(bits[i]);
-            } else
-                builder.append(bits[i]);
-        }
-        return builder.toString();
-    }
-
-    private String splitWords(String input) {
-        char[] bits = underScoreWords(input).toCharArray();
-        StringBuilder builder = new StringBuilder();
-        builder.append(bits[0]);
-        for (int i = 1; i < bits.length; i++) {
-            if (bits[i] == '_')
-                builder.append(' ');
-            else
-                builder.append(bits[i]);
-        }
-        return builder.toString();
-    }
-
-    private void generateEnum(Table table, PrintWriter outData) {
-        for (int i = 0; i < table.fields.size(); i++) {
-            Field field = table.fields.elementAt(i);
-            if (!field.enums.isEmpty()) {
-                outData.println("  public enum " + field.useUpperName());
-                outData.println("  {");
-                for (int j = 0; j < field.enums.size(); j++) {
-                    Enum element = field.enums.elementAt(j);
-                    String evalue = "" + element.value;
-                    if (field.type == Field.ANSICHAR && field.length == 1)
-                        evalue = "'" + (char) element.value + "'";
-                    String keyName = underScoreWords(element.name).toUpperCase();
-                    outData.println("    " + keyName + "(" + evalue + ", \"" + splitWords(element.name) + "\")" + (((j + 1) < field.enums.size()) ? "," : ";"));
-                }
-                outData.println("    public int key;");
-                outData.println("    public String value;");
-                outData.println("    " + field.useUpperName() + "(int key, String value)");
-                outData.println("    {");
-                outData.println("      this.key = key;");
-                outData.println("      this.value = value;");
-                outData.println("    }");
-                outData.println("    public static " + field.useUpperName() + " get(int key)");
-                outData.println("    {");
-                outData.println("      for (" + field.useUpperName() + " op : values())");
-                outData.println("        if (op.key == key) return op;");
-                outData.println("      return null;");
-                outData.println("    }");
-                outData.println("    public String toString()");
-                outData.println("    {");
-                outData.println("      return value;");
-                outData.println("    }");
-                outData.println("  }");
-            }
-        }
-    }
-
     private void generateStdProcStruct(Table table, String output) {
 
         String fileName = output + table.useName() + ENTITY_CLASS_SUFFIX + ".java";
@@ -149,6 +97,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println("import java.io.Serializable;");
             outData.println("import java.sql.*;");
             outData.println("import java.math.*;");
+
             outData.println();
             outData.println("/**");
             for (int i = 0; i < table.comments.size(); i++) {
@@ -160,6 +109,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println(" */");
             outData.println("public class " + table.useName() + ENTITY_CLASS_SUFFIX + " implements Serializable");
             outData.println("{");
+            outData.println("  public static final long serialVersionUID = 1L;");
             generateEnum(table, outData);
             for (int i = 0; i < table.fields.size(); i++) {
                 Field field = table.fields.elementAt(i);
@@ -223,113 +173,117 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
 
         logger.info("Code: {}", fileName);
 
-        try (PrintWriter outData2 = openOutputFileForGeneration("Java", fileName)) {
+        try (PrintWriter outData = openOutputFileForGeneration("Java", fileName)) {
             if (table.database.packageName.length() > 0) {
-                outData2.println("package " + table.database.packageName + ";");
-                outData2.println();
+                outData.println("package " + table.database.packageName + ";");
+                outData.println();
             }
-            outData2.println("import java.io.Serializable;");
-            outData2.println("import java.sql.*;");
-            outData2.println("import java.math.*;");
-            outData2.println();
-            outData2.println("/**");
+            outData.println("import java.io.Serializable;");
+            outData.println("import java.sql.*;");
+            outData.println("import java.math.*;");
+
+            generateEnumImports(table, outData);
+
+            outData.println();
+            outData.println("/**");
             for (int j = 0; j < proc.comments.size(); j++) {
                 String comment = proc.comments.elementAt(j);
-                outData2.println(" *" + comment);
+                outData.println(" *" + comment);
             }
-            outData2.println(" */");
-            outData2.println("public class " + table.useName() + proc.upperFirst() + ENTITY_CLASS_SUFFIX + " implements Serializable");
-            outData2.println("{");
+            outData.println(" */");
+            outData.println("public class " + table.useName() + proc.upperFirst() + ENTITY_CLASS_SUFFIX + " implements Serializable");
+            outData.println("{");
+            outData.println("    private static final long serialVersionUID = 1L;");
             int maxSize = 0;
             for (int j = 0; j < proc.inputs.size(); j++) {
                 Field field = proc.inputs.elementAt(j);
                 if (field.useName().length() > maxSize)
                     maxSize = field.useName().length();
-                outData2.println("  /**");
+                outData.println("  /**");
                 for (int c = 0; c < field.comments.size(); c++) {
                     String s = field.comments.elementAt(c);
-                    outData2.println("   *" + s);
+                    outData.println("   *" + s);
                 }
                 if (!proc.hasOutput(field.name))
-                    outData2.println("   * (input)");
+                    outData.println("   * (input)");
                 else
-                    outData2.println("   * (input/output)");
-                outData2.println("   */");
-                outData2.println("  protected " + javaVar(field) + ";");
-                outData2.println("  public " + getterSetter(field));
+                    outData.println("   * (input/output)");
+                outData.println("   */");
+                outData.println("  protected " + javaVar(field) + ";");
+                outData.println("  public " + getterSetter(field));
             }
             for (int j = 0; j < proc.outputs.size(); j++) {
                 Field field = proc.outputs.elementAt(j);
                 if (field.useName().length() > maxSize)
                     maxSize = field.useName().length();
                 if (!proc.hasInput(field.name)) {
-                    outData2.println("  /**");
+                    outData.println("  /**");
                     for (int c = 0; c < field.comments.size(); c++) {
                         String s = field.comments.elementAt(c);
-                        outData2.println("   *" + s);
+                        outData.println("   *" + s);
                     }
-                    outData2.println("   * (output)");
-                    outData2.println("   */");
-                    outData2.println("  protected " + javaVar(field) + ";");
-                    outData2.println("  public " + getterSetter(field));
+                    outData.println("   * (output)");
+                    outData.println("   */");
+                    outData.println("  protected " + javaVar(field) + ";");
+                    outData.println("  public " + getterSetter(field));
                 }
             }
             for (int j = 0; j < proc.dynamics.size(); j++) {
                 String s = proc.dynamics.elementAt(j);
                 if (s.length() > maxSize)
                     maxSize = s.length();
-                outData2.println("  /**");
-                outData2.println("   * (dynamic)");
-                outData2.println("   */");
-                outData2.println("  public String " + s + ";");
+                outData.println("  /**");
+                outData.println("   * (dynamic)");
+                outData.println("   */");
+                outData.println("  public String " + s + ";");
             }
-            outData2.println("  public " + table.useName() + proc.upperFirst() + ENTITY_CLASS_SUFFIX + "()");
-            outData2.println("  {");
+            outData.println("  public " + table.useName() + proc.upperFirst() + ENTITY_CLASS_SUFFIX + "()");
+            outData.println("  {");
             for (int j = 0; j < proc.inputs.size(); j++) {
                 Field field = proc.inputs.elementAt(j);
-                outData2.println("    " + initJavaVar(field));
+                outData.println("    " + initJavaVar(field));
             }
             for (int j = 0; j < proc.outputs.size(); j++) {
                 Field field = proc.outputs.elementAt(j);
                 if (!proc.hasInput(field.name))
-                    outData2.println("    " + initJavaVar(field));
+                    outData.println("    " + initJavaVar(field));
             }
             for (int j = 0; j < proc.dynamics.size(); j++) {
                 String s = proc.dynamics.elementAt(j);
-                outData2.println("    " + s + " = \"\";");
+                outData.println("    " + s + " = \"\";");
             }
-            outData2.println("  }");
-            outData2.println("  public String toString()");
-            outData2.println("  {");
-            outData2.println("    String CRLF = System.lineSeparator();");
+            outData.println("  }");
+            outData.println("  public String toString()");
+            outData.println("  {");
+            outData.println("    String CRLF = System.lineSeparator();");
             String ret = "    return ";
             for (int j = 0; j < proc.inputs.size(); j++) {
-                outData2.print(ret);
+                outData.print(ret);
                 ret = "         + ";
                 Field field = proc.inputs.elementAt(j);
                 int no = maxSize - field.useName().length();
-                outData2.println("\"  " + field.useLowerName() + padded(no + 1) + ": \" + " + field.useLowerName() + " + CRLF");
+                outData.println("\"  " + field.useLowerName() + padded(no + 1) + ": \" + " + field.useLowerName() + " + CRLF");
             }
             for (int j = 0; j < proc.outputs.size(); j++) {
                 Field field = proc.outputs.elementAt(j);
                 if (!proc.hasInput(field.name)) {
-                    outData2.print(ret);
+                    outData.print(ret);
                     ret = "         + ";
                     int no = maxSize - field.useName().length();
-                    outData2.println("\"  " + field.useLowerName() + padded(no + 1) + ": \" + " + field.useLowerName() + " + CRLF");
+                    outData.println("\"  " + field.useLowerName() + padded(no + 1) + ": \" + " + field.useLowerName() + " + CRLF");
                 }
             }
             for (int j = 0; j < proc.dynamics.size(); j++) {
                 String s = proc.dynamics.elementAt(j);
-                outData2.print(ret);
+                outData.print(ret);
                 ret = "         + ";
                 int no = maxSize - s.length();
-                outData2.println("\"  " + s + padded(no + 1) + ": \" + " + s + " + CRLF");
+                outData.println("\"  " + s + padded(no + 1) + ": \" + " + s + " + CRLF");
             }
-            outData2.println("    ;");
-            outData2.println("  }");
-            outData2.println("}");
-            outData2.flush();
+            outData.println("    ;");
+            outData.println("  }");
+            outData.println("}");
+            outData.flush();
 
         } catch (
                 IOException e1) {
@@ -367,6 +321,9 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             extendsName = table.useName() + ENTITY_CLASS_SUFFIX;
             outData.println("public class " + table.useName() + " extends " + extendsName);
             outData.println("{");
+
+            outData.println("  private static final long serialVersionUID = 1L;");
+
             outData.println("  Connector connector;");
             outData.println("  Connection connection;");
             outData.println("  public " + table.useName() + "()");
@@ -437,6 +394,9 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println("import java.sql.*;");
             outData.println("import java.util.*;");
             outData.println("import java.math.*;");
+
+            generateEnumImports(table, outData);
+
             outData.println("");
             outData.println("/**");
             for (int j = 0; j < proc.comments.size(); j++) {
@@ -447,6 +407,8 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             extendsName = table.useName() + proc.upperFirst() + ENTITY_CLASS_SUFFIX;
             outData.println("public class " + table.useName() + proc.upperFirst() + " extends " + extendsName);
             outData.println("{");
+            outData.println("  private static final long serialVersionUID = 1L;");
+
             outData.println("  Connector connector;");
             outData.println("  Connection connection;");
 
@@ -593,7 +555,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
 
             String prepSet = "    prep.set%s(%d, %s);";
             outData.println(String.format(prepSet, setType(field), i + 1,
-                            String.format(enumToInt, field.useLowerName())));
+                    String.format(enumToInt, field.useLowerName())));
 
             if (field.isNull) {
                 outData.println("    };");
@@ -669,7 +631,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println("   */");
             outData.println("  public " + extendsName + "[] " + procName + "Load() throws SQLException");
             outData.println("  {");
-            outData.println("    Vector recs = new Vector();");
+            outData.println("    Vector<" + extendsName + "> recs = new Vector<>();");
             outData.println("    Query query = " + procName + "();");
             outData.println("    while (" + procName + "(query) == true)");
             outData.println("    {");
@@ -682,7 +644,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println("    }");
             outData.println("    " + extendsName + "[] result = new " + extendsName + "[recs.size()];");
             outData.println("    for (int i=0; i<recs.size();i++)");
-            outData.println("      result[i] = (" + extendsName + ")recs.elementAt(i); ");
+            outData.println("      result[i] = recs.elementAt(i); ");
             outData.println("    return result;");
             outData.println("  }");
         }
@@ -791,7 +753,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 return "Long " + field.useLowerName();
             case Field.INT:
                 if (utilizeEnums && hasEnums(field)) {
-                    return field.useUpperName() + " " + field.useLowerName();
+                    return getEnumTypeName(field) + " " + field.useLowerName();
                 }
             case Field.SEQUENCE:
             case Field.IDENTITY:
@@ -841,7 +803,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 break;
             case Field.INT:
                 if (utilizeEnums && hasEnums(field)) {
-                    type = field.useUpperName() + " ";
+                    type = getEnumTypeName(field) + " ";
                     break;
                 }
             case Field.SEQUENCE:
@@ -990,8 +952,105 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
         return padString.substring(0, size);
     }
 
+    private String underScoreWords(String input) {
+        char[] bits = input.toCharArray();
+        StringBuilder builder = new StringBuilder();
+        builder.append(bits[0]);
+        for (int i = 1; i < bits.length; i++) {
+            if ("ABCDEFGHIJKLMNOPQRSTUVWXYZ".indexOf(bits[i]) >= 0
+                    && bits[i - 1] != ' ') {
+                builder.append('_');
+                builder.append(bits[i]);
+            } else
+                builder.append(bits[i]);
+        }
+        return builder.toString();
+    }
+
+    private String splitWords(String input) {
+        char[] bits = underScoreWords(input).toCharArray();
+        StringBuilder builder = new StringBuilder();
+        builder.append(bits[0]);
+        for (int i = 1; i < bits.length; i++) {
+            if (bits[i] == '_')
+                builder.append(' ');
+            else
+                builder.append(bits[i]);
+        }
+        return builder.toString();
+    }
+
+    private void generateEnum(Table table, PrintWriter outData) {
+        for (int i = 0; i < table.fields.size(); i++) {
+            Field field = table.fields.elementAt(i);
+            if (!field.enums.isEmpty()) {
+                outData.println("  public enum " + getEnumTypeName(field));
+                outData.println("  {");
+                for (int j = 0; j < field.enums.size(); j++) {
+                    Enum element = field.enums.elementAt(j);
+                    String evalue = "" + element.value;
+                    if (field.type == Field.ANSICHAR && field.length == 1)
+                        evalue = "'" + (char) element.value + "'";
+                    String keyName = underScoreWords(element.name).toUpperCase();
+                    outData.println("    " + keyName + "(" + evalue + ", \"" + splitWords(element.name) + "\")" + (((j + 1) < field.enums.size()) ? "," : ";"));
+                }
+                outData.println("    public int key;");
+                outData.println("    public String value;");
+                outData.println("    " + field.useUpperName() + "(int key, String value)");
+                outData.println("    {");
+                outData.println("      this.key = key;");
+                outData.println("      this.value = value;");
+                outData.println("    }");
+                outData.println("    public static " + field.useUpperName() + " get(int key)");
+                outData.println("    {");
+                outData.println("      for (" + field.useUpperName() + " op : values())");
+                outData.println("        if (op.key == key) return op;");
+                outData.println("      return null;");
+                outData.println("    }");
+                outData.println("    public String toString()");
+                outData.println("    {");
+                outData.println("      return value;");
+                outData.println("    }");
+                outData.println("  }");
+            }
+        }
+    }
+
     private boolean hasEnums(Field field) {
         return field.getEnums() != null
                 && !field.getEnums().isEmpty();
+    }
+
+
+    private boolean hasEnums(Table table) {
+        return table.getFields().stream().anyMatch(field -> field.getEnums() != null
+                && !field.getEnums().isEmpty());
+    }
+
+    public List<Field> getAllEnumFields(Table table) {
+        return table.getFields().stream()
+                .filter(this::hasEnums)
+                .collect(Collectors.toList());
+    }
+
+    private void generateEnumImports(Table table, PrintWriter outData) {
+        String enumImport = "import %s.%s%s.%s;";
+
+        if (utilizeEnums && hasEnums(table)) {
+            for (Field field : getAllEnumFields(table)) {
+                outData.println(String.format(enumImport,
+                        table.getDatabase().getPackageName(),
+                        table.getName(), ENTITY_CLASS_SUFFIX, getEnumTypeName(field))
+                );
+            }
+        }
+    }
+
+    public String getEnumTypeName(Field field) {
+        if (field.getEnumType() != null && !field.getEnumType().isEmpty()) {
+            return field.getEnumType();
+        } else {
+            return field.useUpperName();
+        }
     }
 }

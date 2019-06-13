@@ -85,6 +85,14 @@ public class Field implements Serializable
     return enumLink;
   }
 
+  public String getEnumType() {
+    return enumType;
+  }
+
+  public void setEnumType(String enumType) {
+    this.enumType = enumType;
+  }
+
   public boolean isPrimaryKey() {
     return isPrimaryKey;
   }
@@ -148,6 +156,7 @@ public class Field implements Serializable
   public Vector<Enum> enums;
   public Vector<String> valueList;
   public String enumLink;
+  public String enumType;
   /** Indicates field is used in the primary key */
   public boolean isPrimaryKey;
   /** Indicates the field is a Sequence */
