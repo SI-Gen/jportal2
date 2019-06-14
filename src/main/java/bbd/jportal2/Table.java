@@ -694,16 +694,17 @@ public class Table implements Serializable {
                 proc.isSingle = true;
                 proc.hasUpdates = true;
             } else if (isSequence(field)) {
-                proc.lines.addElement(new Line(line + field.name + comma));
 
-                if (!proc.isMultipleInput) {
+                if (proc.hasReturning || proc.isMultipleInput) {
+                    proc.lines.addElement(new Line(line + field.name + comma));
+                }
+
+                if (proc.hasReturning) {
                     proc.hasUpdates = true;
                     proc.isSingle = true;
-
-                    if (proc.hasReturning) {
-                        proc.outputs.addElement(field);
-                    }
+                    proc.outputs.addElement(field);
                 }
+
             } else {
                 proc.inputs.addElement(field);
                 proc.lines.addElement(new Line(line + field.useLiteral() + comma));
@@ -727,7 +728,7 @@ public class Table implements Serializable {
                 continue;
 
             if (isSequence(field)) {
-                if (proc.hasReturning && !proc.isMultipleInput) {
+                if (proc.hasReturning || proc.isMultipleInput) {
                     proc.lines.addElement(new Line("_ret.sequence", true));
                 }
             } else {
