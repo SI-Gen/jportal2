@@ -92,13 +92,6 @@
             <artifactId>jcommander</artifactId>
             <version>1.72</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.codehaus.mojo/javacc-maven-plugin -->
-        <dependency>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>javacc-maven-plugin</artifactId>
-            <version>2.6</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.freemarker/freemarker -->
         <dependency>
             <groupId>org.freemarker</groupId>
@@ -110,6 +103,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
+            <scope>test</scope>
         </dependency>
         <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.sonatype.plugins/nexus-staging-maven-plugin &ndash;&gt;-->
         <!--<dependency>-->
@@ -141,7 +135,7 @@
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
-            <version>3.1.0</version>
+            <version>3.2.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.antlr/stringtemplate -->
@@ -151,19 +145,12 @@
             <version>4.0.2</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.clapper</groupId>
-            <artifactId>javautil</artifactId>
-            <version>3.2.0</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/net.sf.extcos/extcos -->
         <dependency>
             <groupId>net.sf.extcos</groupId>
             <artifactId>extcos</artifactId>
             <version>0.4b</version>
         </dependency>
-
-
     </dependencies>
     <build>
         <pluginManagement>

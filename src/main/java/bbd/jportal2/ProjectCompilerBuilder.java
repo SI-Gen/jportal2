@@ -1,7 +1,5 @@
 package bbd.jportal2;
 
-import com.google.common.base.Strings;
-
 import java.util.Objects;
 
 public class ProjectCompilerBuilder {
@@ -10,7 +8,7 @@ public class ProjectCompilerBuilder {
 
     public static ProjectCompiler build(JPortal2Arguments arguments, String additionalArgumentString) {
 
-        if (Strings.isNullOrEmpty(additionalArgumentString)) {
+        if (additionalArgumentString == null || additionalArgumentString.isEmpty()) {
             return build(arguments);
         }
 
