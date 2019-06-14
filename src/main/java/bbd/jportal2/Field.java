@@ -1,11 +1,11 @@
 /// ------------------------------------------------------------------
-/// Copyright (c) from 1996 Vincent Risi 
-///                           
-/// All rights reserved. 
-/// This program and the accompanying materials are made available 
-/// under the terms of the Common Public License v1.0 
-/// which accompanies this distribution and is available at 
-/// http://www.eclipse.org/legal/cpl-v10.html 
+/// Copyright (c) from 1996 Vincent Risi
+///
+/// All rights reserved.
+/// This program and the accompanying materials are made available
+/// under the terms of the Common Public License v1.0
+/// which accompanies this distribution and is available at
+/// http://www.eclipse.org/legal/cpl-v10.html
 /// Contributors:
 ///    Vincent Risi
 /// ------------------------------------------------------------------
@@ -25,7 +25,7 @@ import java.util.Vector;
 public class Field implements Serializable
 {
   /**
-   * 
+   *
    */
   private static final long serialVersionUID = 1L;
 
@@ -83,6 +83,14 @@ public class Field implements Serializable
 
   public String getEnumLink() {
     return enumLink;
+  }
+
+  public String getEnumType() {
+    return enumType;
+  }
+
+  public void setEnumType(String enumType) {
+    this.enumType = enumType;
   }
 
   public boolean isPrimaryKey() {
@@ -148,6 +156,7 @@ public class Field implements Serializable
   public Vector<Enum> enums;
   public Vector<String> valueList;
   public String enumLink;
+  public String enumType;
   /** Indicates field is used in the primary key */
   public boolean isPrimaryKey;
   /** Indicates the field is a Sequence */
@@ -195,7 +204,7 @@ public class Field implements Serializable
   , AUTOTIMESTAMP = 26
   , WCHAR      = 27
   , WANSICHAR  = 28
-  , UTF8       = 29   
+  , UTF8       = 29
   , BIGXML     = 30
   ;
   public static final int DEFAULT_XML = 4096;
@@ -332,11 +341,17 @@ public class Field implements Serializable
   public String useLowerName()
   {
     String n = useName();
+
+    if (n.length() <= 2){
+      return n.toLowerCase();
+    }
+
     String f = n.substring(0, 1);
     if (isExtStd)
     {
       n = replaceAll(n, "", "");
     }
+
     return f.toLowerCase()+n.substring(1);
   }
   /** If there is an alias uses that else returns name */
