@@ -1,0 +1,56 @@
+trigger:
+  branches:
+    include:
+      - 'refs/tags/*'
+pr: none
+jobs:
+- job: publish_release
+  displayName: Build and Publish Release
+  variables:
+    - group: JPortal2SensitiveVariables
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/')) 
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - checkout: self
+    persistCredentials: true
+    clean: true
+  - template: templates/maven.yml
+  - template: templates/analyse.yml
+  - bash: |
+      extracted_version=$(echo "$BUILD_SOURCEBRANCH" | rev | cut -d/ -f1 | rev)
+      echo "##vso[task.setvariable variable=project_version]$extracted_version"
+      echo "Git tag version: $extracted_version"
+    displayName: 'Extract version from Git tag'
+    failOnStderr: true  
+  - bash: |
+      echo "Validating format of tagged version..."
+      echo "$PROJECT_VERSION" | grep -P "^[1-9]\d*?\.\d+?.\d+?$"
+      if [ $? -ne 0 ]; then
+        echo "Invalid version $PROJECT_VERSION - Please supply a tag in major.minor.patch format (1.0.0 at the least)."
+        exit 1
+      fi
+      echo "Version passed validation."
+    displayName: 'Validate tagged version'
+    failOnStderr: true
+  - template: templates/download-secure-files.yml
+  - template: templates/maven.yml
+    parameters:
+      displayName: 'Maven create release version'
+      goals: | 
+        -Pcreate-release-version  -DreleaseVersion=$(project_version) clean validate
+  - template: templates/maven.yml
+    parameters:
+      displayName: 'Maven publish release version'
+      goals: |
+        --settings=$(mavenSettings.secureFilePath) -Prelease-oss-maven-central -Dgpg.publicKeyring=$(publicKeyRing.secureFilePath) -Dgpg.secretKeyring=$(privateKeyRing.secureFilePath) clean deploy
+  - task: GitHubRelease@0
+    inputs:
+      gitHubConnection: github-si-gen
+      repositoryName: '$(Build.Repository.Name)' 
+      action: 'create'
+      target: '$(Build.SourceVersion)'
+      tagSource: 'auto'
+      title: JPortal2 v$(project_version)
+      assets: 'target/jportal2*.jar'
+    displayName: 'Create GitHub release'

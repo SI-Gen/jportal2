@@ -16,9 +16,6 @@ import java.util.*;
  * Unittest to test the FreeMarker template based generator
  */
 public class AllBuiltInGeneratorsBasicTest {
-    private static final Logger logger = LoggerFactory.getLogger(AllBuiltInGeneratorsBasicTest.class);
-
-    //private final String INPUT_DIRS = "src/test/resources/freemarker_input_dirs/";
 
     private final String SI_DIR = "src/main/resources/example_si_files/";
     private final String OUTPUT_DIR = "target/test-all-generators-basic-test-out/";
@@ -33,7 +30,6 @@ public class AllBuiltInGeneratorsBasicTest {
     public void testAllBuiltinPostProcessors() throws Exception {
         this.testBuiltInProcessorsOfType(IBuiltInPostProcessor.class);
     }
-
 
     public <TYPE_TO_TEST> void testBuiltInProcessorsOfType(Class<TYPE_TO_TEST> classType) throws Exception {
         ProjectCompiler pj = new ProjectCompiler();

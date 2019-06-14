@@ -1,0 +1,30 @@
+steps:
+# Publish Cobertura or JaCoCo code coverage results from a build
+#- task: PublishCodeCoverageResults@1
+# inputs:
+#   codeCoverageTool: 'JaCoCo'
+#   summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/site/jacoco/jacoco.xml'
+#   reportDirectory: '$(System.DefaultWorkingDirectory)/**/site/jacoco'
+#   failIfCoverageEmpty: true
+- task: SonarSource.sonarcloud.14d9cde6-c1da-4d55-aa01-2965cd301255.SonarCloudPrepare@1
+  displayName: 'Prepare analysis on SonarCloud'
+  inputs:
+    SonarCloud: 'SonarSource Global'
+    organization: 'si-gen'
+    scannerMode: CLI
+    configMode: manual
+    cliProjectKey: '$(SonarSource-JPortal2-ID)'
+    projectName: SI-Gen_jportal2
+    cliSources: src/main
+    extraProperties: |
+      sonar.sources=src/main/java
+      sonar.java.binaries=target/classes
+      sonar.java.source=1.8
+      # # sonar.exclusions=**/*.bin
+      # #sonar.projectKey=XXX$(SonarSource-JPortal2-ID)
+
+- task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
+  displayName: 'Run Code Analysis'
+
+- task: SonarSource.sonarcloud.38b27399-a642-40af-bb7d-9971f69712e8.SonarCloudPublish@1
+  displayName: 'Publish Quality Gate Result'

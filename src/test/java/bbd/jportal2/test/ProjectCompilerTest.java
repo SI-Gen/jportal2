@@ -27,12 +27,12 @@ public class ProjectCompilerTest {
     private final String SI_FILE1 = "src/main/resources/example_si_files/Contingency.si";
 
     private final String SI_DIR = "src/main/resources/example_si_files/";
-    private final Path OUTPUT_DIR = Paths.get("target", "test-freemarker-template-out");
+    private final Path OUTPUT_DIR = Paths.get("target", "test-freemarker-template-out", "project-compiler-tests");
     private final String TEMPLATE_DIR = "src/test/resources/freemarker_input_dirs";
-    private final String FREEMARKER_GENERATOR1 = "testFreeMarkerSingleFileInDir:" + OUTPUT_DIR.toString() + "testFreeMarkerSingleFileInDir";
-    private final String FREEMARKER_GENERATOR2 = "testFreeMarkerMultipleSubDirMultipleFiles:" + OUTPUT_DIR.toString() + "testFreeMarkerMultipleSubDirMultipleFiles";
+    private final String FREEMARKER_GENERATOR1 = "testFreeMarkerSingleFileInDir:" + Paths.get(OUTPUT_DIR.toString(), "testFreeMarkerSingleFileInDir").toString();
+    private final String FREEMARKER_GENERATOR2 = "testFreeMarkerMultipleSubDirMultipleFiles:" + Paths.get(OUTPUT_DIR.toString(), "testFreeMarkerMultipleSubDirMultipleFiles").toString();
     private final String BUILTIN_GENERATOR1 = "CSNetCode:" + OUTPUT_DIR.toString() + "/cs";
-    private final String BUILTIN_GENERATOR2 = "MSSqlDDL:" + OUTPUT_DIR.toString() + "mssql";
+    private final String BUILTIN_GENERATOR2 = "MSSqlDDL:" + OUTPUT_DIR.toString() + "/mssql";
 
     @Test
     public void testProjectCompilerTestSimple() throws Exception {
@@ -40,7 +40,6 @@ public class ProjectCompilerTest {
         setupSimpleListsParameters(pj);
         pj.compileAll();
     }
-
 
     @Test(expected = SingleFileCompilerException.class)
     public void testProjectCompilerThrowsExceptionIfGeneratorNotFound() throws Exception {

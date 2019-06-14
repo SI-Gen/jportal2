@@ -72,13 +72,12 @@ public class FreeMarkerTest {
         assertEquals("Static: 2"                ,lines2.get(2));
     }
 
-
     @Test
     public void testFreeMarkerMultipleSubDirMultipleFiles() throws Exception {
         String nameOfTest = "testFreeMarkerMultipleSubDirMultipleFiles";
         Path templateDir = Paths.get(INPUT_DIRS);
         Path siFile = Paths.get(SI_DIR,"ExampleTable.si");
-        Path outputDir = Paths.get(OUTPUT_DIR,nameOfTest);
+        Path outputDir = Paths.get(OUTPUT_DIR, nameOfTest);
 
         String nubDir="";
         Database db = JPortal.run(siFile.toString(), nubDir);
@@ -97,7 +96,6 @@ public class FreeMarkerTest {
         assertEquals("Field Name: IntField" ,lines2.get(1));
         assertEquals("Static: 2"                ,lines2.get(2));
 
-
         //Test output - dir2/file1.txt
         List<String> lines3 = Files.readAllLines(Paths.get(outputDirectory.toString(), "dir2/file1.txt"));
         assertEquals("Database Name: jportal_example_db"         ,lines3.get(0));
@@ -111,7 +109,50 @@ public class FreeMarkerTest {
         assertEquals("Static: 4"                            ,lines4.get(2));
     }
 
+    @Test
+    public void testFreeMarkerMultipleTemplateInDir() throws Exception {
+        String nameOfTest = "testFreeMarkerMultipleTemplateInDir";
+        Path templateDir = Paths.get(INPUT_DIRS);
+        Path siFile = Paths.get(SI_DIR,"ExampleTable.si");
+        Path outputDir = Paths.get(OUTPUT_DIR, nameOfTest);
 
+        String nubDir="";
+        Database db = JPortal.run(siFile.toString(), nubDir);
+        File outputDirectory = new File(outputDir.toString());
+        (new FreeMarker()).generateTemplate(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+
+        //Test output - dir1/file1.txt
+        List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "ExampleTable/file1.txt"));
+        assertEquals("Database Name: jportal_example_db" ,lines.get(0));
+        assertEquals("Field Name: ID"           ,lines.get(1));
+        assertEquals("Static: 1"                ,lines.get(2));
+    }
+
+    @Test
+    public void testFreeMarkerMultipleProcFileGen() throws Exception {
+        String nameOfTest = "testFreeMarkerMultipleProcFileGen";
+        Path templateDir = Paths.get(INPUT_DIRS);
+        Path siFile = Paths.get(SI_DIR,"ExampleTable.si");
+        Path outputDir = Paths.get(OUTPUT_DIR, nameOfTest);
+
+        String nubDir="";
+        Database db = JPortal.run(siFile.toString(), nubDir);
+        File outputDirectory = new File(outputDir.toString());
+        (new FreeMarker()).generateTemplate(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+
+        //Test output - SelectForUpdateByUniqueInt.txt
+        List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "SelectForUpdateByUniqueInt.txt"));
+        assertEquals("Database Name: jportal_example_db" ,lines.get(0));
+        assertEquals("Field Name: SelectForUpdateByUniqueInt"           ,lines.get(1));
+        assertEquals("Static: 1"                ,lines.get(2));
+
+        //Test output - GetByUniqueInt.txt
+        List<String> lines1 = Files.readAllLines(Paths.get(outputDirectory.toString(), "GetByUniqueInt.txt"));
+        assertEquals("Database Name: jportal_example_db" ,lines1.get(0));
+        assertEquals("Field Name: GetByUniqueInt"           ,lines1.get(1));
+        assertEquals("Static: 1"                ,lines1.get(2));
+
+    }
 
     @Test
     public void testFreeMarkerGenerateSimpleHarness() throws Exception {

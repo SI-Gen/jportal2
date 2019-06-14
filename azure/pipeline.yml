@@ -1,0 +1,23 @@
+variables:
+  - group: JPortal2SensitiveVariables
+
+trigger:
+  branches:
+    include:
+      - feature/*
+      - bugfix/*
+      - hotfix/*
+      - master
+
+pr:
+  branches:
+    include:
+      - develop
+      - master
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+
+steps:
+- template: templates/maven.yml
+- template: templates/analyse.yml

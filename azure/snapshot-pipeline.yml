@@ -1,0 +1,25 @@
+trigger:
+  branches:
+    include:
+      - develop
+pr: none
+jobs:
+- job: publish_snapshot
+  displayName: Build and Publish Snapshot
+  variables:
+    - group: JPortal2SensitiveVariables
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - checkout: self
+    clean: true
+  - template: templates/maven.yml
+  - template: templates/analyse.yml
+  - template: templates/download-secure-files.yml
+  - template: templates/maven.yml
+    parameters:
+      displayName: 'Maven deploy snapshot version'
+      goals: | 
+        --settings=$(mavenSettings.secureFilePath) -Prelease-oss-maven-central -Dgpg.publicKeyring=$(publicKeyRing.secureFilePath) -Dgpg.secretKeyring=$(privateKeyRing.secureFilePath) clean deploy
+  

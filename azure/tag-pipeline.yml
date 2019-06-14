@@ -1,0 +1,70 @@
+trigger: none
+pr: none
+variables:
+- group: JPortal2SensitiveVariables
+jobs:
+- job: tag_release
+  displayName: Tag Release
+  condition: and(succeeded(), and(eq(variables['is_hotfix'], 'false'), eq(variables['Build.SourceBranch'], 'refs/heads/master')))
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - checkout: self
+    persistCredentials: true
+    clean: true
+  - bash: |
+      set -e
+      git config --global user.email "mavencentral@bbd.co.za"
+      git config --global user.name "BBD Software"
+      git checkout -f master
+    displayName: 'Git force-checkout master head'
+  - template: templates/maven.yml
+  - template: templates/extract-version.yml
+  - bash: |
+      set -e
+      git tag ${PROJECT_VERSION}
+      git push origin ${PROJECT_VERSION}
+    displayName: 'Git tag release'
+  - template: templates/maven.yml
+    parameters:
+      displayName: 'Maven increment minor version'
+      goals: 'validate -Pincrement-minor-version'
+  - template: templates/extract-version.yml
+  - bash: |
+      set -e
+      git status
+      git add pom.xml
+      git commit -m "CICD: New development version - ${PROJECT_VERSION}-SNAPSHOT [skip ci]"
+      git push
+    displayName: 'Git commit and push new POM version' 
+- job: tag_hotfix
+  displayName: Tag Hotfix
+  condition: and(succeeded(), and(eq(variables['is_hotfix'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master')))
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  steps:
+  - checkout: self
+    persistCredentials: true
+    clean: true
+  - bash: |
+      set -e
+      git config --global user.email "mavencentral@bbd.co.za"
+      git config --global user.name "BBD Software"
+      git checkout -f master
+    displayName: 'Git force-checkout master head'
+  - bash: |
+      echo "Validating format of supplied hotfix version..."
+      echo "$HOTFIX_VERSION" | grep -P "^[1-9]\d*?\.\d+?.[1-9]\d*?$"
+      if [ $? -ne 0 ]; then
+        echo "Invalid version $HOTFIX_VERSION - Please supply a version in major.minor.patch format (1.0.1 at the least)."
+        exit 1
+      fi
+      echo "Hotfix version passed validation."
+    displayName: 'Validate hotfix version'
+    failOnStderr: true  
+  - template: templates/maven.yml
+  - bash: |
+      set -e
+      git tag ${HOTFIX_VERSION}
+      git push origin ${HOTFIX_VERSION}
+    displayName: 'Git tag hotfix'

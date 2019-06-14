@@ -12,42 +12,57 @@
 
 package bbd.jportal2.generators;
 
+import bbd.jportal2.Enum;
 import bbd.jportal2.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
+/**
+ * <p>Generates Java code for JDBC and Crackle consumption </p>
+ *
+ * <h3>Supported Flags</h3>
+ * <ul>
+ * <li><code>utilizeEnums</code> - Not only generates Enum types but also uses them on generated fields and
+ * method parameters and return values.
+ * </li>
+ * </ul>
+ */
 public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
 
+    private static final Logger logger = LoggerFactory.getLogger(JavaJCCode.class);
     public static final String GENERATE_PROCS_IO_ERROR = "Generate Procs IO Error";
+    public static final String FLAG_UTILIZE_ENUMS = "utilizeEnums";
+    public static final String ENTITY_CLASS_SUFFIX = "Struct";
+
+    private boolean utilizeEnums = false;
 
     public JavaJCCode() {
         super(JavaJCCode.class);
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(JavaJCCode.class);
-
-    @Override
+    /**
+     * Generates the procedure classes for each table present.
+     */
     public String description() {
         return "generate Java code for jdbc and crackle consumption - separates structs and others from main";
     }
 
-    @Override
     public String documentation() {
         return "generate Java code for jdbc and crackle consumption - separates structs and others from main";
     }
 
-    /**
-     * Generates the procedure classes for each table present.
-     *
-     * @param database
-     * @param output
-     */
-    @Override
     public void generate(Database database, String output) {
+
+        database.getFlags().stream()
+                .filter(f -> f.equalsIgnoreCase(FLAG_UTILIZE_ENUMS))
+                .findFirst()
+                .ifPresent(f -> this.utilizeEnums = true);
 
         for (int i = 0; i < database.tables.size(); i++) {
             Table table = database.tables.elementAt(i);
@@ -56,81 +71,89 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
         }
     }
 
+    /**
+     * Build of standard and user defined procedures
+     */
+    private void generate(Table table, String output) {
+        generateStdProcs(table, output);
+        generateOtherProcs(table, output);
+    }
+
     private void generateStructs(Table table, String output) {
         generateStdProcStruct(table, output);
         generateOtherProcStructs(table, output);
     }
 
     private void generateStdProcStruct(Table table, String output) {
-        try {
 
-            if (logger.isInfoEnabled()) {
-                logger.info("Code: {}{}Struct.java", output, table.useName());
-            }
+        String fileName = output + table.useName() + ENTITY_CLASS_SUFFIX + ".java";
+        logger.info("Code: {}", fileName);
 
-            try (PrintWriter outData = openOutputFileForGeneration("Java",
-                    output + table.useName() + "Struct.java")) {
-                if (table.database.packageName.length() > 0) {
-                    outData.println("package " + table.database.packageName + ";");
-                    outData.println();
-                }
-                outData.println("import java.io.Serializable;");
-                outData.println("import java.sql.*;");
-                outData.println("import java.math.*;");
+        try (PrintWriter outData = openOutputFileForGeneration("Java", fileName)) {
+            if (table.database.packageName.length() > 0) {
+                outData.println("package " + table.database.packageName + ";");
                 outData.println();
-                outData.println("/**");
-                for (int i = 0; i < table.comments.size(); i++) {
-                    String s = table.comments.elementAt(i);
-                    outData.println(" *" + s);
-                }
-                outData.println(" * This code was generated, do not modify it, modify it at source and regenerate it.");
-                outData.println(" * Does not use inner public classes and separates structs out.");
-                outData.println(" */");
-                outData.println("public class " + table.useName() + "Struct implements Serializable");
-                outData.println("{");
-                for (int i = 0; i < table.fields.size(); i++) {
-                    Field field = table.fields.elementAt(i);
-                    if (!field.comments.isEmpty()) {
-                        outData.println("  /**");
-                        for (int c = 0; c < field.comments.size(); c++) {
-                            String s = field.comments.elementAt(c);
-                            outData.println("   *" + s);
-                        }
-                        outData.println("   */");
-                    }
-                    outData.println("  public " + javaVar(field) + ";");
-                    outData.println("  public " + getterSetter(field));
-                }
-                outData.println("  public " + table.useName() + "Struct()");
-                outData.println("  {");
-                int maxSize = 0;
-                for (int i = 0; i < table.fields.size(); i++) {
-                    Field field = table.fields.elementAt(i);
-                    if (field.useName().length() > maxSize)
-                        maxSize = field.useName().length();
-                    outData.println("    " + initJavaVar(field));
-                }
-                outData.println("  }");
-
-                outData.println("  public String toString()");
-                outData.println("  {");
-                outData.println("    String CRLF = System.lineSeparator();");
-                for (int i = 0; i < table.fields.size(); i++) {
-                    if (i == 0)
-                        outData.print("    return ");
-                    else
-                        outData.print("         + ");
-                    Field field = table.fields.elementAt(i);
-                    int no = maxSize - field.useName().length();
-                    outData.println("\"  " + field.useName() + padded(no + 1) + ": \" + " + field.useName() + " + CRLF");
-                }
-                outData.println("    ;");
-                outData.println("  }");
-                outData.println("}");
-                outData.flush();
             }
+            outData.println("import java.io.Serializable;");
+            outData.println("import java.sql.*;");
+            outData.println("import java.math.*;");
+
+            outData.println();
+            outData.println("/**");
+            for (int i = 0; i < table.comments.size(); i++) {
+                String s = table.comments.elementAt(i);
+                outData.println(" *" + s);
+            }
+            outData.println(" * This code was generated, do not modify it, modify it at source and regenerate it.");
+            outData.println(" * Does not use inner public classes and separates structs out.");
+            outData.println(" */");
+            outData.println("public class " + table.useName() + ENTITY_CLASS_SUFFIX + " implements Serializable");
+            outData.println("{");
+            outData.println("  public static final long serialVersionUID = 1L;");
+            generateEnum(table, outData);
+            for (int i = 0; i < table.fields.size(); i++) {
+                Field field = table.fields.elementAt(i);
+                if (!field.comments.isEmpty()) {
+                    outData.println("  /**");
+                    for (int c = 0; c < field.comments.size(); c++) {
+                        String s = field.comments.elementAt(c);
+                        outData.println("   *" + s);
+                    }
+                    outData.println("   */");
+                }
+                outData.println("  protected " + javaVar(field) + ";");
+                outData.println("  public " + getterSetter(field));
+            }
+            outData.println("  public " + table.useName() + ENTITY_CLASS_SUFFIX + "()");
+            outData.println("  {");
+            int maxSize = 0;
+            for (int i = 0; i < table.fields.size(); i++) {
+                Field field = table.fields.elementAt(i);
+                if (field.useName().length() > maxSize)
+                    maxSize = field.useName().length();
+                outData.println("    " + initJavaVar(field));
+            }
+            outData.println("  }");
+
+            outData.println("  public String toString()");
+            outData.println("  {");
+            outData.println("    String CRLF = System.lineSeparator();");
+            for (int i = 0; i < table.fields.size(); i++) {
+                if (i == 0)
+                    outData.print("    return ");
+                else
+                    outData.print("         + ");
+                Field field = table.fields.elementAt(i);
+                int no = maxSize - field.useName().length();
+                outData.println("\"  " + field.useLowerName() + padded(no + 1) + ": \" + " + field.useLowerName() + " + CRLF");
+            }
+            outData.println("    ;");
+            outData.println("  }");
+            outData.println("}");
+            outData.flush();
+
         } catch (IOException e1) {
-            logger.error(GENERATE_PROCS_IO_ERROR);
+            logger.error(GENERATE_PROCS_IO_ERROR, e1);
         }
     }
 
@@ -145,131 +168,128 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     }
 
     private void generateOtherProcStruct(Table table, Proc proc, String output) {
-        try {
-            if (logger.isInfoEnabled()){
-                logger.info("Code: {}Struct.java", output + table.useName() + proc.upperFirst());
-            }
 
-            try (PrintWriter outData2 = openOutputFileForGeneration("java",
-                    output + table.useName() + proc.upperFirst() + "Struct.java")) {
-                if (table.database.packageName.length() > 0) {
-                    outData2.println("package " + table.database.packageName + ";");
-                    outData2.println();
+        String fileName = output + table.useName() + proc.upperFirst() + ENTITY_CLASS_SUFFIX + ".java";
+
+        logger.info("Code: {}", fileName);
+
+        try (PrintWriter outData = openOutputFileForGeneration("Java", fileName)) {
+            if (table.database.packageName.length() > 0) {
+                outData.println("package " + table.database.packageName + ";");
+                outData.println();
+            }
+            outData.println("import java.io.Serializable;");
+            outData.println("import java.sql.*;");
+            outData.println("import java.math.*;");
+
+            generateEnumImports(table, outData);
+
+            outData.println();
+            outData.println("/**");
+            for (int j = 0; j < proc.comments.size(); j++) {
+                String comment = proc.comments.elementAt(j);
+                outData.println(" *" + comment);
+            }
+            outData.println(" */");
+            outData.println("public class " + table.useName() + proc.upperFirst() + ENTITY_CLASS_SUFFIX + " implements Serializable");
+            outData.println("{");
+            outData.println("    private static final long serialVersionUID = 1L;");
+            int maxSize = 0;
+            for (int j = 0; j < proc.inputs.size(); j++) {
+                Field field = proc.inputs.elementAt(j);
+                if (field.useName().length() > maxSize)
+                    maxSize = field.useName().length();
+                outData.println("  /**");
+                for (int c = 0; c < field.comments.size(); c++) {
+                    String s = field.comments.elementAt(c);
+                    outData.println("   *" + s);
                 }
-                outData2.println("import java.io.Serializable;");
-                outData2.println("import java.sql.*;");
-                outData2.println("import java.math.*;");
-                outData2.println();
-                outData2.println("/**");
-                for (int j = 0; j < proc.comments.size(); j++) {
-                    String comment = proc.comments.elementAt(j);
-                    outData2.println(" *" + comment);
-                }
-                outData2.println(" */");
-                outData2.println("public class " + table.useName() + proc.upperFirst() + "Struct implements Serializable");
-                outData2.println("{");
-                int maxSize = 0;
-                for (int j = 0; j < proc.inputs.size(); j++) {
-                    Field field = proc.inputs.elementAt(j);
-                    if (field.useName().length() > maxSize)
-                        maxSize = field.useName().length();
-                    outData2.println("  /**");
+                if (!proc.hasOutput(field.name))
+                    outData.println("   * (input)");
+                else
+                    outData.println("   * (input/output)");
+                outData.println("   */");
+                outData.println("  protected " + javaVar(field) + ";");
+                outData.println("  public " + getterSetter(field));
+            }
+            for (int j = 0; j < proc.outputs.size(); j++) {
+                Field field = proc.outputs.elementAt(j);
+                if (field.useName().length() > maxSize)
+                    maxSize = field.useName().length();
+                if (!proc.hasInput(field.name)) {
+                    outData.println("  /**");
                     for (int c = 0; c < field.comments.size(); c++) {
                         String s = field.comments.elementAt(c);
-                        outData2.println("   *" + s);
+                        outData.println("   *" + s);
                     }
-                    if (!proc.hasOutput(field.name))
-                        outData2.println("   * (input)");
-                    else
-                        outData2.println("   * (input/output)");
-                    outData2.println("   */");
-                    outData2.println("  public " + javaVar(field) + ";");
-                    outData2.println("  public " + getterSetter(field));
+                    outData.println("   * (output)");
+                    outData.println("   */");
+                    outData.println("  protected " + javaVar(field) + ";");
+                    outData.println("  public " + getterSetter(field));
                 }
-                for (int j = 0; j < proc.outputs.size(); j++) {
-                    Field field = proc.outputs.elementAt(j);
-                    if (field.useName().length() > maxSize)
-                        maxSize = field.useName().length();
-                    if (!proc.hasInput(field.name)) {
-                        outData2.println("  /**");
-                        for (int c = 0; c < field.comments.size(); c++) {
-                            String s = field.comments.elementAt(c);
-                            outData2.println("   *" + s);
-                        }
-                        outData2.println("   * (output)");
-                        outData2.println("   */");
-                        outData2.println("  public " + javaVar(field) + ";");
-                        outData2.println("  public " + getterSetter(field));
-                    }
-                }
-                for (int j = 0; j < proc.dynamics.size(); j++) {
-                    String s = proc.dynamics.elementAt(j);
-                    if (s.length() > maxSize)
-                        maxSize = s.length();
-                    outData2.println("  /**");
-                    outData2.println("   * (dynamic)");
-                    outData2.println("   */");
-                    outData2.println("  public String " + s + ";");
-                }
-                outData2.println("  public " + table.useName() + proc.upperFirst() + "Struct()");
-                outData2.println("  {");
-                for (int j = 0; j < proc.inputs.size(); j++) {
-                    Field field = proc.inputs.elementAt(j);
-                    outData2.println("    " + initJavaVar(field));
-                }
-                for (int j = 0; j < proc.outputs.size(); j++) {
-                    Field field = proc.outputs.elementAt(j);
-                    if (!proc.hasInput(field.name))
-                        outData2.println("    " + initJavaVar(field));
-                }
-                for (int j = 0; j < proc.dynamics.size(); j++) {
-                    String s = proc.dynamics.elementAt(j);
-                    outData2.println("    " + s + " = \"\";");
-                }
-                outData2.println("  }");
-                outData2.println("  public String toString()");
-                outData2.println("  {");
-                outData2.println("    String CRLF = System.lineSeparator();");
-                String ret = "    return ";
-                for (int j = 0; j < proc.inputs.size(); j++) {
-                    outData2.print(ret);
-                    ret = "         + ";
-                    Field field = proc.inputs.elementAt(j);
-                    int no = maxSize - field.useName().length();
-                    outData2.println("\"  " + field.useName() + padded(no + 1) + ": \" + " + field.useName() + " + CRLF");
-                }
-                for (int j = 0; j < proc.outputs.size(); j++) {
-                    Field field = proc.outputs.elementAt(j);
-                    if (!proc.hasInput(field.name)) {
-                        outData2.print(ret);
-                        ret = "         + ";
-                        int no = maxSize - field.useName().length();
-                        outData2.println("\"  " + field.useName() + padded(no + 1) + ": \" + " + field.useName() + " + CRLF");
-                    }
-                }
-                for (int j = 0; j < proc.dynamics.size(); j++) {
-                    String s = proc.dynamics.elementAt(j);
-                    outData2.print(ret);
-                    ret = "         + ";
-                    int no = maxSize - s.length();
-                    outData2.println("\"  " + s + padded(no + 1) + ": \" + " + s + " + CRLF");
-                }
-                outData2.println("    ;");
-                outData2.println("  }");
-                outData2.println("}");
-                outData2.flush();
             }
-        } catch (IOException e1) {
-            logger.error(GENERATE_PROCS_IO_ERROR);
-        }
-    }
+            for (int j = 0; j < proc.dynamics.size(); j++) {
+                String s = proc.dynamics.elementAt(j);
+                if (s.length() > maxSize)
+                    maxSize = s.length();
+                outData.println("  /**");
+                outData.println("   * (dynamic)");
+                outData.println("   */");
+                outData.println("  public String " + s + ";");
+            }
+            outData.println("  public " + table.useName() + proc.upperFirst() + ENTITY_CLASS_SUFFIX + "()");
+            outData.println("  {");
+            for (int j = 0; j < proc.inputs.size(); j++) {
+                Field field = proc.inputs.elementAt(j);
+                outData.println("    " + initJavaVar(field));
+            }
+            for (int j = 0; j < proc.outputs.size(); j++) {
+                Field field = proc.outputs.elementAt(j);
+                if (!proc.hasInput(field.name))
+                    outData.println("    " + initJavaVar(field));
+            }
+            for (int j = 0; j < proc.dynamics.size(); j++) {
+                String s = proc.dynamics.elementAt(j);
+                outData.println("    " + s + " = \"\";");
+            }
+            outData.println("  }");
+            outData.println("  public String toString()");
+            outData.println("  {");
+            outData.println("    String CRLF = System.lineSeparator();");
+            String ret = "    return ";
+            for (int j = 0; j < proc.inputs.size(); j++) {
+                outData.print(ret);
+                ret = "         + ";
+                Field field = proc.inputs.elementAt(j);
+                int no = maxSize - field.useName().length();
+                outData.println("\"  " + field.useLowerName() + padded(no + 1) + ": \" + " + field.useLowerName() + " + CRLF");
+            }
+            for (int j = 0; j < proc.outputs.size(); j++) {
+                Field field = proc.outputs.elementAt(j);
+                if (!proc.hasInput(field.name)) {
+                    outData.print(ret);
+                    ret = "         + ";
+                    int no = maxSize - field.useName().length();
+                    outData.println("\"  " + field.useLowerName() + padded(no + 1) + ": \" + " + field.useLowerName() + " + CRLF");
+                }
+            }
+            for (int j = 0; j < proc.dynamics.size(); j++) {
+                String s = proc.dynamics.elementAt(j);
+                outData.print(ret);
+                ret = "         + ";
+                int no = maxSize - s.length();
+                outData.println("\"  " + s + padded(no + 1) + ": \" + " + s + " + CRLF");
+            }
+            outData.println("    ;");
+            outData.println("  }");
+            outData.println("}");
+            outData.flush();
 
-    /**
-     * Build of standard and user defined procedures
-     */
-    private void generate(Table table, String output) {
-        generateStdProcs(table, output);
-        generateOtherProcs(table, output);
+        } catch (
+                IOException e1) {
+            logger.error(GENERATE_PROCS_IO_ERROR, e1);
+        }
+
     }
 
     /**
@@ -278,70 +298,71 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     private String extendsName;
 
     private void generateStdProcs(Table table, String output) {
-        try {
 
-            if (logger.isInfoEnabled()) {
-                logger.info("Code: {}{}.java", output, table.useName());
-            }
-
-            try (PrintWriter outData = openOutputFileForGeneration("java", output + table.useName() + ".java")) {
-
-                if (table.database.packageName.length() > 0) {
-                    outData.println("package " + table.database.packageName + ";");
-                    outData.println("");
-                }
-                outData.println("import bbd.jportal.*;");
-                outData.println("import java.sql.*;");
-                outData.println("import java.math.*;");
-                outData.println("import java.util.*;");
+        String fileName = output + table.useName() + ".java";
+        logger.info("Code: {}", fileName);
+        try (PrintWriter outData = openOutputFileForGeneration("Java", fileName)) {
+            if (table.database.packageName.length() > 0) {
+                outData.println("package " + table.database.packageName + ";");
                 outData.println("");
-                outData.println("/**");
-                for (int i = 0; i < table.comments.size(); i++) {
-                    String s = table.comments.elementAt(i);
-                    outData.println(" *" + s);
-                }
-                outData.println(" * This code was generated, do not modify it, modify it at source and regenerate it.");
-                outData.println(" */");
-                extendsName = table.useName() + "Struct";
-                outData.println("public class " + table.useName() + " extends " + extendsName);
-                outData.println("{");
-                outData.println("  Connector connector;");
-                outData.println("  Connection connection;");
-                outData.println("  /**");
-                outData.println("   * @param Connector for specific database");
-                outData.println("   */");
-
-                outData.println("  public " + table.useName() + "()");
-                outData.println("  {");
-                outData.println("    super();");
-                outData.println("  }");
-
-                outData.println("  public void setConnector(Connector conn)");
-                outData.println("  {");
-                outData.println("    this.connector = conn;");
-                outData.println("    connection = connector.connection;");
-                outData.println("  }");
-
-                outData.println("  public " + table.useName() + "(Connector connector)");
-                outData.println("  {");
-                outData.println("    super();");
-                outData.println("    this.connector = connector;");
-                outData.println("    connection = connector.connection;");
-                outData.println("  }");
-                for (int i = 0; i < table.procs.size(); i++) {
-                    Proc proc = table.procs.elementAt(i);
-                    if (proc.isData)
-                        continue;
-                    if (proc.isStd)
-                        emitProc(proc, outData);
-                    else if (proc.hasNoData())
-                        emitStaticProc(proc, outData);
-                }
-                outData.println("}");
-                outData.flush();
             }
+            outData.println("import bbd.jportal2.util.*;");
+            outData.println("import java.sql.*;");
+            outData.println("import java.math.*;");
+            outData.println("import java.util.*;");
+            outData.println("");
+            outData.println("/**");
+            for (int i = 0; i < table.comments.size(); i++) {
+                String s = table.comments.elementAt(i);
+                outData.println(" *" + s);
+            }
+            outData.println(" * This code was generated, do not modify it, modify it at source and regenerate it.");
+            outData.println(" */");
+            extendsName = table.useName() + ENTITY_CLASS_SUFFIX;
+            outData.println("public class " + table.useName() + " extends " + extendsName);
+            outData.println("{");
+
+            outData.println("  private static final long serialVersionUID = 1L;");
+
+            outData.println("  Connector connector;");
+            outData.println("  Connection connection;");
+            outData.println("  public " + table.useName() + "()");
+            outData.println("  {");
+            outData.println("    super();");
+            outData.println("  }");
+
+            outData.println("  /**");
+            outData.println("   * @param conn for specific database");
+            outData.println("   */");
+            outData.println("  public void setConnector(Connector conn)");
+            outData.println("  {");
+            outData.println("    this.connector = conn;");
+            outData.println("    connection = connector.connection;");
+            outData.println("  }");
+
+            outData.println("  /**");
+            outData.println("   * @param connector for specific database");
+            outData.println("   */");
+            outData.println("  public " + table.useName() + "(Connector connector)");
+            outData.println("  {");
+            outData.println("    super();");
+            outData.println("    this.connector = connector;");
+            outData.println("    connection = connector.connection;");
+            outData.println("  }");
+            for (int i = 0; i < table.procs.size(); i++) {
+                Proc proc = table.procs.elementAt(i);
+                if (proc.isData)
+                    continue;
+                if (proc.isStd)
+                    emitProc(proc, outData);
+                else if (proc.hasNoData())
+                    emitStaticProc(proc, outData);
+            }
+            outData.println("}");
+            outData.flush();
+
         } catch (IOException e1) {
-            logger.error(GENERATE_PROCS_IO_ERROR);
+            logger.error(GENERATE_PROCS_IO_ERROR, e1);
         }
     }
 
@@ -359,59 +380,62 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     }
 
     private void generateOtherProc(Table table, Proc proc, String output) {
-        try {
 
-            if (logger.isInfoEnabled()) {
-                logger.info("Code: {}.java", output + table.useName() + proc.upperFirst());
-            }
+        String fileName = output + table.useName() + proc.upperFirst() + ".java";
 
-            try (PrintWriter outData = openOutputFileForGeneration("java",
-                    output + table.useName() + proc.upperFirst() + ".java")) {
-                if (table.database.packageName.length() > 0) {
-                    outData.println("package " + table.database.packageName + ";");
-                    outData.println("");
-                }
-                outData.println("import bbd.jportal.*;");
-                outData.println("import java.sql.*;");
-                outData.println("import java.math.*;");
-                outData.println("import java.util.*;");
+        logger.info("Code: {}", fileName);
+
+        try (PrintWriter outData = openOutputFileForGeneration("Java", fileName)) {
+            if (table.database.packageName.length() > 0) {
+                outData.println("package " + table.database.packageName + ";");
                 outData.println("");
-                outData.println("/**");
-                for (int j = 0; j < proc.comments.size(); j++) {
-                    String comment = proc.comments.elementAt(j);
-                    outData.println(" *" + comment);
-                }
-                outData.println(" */");
-                extendsName = table.useName() + proc.upperFirst() + "Struct";
-                outData.println("public class " + table.useName() + proc.upperFirst() + " extends " + extendsName);
-                outData.println("{");
-                outData.println("  Connector connector;");
-                outData.println("  Connection connection;");
-
-                outData.println("  public " + table.useName() + proc.upperFirst() + "()");
-                outData.println("  {");
-                outData.println("    super();");
-                outData.println("  }");
-
-                outData.println("  public void setConnector(Connector conn)");
-                outData.println("  {");
-                outData.println("    this.connector = conn;");
-                outData.println("    connection = connector.connection;");
-                outData.println("  }");
-
-                outData.println("  public " + table.useName() + proc.upperFirst() + "(Connector connector)");
-                outData.println("  {");
-                outData.println("    super();");
-                outData.println("    this.connector = connector;");
-                outData.println("    connection = connector.connection;");
-                outData.println("  }");
-                emitProc(proc, outData);
-                outData.println("}");
-                outData.flush();
             }
+            outData.println("import bbd.jportal2.util.*;");
+            outData.println("import java.sql.*;");
+            outData.println("import java.util.*;");
+            outData.println("import java.math.*;");
+
+            generateEnumImports(table, outData);
+
+            outData.println("");
+            outData.println("/**");
+            for (int j = 0; j < proc.comments.size(); j++) {
+                String comment = proc.comments.elementAt(j);
+                outData.println(" *" + comment);
+            }
+            outData.println(" */");
+            extendsName = table.useName() + proc.upperFirst() + ENTITY_CLASS_SUFFIX;
+            outData.println("public class " + table.useName() + proc.upperFirst() + " extends " + extendsName);
+            outData.println("{");
+            outData.println("  private static final long serialVersionUID = 1L;");
+
+            outData.println("  Connector connector;");
+            outData.println("  Connection connection;");
+
+            outData.println("  public " + table.useName() + proc.upperFirst() + "()");
+            outData.println("  {");
+            outData.println("    super();");
+            outData.println("  }");
+
+            outData.println("  public void setConnector(Connector conn)");
+            outData.println("  {");
+            outData.println("    this.connector = conn;");
+            outData.println("    connection = connector.connection;");
+            outData.println("  }");
+
+            outData.println("  public " + table.useName() + proc.upperFirst() + "(Connector connector)");
+            outData.println("  {");
+            outData.println("    super();");
+            outData.println("    this.connector = connector;");
+            outData.println("    connection = connector.connection;");
+            outData.println("  }");
+            emitProc(proc, outData);
+            outData.println("}");
+            outData.flush();
         } catch (IOException e1) {
-            logger.error(GENERATE_PROCS_IO_ERROR);
+            logger.error(GENERATE_PROCS_IO_ERROR, e1);
         }
+
     }
 
     /**
@@ -449,7 +473,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
      */
     private void emitProc(Proc proc, PrintWriter outData) {
         outData.println("  /**");
-        if (!proc.comments.isEmpty()) {
+        if (proc.comments.size() > 0) {
             for (int i = 0; i < proc.comments.size(); i++) {
                 String comment = proc.comments.elementAt(i);
                 outData.println("    *" + comment);
@@ -500,24 +524,43 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             Field field = proc.inputs.elementAt(i);
             if (proc.isInsert) {
                 if (field.type == Field.BIGSEQUENCE)
-                    outData.println("    " + field.useName() + " = connector.getBigSequence(\"" + proc.table.name + "\");");
+                    outData.println("    " + field.useLowerName() + " = connector.getBigSequence(\"" + proc.table.name + "\");");
                 else if (field.type == Field.SEQUENCE)
-                    outData.println("    " + field.useName() + " = connector.getSequence(\"" + proc.table.name + "\");");
+                    outData.println("    " + field.useLowerName() + " = connector.getSequence(\"" + proc.table.name + "\");");
             }
             if (field.type == Field.TIMESTAMP)
-                outData.println("    " + field.useName() + " = connector.getTimestamp();");
+                outData.println("    " + field.useLowerName() + " = connector.getTimestamp();");
             if (field.type == Field.USERSTAMP)
-                outData.println("    " + field.useName() + " = connector.getUserstamp();");
+                outData.println("    " + field.useLowerName() + " = connector.getUserstamp();");
         }
         Vector<PlaceHolderPairs> pairs = placeHolders.getPairs();
         for (int i = 0; i < pairs.size(); i++) {
             PlaceHolderPairs pair = pairs.elementAt(i);
             Field field = pair.field;
-            outData.print("    prep.set");
-            outData.print(setType(field));
-            outData.print("(");
-            outData.print(i + 1);
-            outData.println(", " + field.useName() + ");");
+
+            if (field.isNull) {
+                outData.println("    if(" + field.useLowerName() + " == null) {");
+                outData.print("        prep.setNull(");
+                outData.print(i + 1);
+                outData.println(", java.sql.Types.NULL);");
+                outData.println("    } else {");
+                outData.print("    ");
+            }
+
+            String enumToInt = "%s";
+
+            if (utilizeEnums && hasEnums(field)) {
+                enumToInt = "%s.key";
+            }
+
+            String prepSet = "    prep.set%s(%d, %s);";
+            outData.println(String.format(prepSet, setType(field), i + 1,
+                    String.format(enumToInt, field.useLowerName())));
+
+            if (field.isNull) {
+                outData.println("    };");
+            }
+
         }
         if (!proc.outputs.isEmpty()) {
             outData.println("    ResultSet result = prep.executeQuery();");
@@ -527,7 +570,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData.println("  }");
                 outData.println("  /**");
                 outData.println("   * Returns the next record in a result set.");
-                outData.println("   * @param result The result set for the query.");
+                outData.println("   * @param query The result set for the query.");
                 outData.println("   * @return true while records are found.");
                 outData.println("   * @exception SQLException is passed through");
                 outData.println("   */");
@@ -549,11 +592,25 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             }
             for (int i = 0; i < proc.outputs.size(); i++) {
                 Field field = proc.outputs.elementAt(i);
-                outData.print("    " + field.useName() + " =  result.get");
-                outData.print(setType(field));
-                outData.print("(");
-                outData.print(i + 1);
-                outData.println(");");
+
+                String enumWrappedResultGet = "%s;";
+
+                if (utilizeEnums && hasEnums(field)) {
+                    enumWrappedResultGet = field.useUpperName() + ".get(%s);";
+                }
+
+                String resultGet = "result.get%s(%d)";
+                enumWrappedResultGet = String.format(enumWrappedResultGet,
+                        String.format(resultGet, setType(field), i + 1));
+
+                if (!field.isNull) {
+                    outData.print("    " + field.useLowerName() + " =  ");
+                } else {
+                    outData.print("    " + field.useLowerName() + " =  result.getObject(");
+                    outData.print(i + 1);
+                    outData.print(") == null?null:");
+                }
+                outData.println(enumWrappedResultGet);
             }
             if (proc.isSingle) {
                 outData.println("    result.close();");
@@ -574,20 +631,20 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println("   */");
             outData.println("  public " + extendsName + "[] " + procName + "Load() throws SQLException");
             outData.println("  {");
-            outData.println("    Vector recs = new Vector();");
+            outData.println("    Vector<" + extendsName + "> recs = new Vector<>();");
             outData.println("    Query query = " + procName + "();");
             outData.println("    while (" + procName + "(query) == true)");
             outData.println("    {");
             outData.println("      " + extendsName + " rec = new " + extendsName + "();");
             for (int i = 0; i < proc.outputs.size(); i++) {
                 Field field = proc.outputs.elementAt(i);
-                outData.println("      rec." + field.useName() + " = " + field.useName() + ";");
+                outData.println("      rec." + field.useLowerName() + " = " + field.useLowerName() + ";");
             }
             outData.println("      recs.addElement(rec);");
             outData.println("    }");
             outData.println("    " + extendsName + "[] result = new " + extendsName + "[recs.size()];");
             outData.println("    for (int i=0; i<recs.size();i++)");
-            outData.println("      result[i] = (" + extendsName + ")recs.elementAt(i); ");
+            outData.println("      result[i] = recs.elementAt(i); ");
             outData.println("    return result;");
             outData.println("  }");
         }
@@ -610,7 +667,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                     continue;
                 if (!field.isPrimaryKey)
                     continue;
-                outData.println("   * @param " + field.useName() + " key input.");
+                outData.println("   * @param " + field.useLowerName() + " key input.");
             }
             for (int i = 0; i < proc.inputs.size(); i++) {
                 Field field = proc.inputs.elementAt(i);
@@ -620,7 +677,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                     continue;
                 if (field.isPrimaryKey)
                     continue;
-                outData.println("   * @param " + field.useName() + " input.");
+                outData.println("   * @param " + field.useLowerName() + " input.");
             }
             for (int i = 0; i < proc.dynamics.size(); i++)
                 outData.println("   * @param " + proc.name + " dynamic input.");
@@ -668,7 +725,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                         || (field.type == Field.TIMESTAMP)
                         || (field.type == Field.USERSTAMP))
                     continue;
-                String usename = field.useName();
+                String usename = field.useLowerName();
                 outData.println("    this." + usename + " = " + usename + ";");
             }
             for (int i = 0; i < proc.dynamics.size(); i++) {
@@ -686,50 +743,53 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     /**
      * Translates field type to java data member type
      */
-    private static String javaVar(Field field) {
+    private String javaVar(Field field) {
         switch (field.type) {
             case Field.BYTE:
-                return "Byte " + field.useName();
+                return "Byte " + field.useLowerName();
             case Field.SHORT:
-                return "Short " + field.useName();
+                return "Short " + field.useLowerName();
             case Field.BIGSEQUENCE:
-                return "Long " + field.useName();
+                return "Long " + field.useLowerName();
             case Field.INT:
+                if (utilizeEnums && hasEnums(field)) {
+                    return getEnumTypeName(field) + " " + field.useLowerName();
+                }
             case Field.SEQUENCE:
             case Field.IDENTITY:
-                return "Integer " + field.useName();
+                return "Integer " + field.useLowerName();
             case Field.LONG:
-                return "Long " + field.useName();
+                return "Long " + field.useLowerName();
             case Field.CHAR:
             case Field.ANSICHAR:
-                return "String " + field.useName();
+                return "String " + field.useLowerName();
             case Field.DATE:
-                return "java.sql.Date " + field.useName();
+                return "java.sql.Date " + field.useLowerName();
             case Field.DATETIME:
-                return "Timestamp " + field.useName();
+                return "Timestamp " + field.useLowerName();
             case Field.TIME:
-                return "Time " + field.useName();
+                return "Time " + field.useLowerName();
             case Field.TIMESTAMP:
-                return "Timestamp " + field.useName();
+                return "Timestamp " + field.useLowerName();
             case Field.FLOAT:
             case Field.DOUBLE:
-                return "Double " + field.useName();
+                return "BigDecimal " + field.useLowerName();
             case Field.BLOB:
+                return "byte[] " + field.useLowerName();
             case Field.TLOB:
-                return "String " + field.useName();
+                return "String " + field.useLowerName();
             case Field.MONEY:
-                return "BigDecimal " + field.useName();
+                return "BigDecimal " + field.useLowerName();
             case Field.USERSTAMP:
-                return "String " + field.useName();
-            default:
-                return "unknown";
+                return "String " + field.useLowerName();
         }
+        return "unknown";
     }
 
     /**
      * Translates field type to java data member type
      */
-    private static String getterSetter(Field field) {
+    private String getterSetter(Field field) {
         String type = null;
         switch (field.type) {
             case Field.BYTE:
@@ -742,6 +802,10 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 type = "Long ";
                 break;
             case Field.INT:
+                if (utilizeEnums && hasEnums(field)) {
+                    type = getEnumTypeName(field) + " ";
+                    break;
+                }
             case Field.SEQUENCE:
             case Field.IDENTITY:
                 type = "Integer ";
@@ -767,9 +831,11 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 break;
             case Field.FLOAT:
             case Field.DOUBLE:
-                type = "Double ";
+                type = "BigDecimal ";
                 break;
             case Field.BLOB:
+                type = "byte[] ";
+                break;
             case Field.TLOB:
                 type = "String ";
                 break;
@@ -784,49 +850,52 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             return "unknown";
 
         } else {
-            return type + "get" + field.useName() + "(){ return " + field.useName() + "; } \n  public void set" + field.useName() + "(" + type + " " + field.useName() + "){ this." + field.useName() + " = " + field.useName() + "; }\n";
+            return type + "get" + field.useName() + "(){ return " + field.useLowerName() + "; } \n  public void set" + field.useName() + "(" + type + " " + field.useLowerName() + "){ this." + field.useLowerName() + " = " + field.useLowerName() + "; }\n";
 
         }
     }
 
     /**
-     * returns the data member initialisation code (not always necessary in java but still we do it)
+     * returns the data member initialisation code (not always neccessary in java but still we do it)
      */
-    private static String initJavaVar(Field field) {
+    private String initJavaVar(Field field) {
         switch (field.type) {
             case Field.BYTE:
-                return field.useName() + " = 0;";
+                return field.useLowerName() + " = null;";
             case Field.CHAR:
             case Field.ANSICHAR:
-                return field.useName() + " = \"\";";
+                return field.useLowerName() + " = null;";
             case Field.DATE:
-                return field.useName() + " = new Date(0);";
+                return field.useLowerName() + " = new Date(0);";
             case Field.DATETIME:
-                return field.useName() + " = new Timestamp(0);";
+                return field.useLowerName() + " = new Timestamp(0);";
             case Field.FLOAT:
             case Field.DOUBLE:
-                return field.useName() + " = 0.0;";
+                return field.useLowerName() + " = null;";
             case Field.BLOB:
             case Field.TLOB:
-                return field.useName() + " = \"\";";
+                return field.useLowerName() + " = null;";
             case Field.BIGSEQUENCE:
-                return field.useName() + " = 0L;";
+                return field.useLowerName() + " = null;";
             case Field.INT:
+                if (utilizeEnums && hasEnums(field)) {
+                    return field.useLowerName() + " = null;";
+                }
             case Field.SEQUENCE:
             case Field.IDENTITY:
-                return field.useName() + " = 0;";
+                return field.useLowerName() + " = null;";
             case Field.LONG:
-                return field.useName() + " = 0L;";
+                return field.useLowerName() + " = null;";
             case Field.MONEY:
-                return field.useName() + " = BigDecimal.ZERO;";
+                return field.useLowerName() + " = null;";
             case Field.SHORT:
-                return field.useName() + " = 0;";
+                return field.useLowerName() + " = null;";
             case Field.TIME:
-                return field.useName() + " = new Time(0);";
+                return field.useLowerName() + " = new Time(0);";
             case Field.TIMESTAMP:
-                return field.useName() + " = new Timestamp(0);";
+                return field.useLowerName() + " = new Timestamp(0);";
             case Field.USERSTAMP:
-                return field.useName() + " = \"\";";
+                return field.useLowerName() + " = null;";
         }
         return "unknown";
     }
@@ -834,7 +903,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     /**
      * JDBC get and set type for field data transfers
      */
-    private static String setType(Field field) {
+    private String setType(Field field) {
         switch (field.type) {
             case Field.BYTE:
                 return "Byte";
@@ -847,8 +916,9 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 return "Timestamp";
             case Field.FLOAT:
             case Field.DOUBLE:
-                return "Double";
+                return "BigDecimal";
             case Field.BLOB:
+                return "Bytes";
             case Field.TLOB:
                 return "String";
             case Field.BIGSEQUENCE:
@@ -873,12 +943,113 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
         return "unknown";
     }
 
-    private static String padded(int size) {
+    private String padded(int size) {
         String padString = "                                                         ";
         if (size == 0)
             return "";
         if (size > padString.length())
             size = padString.length();
         return padString.substring(0, size);
+    }
+
+    private String underScoreWords(String input) {
+        char[] bits = input.toCharArray();
+        StringBuilder builder = new StringBuilder();
+        builder.append(bits[0]);
+        for (int i = 1; i < bits.length; i++) {
+            if ("ABCDEFGHIJKLMNOPQRSTUVWXYZ".indexOf(bits[i]) >= 0
+                    && bits[i - 1] != ' ') {
+                builder.append('_');
+                builder.append(bits[i]);
+            } else
+                builder.append(bits[i]);
+        }
+        return builder.toString();
+    }
+
+    private String splitWords(String input) {
+        char[] bits = underScoreWords(input).toCharArray();
+        StringBuilder builder = new StringBuilder();
+        builder.append(bits[0]);
+        for (int i = 1; i < bits.length; i++) {
+            if (bits[i] == '_')
+                builder.append(' ');
+            else
+                builder.append(bits[i]);
+        }
+        return builder.toString();
+    }
+
+    private void generateEnum(Table table, PrintWriter outData) {
+        for (int i = 0; i < table.fields.size(); i++) {
+            Field field = table.fields.elementAt(i);
+            if (!field.enums.isEmpty()) {
+                outData.println("  public enum " + getEnumTypeName(field));
+                outData.println("  {");
+                for (int j = 0; j < field.enums.size(); j++) {
+                    Enum element = field.enums.elementAt(j);
+                    String evalue = "" + element.value;
+                    if (field.type == Field.ANSICHAR && field.length == 1)
+                        evalue = "'" + (char) element.value + "'";
+                    String keyName = underScoreWords(element.name).toUpperCase();
+                    outData.println("    " + keyName + "(" + evalue + ", \"" + splitWords(element.name) + "\")" + (((j + 1) < field.enums.size()) ? "," : ";"));
+                }
+                outData.println("    public int key;");
+                outData.println("    public String value;");
+                outData.println("    " + field.useUpperName() + "(int key, String value)");
+                outData.println("    {");
+                outData.println("      this.key = key;");
+                outData.println("      this.value = value;");
+                outData.println("    }");
+                outData.println("    public static " + field.useUpperName() + " get(int key)");
+                outData.println("    {");
+                outData.println("      for (" + field.useUpperName() + " op : values())");
+                outData.println("        if (op.key == key) return op;");
+                outData.println("      return null;");
+                outData.println("    }");
+                outData.println("    public String toString()");
+                outData.println("    {");
+                outData.println("      return value;");
+                outData.println("    }");
+                outData.println("  }");
+            }
+        }
+    }
+
+    private boolean hasEnums(Field field) {
+        return field.getEnums() != null
+                && !field.getEnums().isEmpty();
+    }
+
+
+    private boolean hasEnums(Table table) {
+        return table.getFields().stream().anyMatch(this::hasEnums);
+    }
+
+    public List<Field> getAllEnumFields(Table table) {
+        return table.getFields().stream()
+                .filter(this::hasEnums)
+                .collect(Collectors.toList());
+    }
+
+    private void generateEnumImports(Table table, PrintWriter outData) {
+        String enumImport = "import %s.%s%s.%s;";
+
+        if (utilizeEnums && hasEnums(table)) {
+            for (Field field : getAllEnumFields(table)) {
+                outData.println(String.format(enumImport,
+                        table.getDatabase().getPackageName(),
+                        table.getName(), ENTITY_CLASS_SUFFIX, getEnumTypeName(field))
+                );
+            }
+        }
+    }
+
+    public String getEnumTypeName(Field field) {
+        if (field.getEnumType() != null && !field.getEnumType().isEmpty()) {
+            return field.getEnumType();
+        } else {
+            return field.useUpperName();
+        }
     }
 }

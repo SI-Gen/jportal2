@@ -14,7 +14,7 @@ Table Contingency
    PlayTypeID                    INT
    ContingencyStatus             INT
    Description                   CHAR(256)
-   IsActive                      INT (Yes = 1 No = 0)
+   IsActive                      INT (Yes = 1, No = 0)
    IsActiveReason                CHAR(512) NULL
    SourceBetTypeID               INT
    SourceBetTypeValue            CHAR(100) NULL

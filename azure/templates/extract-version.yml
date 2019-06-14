@@ -1,0 +1,7 @@
+steps:
+- bash: |
+    extracted_version=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout | cut -d- -f1)
+    echo "##vso[task.setvariable variable=project_version]$extracted_version"
+    echo "Current project version: $extracted_version"
+  displayName: 'Extract current project version from POM'
+  failOnStderr: true 
