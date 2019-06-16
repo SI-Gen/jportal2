@@ -24,5 +24,16 @@ public class JavaJCCodeGeneratorTest {
         pj.compileAll();
     }
 
+    @Test
+    public void generateJavaCodeWithLombokAnnotations() throws Exception {
+        ProjectCompiler pj = new ProjectCompiler();
+        pj.addCompilerFlags(Collections.singletonList("generateLombok"));
+        pj.addTemplateLocation(SI_PROCESSOR_TEMPLATE_DIR);
+        Path outputPath = Paths.get(OUTPUT_DIR, "JavaJCCode", "JavaJCCodeWithLombok");
+        pj.addBuiltinSIProcessor("JavaJCCode:" + outputPath);
+        pj.addInputDir(SI_DIR);
+        pj.compileAll();
+    }
+
 }
 
