@@ -19,28 +19,36 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
 /**
  * <p>Generates Java code for JDBC and Crackle consumption </p>
- *
- * <h3>Supported Flags</h3>
+ * <br> Supported Flags
  * <ul>
  * <li><code>utilizeEnums</code> - Not only generates Enum types but also uses them on generated fields and
  * method parameters and return values.
  * </li>
+ * <li><code>generateLombok</code> - Generates Lombok annotations for <code>equals</code>, <code>hashCode</code>,
+ * accessor, mutator and <code>toString</code> method implementations, in addition to a builder implementation.
+ * </li>
  * </ul>
+ *
+ * When specifying the <code>generateLombok</code> flag, ensure that Lombok is on the classpath in client
+ * applications.
  */
 public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(JavaJCCode.class);
     public static final String GENERATE_PROCS_IO_ERROR = "Generate Procs IO Error";
-    public static final String FLAG_UTILIZE_ENUMS = "utilizeEnums";
+    public static final String FLAG_UTILIZE_ENUMS = "utilizeenums";
+    public static final String FLAG_GEN_LOMBOK = "generatelombok";
     public static final String ENTITY_CLASS_SUFFIX = "Struct";
 
-    private boolean utilizeEnums = false;
+    private Set<String> flags = new HashSet<>();
 
     public JavaJCCode() {
         super(JavaJCCode.class);
@@ -59,10 +67,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
 
     public void generate(Database database, String output) {
 
-        database.getFlags().stream()
-                .filter(f -> f.equalsIgnoreCase(FLAG_UTILIZE_ENUMS))
-                .findFirst()
-                .ifPresent(f -> this.utilizeEnums = true);
+        flags = database.getFlags().stream().map(String::toLowerCase).collect(Collectors.toSet());
 
         for (int i = 0; i < database.tables.size(); i++) {
             Table table = database.tables.elementAt(i);
@@ -98,6 +103,8 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println("import java.sql.*;");
             outData.println("import java.math.*;");
 
+            generateLombokImport(outData);
+
             outData.println();
             outData.println("/**");
             for (int i = 0; i < table.comments.size(); i++) {
@@ -107,6 +114,9 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println(" * This code was generated, do not modify it, modify it at source and regenerate it.");
             outData.println(" * Does not use inner public classes and separates structs out.");
             outData.println(" */");
+
+            generateLombokAnnotations(outData);
+
             outData.println("public class " + table.useName() + ENTITY_CLASS_SUFFIX + " implements Serializable");
             outData.println("{");
             outData.println("  public static final long serialVersionUID = 1L;");
@@ -183,6 +193,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println("import java.math.*;");
 
             generateEnumImports(table, outData);
+            generateLombokImport(outData);
 
             outData.println();
             outData.println("/**");
@@ -191,6 +202,9 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData.println(" *" + comment);
             }
             outData.println(" */");
+
+            generateLombokAnnotations(outData);
+
             outData.println("public class " + table.useName() + proc.upperFirst() + ENTITY_CLASS_SUFFIX + " implements Serializable");
             outData.println("{");
             outData.println("    private static final long serialVersionUID = 1L;");
@@ -549,7 +563,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
 
             String enumToInt = "%s";
 
-            if (utilizeEnums && hasEnums(field)) {
+            if (shouldUtilizeEnums() && hasEnums(field)) {
                 enumToInt = "%s.key";
             }
 
@@ -595,7 +609,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
 
                 String enumWrappedResultGet = "%s;";
 
-                if (utilizeEnums && hasEnums(field)) {
+                if (shouldUtilizeEnums() && hasEnums(field)) {
                     enumWrappedResultGet = field.useUpperName() + ".get(%s);";
                 }
 
@@ -752,7 +766,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.BIGSEQUENCE:
                 return "Long " + field.useLowerName();
             case Field.INT:
-                if (utilizeEnums && hasEnums(field)) {
+                if (shouldUtilizeEnums() && hasEnums(field)) {
                     return getEnumTypeName(field) + " " + field.useLowerName();
                 }
             case Field.SEQUENCE:
@@ -802,7 +816,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 type = "Long ";
                 break;
             case Field.INT:
-                if (utilizeEnums && hasEnums(field)) {
+                if (shouldUtilizeEnums() && hasEnums(field)) {
                     type = getEnumTypeName(field) + " ";
                     break;
                 }
@@ -878,7 +892,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.BIGSEQUENCE:
                 return field.useLowerName() + " = null;";
             case Field.INT:
-                if (utilizeEnums && hasEnums(field)) {
+                if (shouldUtilizeEnums() && hasEnums(field)) {
                     return field.useLowerName() + " = null;";
                 }
             case Field.SEQUENCE:
@@ -1035,7 +1049,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     private void generateEnumImports(Table table, PrintWriter outData) {
         String enumImport = "import %s.%s%s.%s;";
 
-        if (utilizeEnums && hasEnums(table)) {
+        if (shouldUtilizeEnums() && hasEnums(table)) {
             for (Field field : getAllEnumFields(table)) {
                 outData.println(String.format(enumImport,
                         table.getDatabase().getPackageName(),
@@ -1045,11 +1059,34 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
         }
     }
 
-    public String getEnumTypeName(Field field) {
+    private void generateLombokImport(PrintWriter outData) {
+        if (shouldGenerateLombok()) {
+            outData.println("import lombok.*;");
+        }
+    }
+
+    private void generateLombokAnnotations(PrintWriter outData) {
+        if (shouldGenerateLombok()) {
+            outData.println("@Data");
+            outData.println("@Builder");
+            outData.println("@AllArgsConstructor");
+        }
+    }
+
+    private String getEnumTypeName(Field field) {
         if (field.getEnumType() != null && !field.getEnumType().isEmpty()) {
             return field.getEnumType();
         } else {
             return field.useUpperName();
         }
     }
+
+    private boolean shouldUtilizeEnums() {
+        return flags.contains(FLAG_UTILIZE_ENUMS);
+    }
+
+    private boolean shouldGenerateLombok() {
+        return flags.contains(FLAG_GEN_LOMBOK);
+    }
+
 }
