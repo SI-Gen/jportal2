@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 /**
  * <p>Generates Java code for JDBC and Crackle consumption </p>
- * <br/> Supported Flags
+ * <br> Supported Flags
  * <ul>
  * <li><code>utilizeEnums</code> - Not only generates Enum types but also uses them on generated fields and
  * method parameters and return values.
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  * </li>
  * </ul>
  *
- * @apiNote When specifying the <code>generateLombok</code> flag, ensure that Lombok is on the classpath in client
+ * When specifying the <code>generateLombok</code> flag, ensure that Lombok is on the classpath in client
  * applications.
  */
 public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
