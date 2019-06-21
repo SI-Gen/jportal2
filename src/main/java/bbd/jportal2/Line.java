@@ -53,8 +53,7 @@ public class Line implements Serializable
     return line;
   }
 
-  @Override
-  public String toString() {
+    public String toString() {
     return getlineval();
   }
 }
