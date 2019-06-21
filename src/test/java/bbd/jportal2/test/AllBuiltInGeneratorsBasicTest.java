@@ -1,11 +1,7 @@
 package bbd.jportal2.test;
 
 import bbd.jportal2.*;
-import net.sf.extcos.ComponentQuery;
-import net.sf.extcos.ComponentScanner;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.file.*;
 import java.util.*;

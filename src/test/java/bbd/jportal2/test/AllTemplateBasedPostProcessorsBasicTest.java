@@ -1,5 +1,6 @@
 package bbd.jportal2.test;
 
+import bbd.jportal2.BuiltInGeneratorHelpers;
 import bbd.jportal2.IBuiltInSIProcessor;
 import bbd.jportal2.ITemplateBasedPostProcessor;
 import bbd.jportal2.ProjectCompiler;

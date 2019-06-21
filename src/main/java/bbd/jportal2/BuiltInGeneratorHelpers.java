@@ -1,4 +1,4 @@
-package bbd.jportal2.test;
+package bbd.jportal2;
 
 import bbd.jportal2.IBuiltInSIProcessor;
 import bbd.jportal2.ProjectCompiler;
