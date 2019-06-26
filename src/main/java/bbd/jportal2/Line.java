@@ -23,6 +23,11 @@ public class Line implements Serializable
 {
   private static final long serialVersionUID = 1L;
   public String line;
+
+  public boolean isVar() {
+    return isVar;
+  }
+
   public boolean isVar;
   /** Constructs line needed to be enclosed in double quotes */
   public Line(String l)
