@@ -11,6 +11,9 @@ import java.util.List;
 @Parameters(separators = "=")
 public class JPortal2Arguments {
 
+    @Parameter(names = {"--debug", "-D"}, description = "Enable debug logging")
+    private Boolean debug = false;
+
     @Parameter(names = {"--log", "-l"}, description = "Logfile name i.e. --log=jportal2.log")
     private String logFileName = null;
 
@@ -90,6 +93,10 @@ public class JPortal2Arguments {
 
     public boolean isHelp() {
         return help;
+    }
+
+    public boolean mustDebug() {
+        return debug;
     }
 
     public void setLogFileName(String logFileName) {
