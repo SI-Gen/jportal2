@@ -14,8 +14,6 @@ package bbd.jportal2.generators;
 import bbd.jportal2.Flag;
 import bbd.jportal2.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Vector;
