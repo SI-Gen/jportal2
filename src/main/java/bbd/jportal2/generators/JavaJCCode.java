@@ -953,7 +953,10 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 return "Timestamp";
             case Field.USERSTAMP:
                 return "String";
+            case Field.BOOLEAN:
+                return "boolean";
         }
+
         return "unknown";
     }
 
@@ -1068,8 +1071,8 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     private void generateLombokAnnotations(PrintWriter outData) {
         if (shouldGenerateLombok()) {
             outData.println("@Data");
-            outData.println("@Builder");
             outData.println("@AllArgsConstructor");
+            outData.println("@NoArgsConstructor");
         }
     }
 
