@@ -1079,7 +1079,6 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
         if (shouldGenerateLombok()) {
             outData.println("@Data");
             outData.println("@AllArgsConstructor");
-            outData.println("@NoArgsConstructor");
         }
     }
 
