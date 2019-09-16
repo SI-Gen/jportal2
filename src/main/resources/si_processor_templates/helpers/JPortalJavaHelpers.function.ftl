@@ -47,9 +47,9 @@
         <#return "Unknown">       <#-- XML -->
     <#elseif typeInt == 24>
         <#return "long">           <#-- BIGSEQUENCE -->
-    <el#if typeInt == 25>
+    <#elseif typeInt == 25>
         <#return "long">           <#-- BIGIDENTITY -->
-    <el#if typeInt == 26>
+    <#elseif typeInt == 26>
         <#return "Unknown">       <#-- AUTOTIMESTAMP -->
     <#elseif typeInt == 27>
         <#return "Unknown">       <#-- WCHAR -->
