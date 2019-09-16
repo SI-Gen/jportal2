@@ -887,7 +887,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
         {
           Field field = (Field)proc.inputs.elementAt(j);
           if ((isSequence(field) && proc.isInsert)
-          || isIdentity(field)
+          || (isIdentity(field) && proc.isInsert)
           || field.type == Field.TIMESTAMP
           || field.type == Field.AUTOTIMESTAMP
           || field.type == Field.USERSTAMP)
@@ -900,6 +900,8 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
           outData.println("  strncpy(" + s + ", a" + s + ", sizeof(" + s + ")-1);");
         }
         outData.println("  Exec();");
+        if (proc.outputs.size() > 0 && proc.isInsert)
+            outData.println("  Fetch();");
         outData.println("}");
         outData.println();
       }
@@ -1054,8 +1056,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     for (int j = 0; j < proc.inputs.size(); j++)
     {
       Field field = (Field)proc.inputs.elementAt(j);
-      if ((isSequence(field) && proc.isInsert) || isIdentity(field)
-        || field.type == Field.TIMESTAMP || field.type == Field.AUTOTIMESTAMP || field.type == Field.USERSTAMP)
+      if ((isSequence(field) && proc.isInsert) || (isIdentity(field) && proc.isInsert) || field.type == Field.TIMESTAMP || field.type == Field.AUTOTIMESTAMP || field.type == Field.USERSTAMP)
         continue;
       outData.println(pad + comma + "const " + cppParm(field));
       comma = ", ";
@@ -1146,8 +1147,15 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     outData.println("  TJQuery q_;");
     if (standardExec == true)
     {
+      if (proc.outputs.size() > 0)
+          outData.println("  bool Fetch();");
+
       outData.println("  void Exec();");
-      outData.println("  void Exec(" + dataStruct + "& Rec) {*DRec() = Rec;Exec();}");
+      if (proc.outputs.size() > 0 && proc.isInsert)
+        outData.println("  void Exec(" + dataStruct + "& Rec) {*DRec() = Rec;Exec(); Fetch();}");
+      else
+        outData.println("  void Exec(" + dataStruct + "& Rec) {*DRec() = Rec;Exec(); }");
+
       boolean skipExecWithParms = false;
       for (int j = 0; j < proc.inputs.size(); j++)
       {
@@ -1161,13 +1169,27 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       if (skipExecWithParms == false)
         if ((proc.inputs.size() > 0) || proc.dynamics.size() > 0)
         {
-          outData.println("  void Exec(");
-          generateWithParms(proc, outData, "  ");
-          outData.println("  );");
+            boolean val = false;
+
+            for (int j = 0; j < proc.inputs.size(); j++)
+            {
+                Field field = (Field)proc.inputs.elementAt(j);
+                if ((isSequence(field) && proc.isInsert) || (isIdentity(field) && proc.isInsert) || field.type == Field.TIMESTAMP || field.type == Field.AUTOTIMESTAMP || field.type == Field.USERSTAMP)
+                    continue;
+                val = true;
+            }
+            for (int j = 0; j < proc.dynamics.size(); j++) {
+                String s = (String) proc.dynamics.elementAt(j);
+                val=true;
+            }
+            if (val)
+            {
+                outData.println("  void Exec(");
+                generateWithParms(proc, outData, "  ");
+                outData.println("  );");
+            }
         }
     }
-    if (proc.outputs.size() > 0)
-      outData.println("  bool Fetch();");
     outData.println("  T" + table.useName() + proc.upperFirst() + "(TJConnector &conn, const char* aFile=__FILE__, long aLine=__LINE__)");
     outData.println("  : q_(conn)");
     outData.println("  {Clear();q_.FileAndLine(aFile,aLine);}");
@@ -1607,6 +1629,8 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       case Field.SHORT:
       case Field.INT:
       case Field.LONG:
+      case Field.BIGIDENTITY:
+      case Field.IDENTITY:
         return field.useName();
       case Field.FLOAT:
       case Field.DOUBLE:
@@ -1751,6 +1775,8 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       case Field.INT:
       case Field.LONG:
       case Field.SEQUENCE:
+      case Field.IDENTITY:
+      case Field.BIGIDENTITY:
       case Field.BIGSEQUENCE:
         return field.useName() + " = a" + field.useName() + ";";
       case Field.FLOAT:
@@ -1772,7 +1798,6 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       case Field.BLOB:
         return field.useName() + " = a" + field.useName() + ";";
       case Field.USERSTAMP:
-      case Field.IDENTITY:
       case Field.TIMESTAMP:
         return "// " + field.useName() + " -- generated";
       case Field.AUTOTIMESTAMP:

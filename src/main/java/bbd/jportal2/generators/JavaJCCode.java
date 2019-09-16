@@ -796,6 +796,8 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 return "BigDecimal " + field.useLowerName();
             case Field.USERSTAMP:
                 return "String " + field.useLowerName();
+            case Field.BOOLEAN:
+                return "Boolean " + field.useLowerName();
         }
         return "unknown";
     }
@@ -859,6 +861,9 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.USERSTAMP:
                 type = "String ";
                 break;
+            case Field.BOOLEAN:
+                type = "Boolean ";
+                break;
         }
         if (type == null) {
             return "unknown";
@@ -910,6 +915,8 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 return field.useLowerName() + " = new Timestamp(0);";
             case Field.USERSTAMP:
                 return field.useLowerName() + " = null;";
+            case Field.BOOLEAN:
+                return field.useLowerName() + " = null;";
         }
         return "unknown";
     }
@@ -953,7 +960,10 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 return "Timestamp";
             case Field.USERSTAMP:
                 return "String";
+            case Field.BOOLEAN:
+                return "Boolean";
         }
+
         return "unknown";
     }
 
@@ -1068,7 +1078,6 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     private void generateLombokAnnotations(PrintWriter outData) {
         if (shouldGenerateLombok()) {
             outData.println("@Data");
-            outData.println("@Builder");
             outData.println("@AllArgsConstructor");
         }
     }
