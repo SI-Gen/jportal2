@@ -343,6 +343,8 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
                 return "numeric(24,6)";
             case Field.USERSTAMP:
                 return "VARCHAR(16)";
+            case Field.BOOLEAN:
+                return "boolean";
             case Field.IDENTITY:
                 return "<not supported>";
         }
