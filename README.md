@@ -119,7 +119,7 @@ INPUT
     ID          =
 OUTPUT
     ListName    =
-    ListType    CHAR(8)
+    ListType    CHAR
 SQLCODE
 SELECT
     ListName,
@@ -200,18 +200,12 @@ the directory ${basedir}/target/generated-sources/java/com/example/db.
 To use a Freemarker Template. Create a folder anywhere: \$HOME/templates/Example
 Inside that folder create the freemarker template file: ExampleDB.py.ftl
 
-Jportal supports freemarker file name substitution. For example ExampleDB${database.tables[0].name}.py.ftl will generate a ExampleDB{tablename}.py file for all the SI files you gen for. 
+Jportal2 supports freemarker file name substitution. For example ExampleDB${database.tables[0].name}.py.ftl will generate a ExampleDB{tablename}.py file for all the SI files you gen for. 
 
 Inside your template file:
 ```
 <#list database.tables as table>
-
-class T${table.name}(object):
-    def __init__(self<#list table.fields as field>, ${field.name?lower_case}=None</#list>):
-
-    <#list table.fields as field>
-        self.${field.name?lower_case} = ${field.name?lower_case}
-    </#list>
+table name: ${table.name}:
 </#list>
 ```
 
@@ -225,10 +219,5 @@ Run jportal with the argument:
 
 When Jportal is done. You will have the generated files in the output directory and it will look like this:
 ```python
-class TExampleTable(object):
-    def __init__(self, id=None, name=None, surname=None):
-
-        self.id = id
-        self.name = name
-        self.surname = surname
+table name: ExampleTable
 ```
