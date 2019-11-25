@@ -195,3 +195,36 @@ OUTPUT
 
 Now compile your maven project. If all went well, you should see 2 files inside
 the directory ${basedir}/target/generated-sources/java/com/example/db.
+
+### Freemarker
+To use a Freemarker Template. Create a folder anywhere: \$HOME/templates/Example
+Inside that folder create the freemarker template file: ExampleDB.py.ftl
+
+JPortal2 supports freemarker file name substitution. For example ExampleDB${database.tables[0].name}.py.ftl will generate a ExampleDB{tablename}.py file for all the SI files you gen for. 
+
+Inside your template file:
+```
+<#list database.tables as table>
+table name: ${table.name}:
+    table Fields:
+    <#list table.fields as field>${field.name}
+    </#list>
+</#list>
+```
+
+JPortal2 takes 2 arguments to run freemarker. The template location where all the templates folders are, and what templates you want to run.
+
+Run jportal with the argument:
+```
+--template-location $HOME/templates/
+--template-generator ExampleDB:$HOME/output
+```
+
+When JPortal2 is done. You will have the generated files in the output directory and it will look like this:
+```python
+table name: ExampleTable
+    table fields:
+    id
+    name
+    surname
+```
