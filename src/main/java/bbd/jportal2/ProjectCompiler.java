@@ -70,7 +70,7 @@ public class ProjectCompiler {
             for (String filename : allInputFiles) {
                 if ("si".compareTo(FilenameUtils.getExtension(filename)) == 0) {
                     logger.info("Generating for SI File: " + filename);
-                    rc |= sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations);
+                    rc |= sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, false);
                 }
             }
         }
