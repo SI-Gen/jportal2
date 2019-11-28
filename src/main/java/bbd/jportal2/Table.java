@@ -184,6 +184,30 @@ public class Table implements Serializable {
         return fields;
     }
 
+    public Link getLinkForField(Field field) {
+        for (Link link : getLinks())
+        {
+            if (link.fields.size() < 1) {
+                System.out.println("ERR");
+                continue;
+            }
+            if (link.getFields().get(0).compareTo(field.name) == 0) {
+                return link;
+            }
+        }
+        return null;
+    }
+
+    public Field getFieldForLink(Link link) {
+        for (Field field : getFields())
+        {
+            if (link.getFields().get(0).compareTo(field.name) == 0) {
+                return field;
+            }
+        }
+        return null;
+    }
+
     public Vector<Key> getKeys() {
         return keys;
     }

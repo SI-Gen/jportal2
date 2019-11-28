@@ -37,10 +37,12 @@ public class Link implements Serializable
   public boolean isUpdateCascade;
   public boolean isProc;
   public boolean isDProc;
+
+
   public Link()
   {
     name      = "";
-    linkName = "";
+    linkName  = "";
     fields    = new Vector<String>();
     linkFields = new Vector<String>();
     options = new Vector<String>();
@@ -57,13 +59,13 @@ public class Link implements Serializable
     for (int i=0; i<noOf; i++)
     {
       String value = ids.readUTF();
-      fields.addElement(value);
+      getFields().addElement(value);
     }
     noOf = ids.readInt();
     for (int i=0; i<noOf; i++)
     {
       String value = ids.readUTF();
-      linkFields.addElement(value);
+      getLinkFields().addElement(value);
     }
     isDeleteCascade = ids.readBoolean();
   }
@@ -71,15 +73,15 @@ public class Link implements Serializable
   {
     ods.writeUTF(name);
     ods.writeUTF(linkName);
-    ods.writeInt(fields.size());
-    for (int i=0; i<fields.size(); i++)
+    ods.writeInt(getFields().size());
+    for (int i = 0; i< getFields().size(); i++)
     {
-      String value = (String) fields.elementAt(i);
+      String value = (String) getFields().elementAt(i);
       ods.writeUTF(value);
     }
-    for (int i=0; i<linkFields.size(); i++)
+    for (int i = 0; i< getLinkFields().size(); i++)
     {
-      String value = (String) linkFields.elementAt(i);
+      String value = (String) getLinkFields().elementAt(i);
       ods.writeUTF(value);
     }
     ods.writeBoolean(isDeleteCascade);
@@ -87,9 +89,9 @@ public class Link implements Serializable
   public boolean hasField(String s)
   {
     int i;
-    for (i=0; i<fields.size(); i++)
+    for (i=0; i< getFields().size(); i++)
     {
-      String name = (String) fields.elementAt(i);
+      String name = (String) getFields().elementAt(i);
       if (name.equalsIgnoreCase(s))
         return true;
     }
@@ -124,6 +126,48 @@ public class Link implements Serializable
 
     return haystack;
   }
+
+  public String getSchema() {
+    String[] results = name.split("\\.");
+    if (results.length > 1)
+      return results[0];
+    return "";
+  }
+
+  public String getName() {
+    String[] results = name.split("\\.");
+    if (results.length > 1)
+      return results[1];
+    return name;
+  }
+
+  public String getFullName() {
+    return name;
+  }
+
+  public String getLinkName() {
+    return linkName;
+  }
+
+  public Vector<String> getFields() {
+    return fields;
+  }
+
+  public Vector<String> getLinkFields() {
+    return linkFields;
+  }
+
+  public String getFirstLinkField() {
+    if (getLinkFields().size() > 0) {
+      return getLinkFields().get(0);
+    }
+    return null;
+  }
+
+  public Vector<String> getOptions() {
+    return options;
+  }
+
 }
 
 
