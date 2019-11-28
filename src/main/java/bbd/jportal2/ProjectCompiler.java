@@ -25,6 +25,12 @@ public class ProjectCompiler {
     private List<String> templateBasedPostProcessors = new ArrayList<>();
     private List<String> templateLocations = new ArrayList<>();
 
+    private Boolean projectCompile = false;
+
+    public ProjectCompiler(Boolean projectCompile) {
+        this.projectCompile = projectCompile;
+    }
+
     public void addInputDirs(List<String> listOfInputDirs) {
         this.inputDirs.addAll(listOfInputDirs);
     }
@@ -40,7 +46,6 @@ public class ProjectCompiler {
     public void addInputFile(String inputFile) {
         this.inputFiles.add(inputFile);
     }
-
 
     public int compileAll() throws Exception {
         List<String> allInputFiles = new ArrayList<>();

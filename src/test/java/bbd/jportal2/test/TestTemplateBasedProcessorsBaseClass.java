@@ -40,7 +40,7 @@ public class TestTemplateBasedProcessorsBaseClass<TYPE_TO_TEST extends ITemplate
     }
 
     public ProjectCompiler getProjectCompiler(String templateLocation) {
-        ProjectCompiler pj = new ProjectCompiler();
+        ProjectCompiler pj = new ProjectCompiler(false);
         pj.addTemplateLocation(templateLocation);
         return pj;
     }
@@ -67,7 +67,6 @@ public class TestTemplateBasedProcessorsBaseClass<TYPE_TO_TEST extends ITemplate
         pj.addInputDir(SI_DIR);
         return pj.compileAll();
     }
-
 
     private Set<Class<? extends TYPE_TO_TEST>> findClasses() {
         final Set<Class<? extends TYPE_TO_TEST>> foundClasses = new HashSet<>();

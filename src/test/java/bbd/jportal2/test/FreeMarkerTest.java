@@ -2,6 +2,7 @@ package bbd.jportal2.test;
 
 import bbd.jportal2.Database;
 import bbd.jportal2.JPortal;
+import bbd.jportal2.Table;
 import bbd.jportal2.generators.FreeMarker.FreeMarker;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -39,11 +40,12 @@ public class FreeMarkerTest {
         String nubDir="";
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        (new FreeMarker()).generateTemplate(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+        (new FreeMarker()).generateTemplate(db, db.tables.get(0), TEMPLATE_DIR, nameOfTest, outputDirectory);
 
         //Test output
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "single_file"));
         assertEquals("Hello World jportal_example_db",lines.get(0));
+        JPortal.clearDatabase();
     }
 
     @Test
@@ -57,7 +59,7 @@ public class FreeMarkerTest {
     
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        (new FreeMarker()).generateTemplate(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+        (new FreeMarker()).generateTemplate(db, db.tables.get(0), TEMPLATE_DIR, nameOfTest, outputDirectory);
 
         //Test output - file1.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "dir1/file1.txt"));
@@ -70,6 +72,7 @@ public class FreeMarkerTest {
         assertEquals("Database Name: jportal_example_db" ,lines2.get(0));
         assertEquals("Field Name: IntField" ,lines2.get(1));
         assertEquals("Static: 2"                ,lines2.get(2));
+        JPortal.clearDatabase();
     }
 
     @Test
@@ -82,31 +85,43 @@ public class FreeMarkerTest {
         String nubDir="";
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        (new FreeMarker()).generateTemplate(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+
+        Table tab = null;
+        for (Table t : db.tables) {
+            if (t.name.equals("ExampleTable")) {
+                tab = t;
+                break;
+            }
+        }
+
+        (new FreeMarker()).generateTemplate(db, tab, TEMPLATE_DIR, nameOfTest, outputDirectory);
 
         //Test output - dir1/file1.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "dir1/file1.txt"));
-        assertEquals("Database Name: jportal_example_db" ,lines.get(0));
-        assertEquals("Field Name: ID"           ,lines.get(1));
-        assertEquals("Static: 1"                ,lines.get(2));
+        assertEquals("Database Name: jportal_example_db",lines.get(0));
+        assertEquals("Field Name: ID"                   ,lines.get(1));
+        assertEquals("Static: 1"                        ,lines.get(2));
 
         //Test output - dir1/file2.txt
         List<String> lines2 = Files.readAllLines(Paths.get(outputDirectory.toString(), "dir1/file2.txt"));
-        assertEquals("Database Name: jportal_example_db" ,lines2.get(0));
-        assertEquals("Field Name: IntField" ,lines2.get(1));
-        assertEquals("Static: 2"                ,lines2.get(2));
+        assertEquals("Database Name: jportal_example_db",lines2.get(0));
+        String line21 = lines2.get(1);
+        int result = line21.compareTo("Field Name: IntField");
+        assertEquals("Field Name: IntField"             ,line21);
+        assertEquals("Static: 2"                        ,lines2.get(2));
 
         //Test output - dir2/file1.txt
         List<String> lines3 = Files.readAllLines(Paths.get(outputDirectory.toString(), "dir2/file1.txt"));
-        assertEquals("Database Name: jportal_example_db"         ,lines3.get(0));
-        assertEquals("Field Name: UniqueInt"    ,lines3.get(1));
+        assertEquals("Database Name: jportal_example_db",lines3.get(0));
+        assertEquals("Field Name: UniqueInt"            ,lines3.get(1));
         assertEquals("Static: 3"                        ,lines3.get(2));
 
         //Test output - dir2/file2.txt
         List<String> lines4 = Files.readAllLines(Paths.get(outputDirectory.toString(), "dir2/file2.txt"));
-        assertEquals("Database Name: jportal_example_db"             ,lines4.get(0));
-        assertEquals("Field Name: StandardString" ,lines4.get(1));
-        assertEquals("Static: 4"                            ,lines4.get(2));
+        assertEquals("Database Name: jportal_example_db",lines4.get(0));
+        assertEquals("Field Name: StandardString"       ,lines4.get(1));
+        assertEquals("Static: 4"                        ,lines4.get(2));
+        JPortal.clearDatabase();
     }
 
     @Test
@@ -119,13 +134,14 @@ public class FreeMarkerTest {
         String nubDir="";
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        (new FreeMarker()).generateTemplate(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+        (new FreeMarker()).generateTemplate(db, db.tables.get(0), TEMPLATE_DIR, nameOfTest, outputDirectory);
 
         //Test output - dir1/file1.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "ExampleTable/file1.txt"));
         assertEquals("Database Name: jportal_example_db" ,lines.get(0));
-        assertEquals("Field Name: ID"           ,lines.get(1));
-        assertEquals("Static: 1"                ,lines.get(2));
+        assertEquals("Field Name: ID"                    ,lines.get(1));
+        assertEquals("Static: 1"                         ,lines.get(2));
+        JPortal.clearDatabase();
     }
 
     @Test
@@ -138,19 +154,20 @@ public class FreeMarkerTest {
         String nubDir="";
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        (new FreeMarker()).generateTemplate(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+        (new FreeMarker()).generateTemplate(db, db.tables.get(0), TEMPLATE_DIR, nameOfTest, outputDirectory);
 
         //Test output - SelectForUpdateByUniqueInt.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "SelectForUpdateByUniqueInt.txt"));
-        assertEquals("Database Name: jportal_example_db" ,lines.get(0));
-        assertEquals("Field Name: SelectForUpdateByUniqueInt"           ,lines.get(1));
-        assertEquals("Static: 1"                ,lines.get(2));
+        assertEquals("Database Name: jportal_example_db"     ,lines.get(0));
+        assertEquals("Field Name: SelectForUpdateByUniqueInt",lines.get(1));
+        assertEquals("Static: 1"                             ,lines.get(2));
 
         //Test output - GetByUniqueInt.txt
         List<String> lines1 = Files.readAllLines(Paths.get(outputDirectory.toString(), "GetByUniqueInt.txt"));
         assertEquals("Database Name: jportal_example_db" ,lines1.get(0));
-        assertEquals("Field Name: GetByUniqueInt"           ,lines1.get(1));
-        assertEquals("Static: 1"                ,lines1.get(2));
+        assertEquals("Field Name: GetByUniqueInt"        ,lines1.get(1));
+        assertEquals("Static: 1"                         ,lines1.get(2));
+        JPortal.clearDatabase();
 
     }
 
@@ -165,12 +182,13 @@ public class FreeMarkerTest {
         String nubDir="";
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        (new FreeMarker()).generateTemplate(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+        (new FreeMarker()).generateTemplate(db, db.tables.get(0), TEMPLATE_DIR, nameOfTest, outputDirectory);
 
         //Test output - dir1/file1.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "TestExampleTable.java"));
         assertEquals("class TestExampleTable" ,lines.get(0));
         assertEquals("{"                     ,lines.get(1));
+        JPortal.clearDatabase();
         //assertEquals("      }"               ,lines.get(2));
     }
 
@@ -184,7 +202,8 @@ public class FreeMarkerTest {
         String nubDir = "";
         Database db = JPortal.run(siFile.toString(), nubDir);
         File outputDirectory = new File(outputDir.toString());
-        (new FreeMarker()).generateTemplate(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+        (new FreeMarker()).generateTemplate(db, db.tables.get(0), TEMPLATE_DIR, nameOfTest, outputDirectory);
+        JPortal.clearDatabase();
 
         //Test output
         //List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "single_file"));
