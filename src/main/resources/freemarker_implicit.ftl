@@ -1,3 +1,6 @@
 [#ftl]
 [#-- @implicitly included --]
+[#-- @ftlvariable name="proc" type="bbd.jportal2.Proc" --]
+[#-- @ftlvariable name="table" type="bbd.jportal2.Table" --]
+[#-- @ftlvariable name="database" type="bbd.jportal2.Database" --]
 [#-- @ftlroot "bbd/jportal2/generators/FreeMarker/templates" --]
