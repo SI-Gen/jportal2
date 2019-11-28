@@ -67,7 +67,7 @@ public class ProjectCompiler {
         SingleFileCompiler sfCompiler = new SingleFileCompiler();
 
         for (String filename : allInputFiles) {
-            int resultRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, true);
+            int resultRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations);
             if (resultRc > 0)
                 rc = resultRc;
         }
@@ -77,7 +77,7 @@ public class ProjectCompiler {
 
         for (String filename : allInputFiles) {
             logger.info("Generating for SI File: " + filename);
-            int localRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, false);
+            int localRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations);
             if (localRc > 0)
                 rc = 1;
 
