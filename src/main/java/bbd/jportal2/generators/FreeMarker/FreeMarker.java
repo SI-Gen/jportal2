@@ -166,6 +166,12 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
         String strRelativePath = templateRelativePath.toString();
 
         HashSet<String> doneFiles = new HashSet<>();
+
+        if (database.tables.get(0).procs.isEmpty()) {
+            logger.warn("\t [{}]: Table: [{}] Has no procs defined. Skipping...", generatorName, database.tables.get(0).name);
+            return;
+        }
+
         for (Proc proc : database.tables.get(0).procs)
         {
             root.put("proc", proc);
