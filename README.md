@@ -172,11 +172,12 @@ SCHEMA ToDoList_App
 
 TABLE ToDo_Item
    ID               SEQUENCE
-   TodoList_ID      BIGINT
+   TodoList_ID      BIGINT     //This is a foreign key to the ToDoList table
    ItemName         CHAR(255)
    ItemDescription  CLOB
    LastUpdated      TIMESTAMP
 
+//This define ID as the Primary Key
 KEY PKEY PRIMARY
     ID
 
@@ -185,6 +186,9 @@ PROC Update
 PROC SelectOne
 PROC Delete
 
+//The SelectBy function automatically creates
+//a SELECT query using the given fields as the
+//WHERE clause
 PROC SelectBy TodoList_ID
 OUTPUT
     ID                  =
