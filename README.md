@@ -64,7 +64,7 @@ and plugins:
                 <compilerFlags>
                     <compilerFlag>utilizeEnums</compilerFlag>
                 </compilerFlags>
-                <additionalArguments>--template-generator JdbiSqlObjects:${basedir}/target/generated-sources/java/</additionalArguments>
+<!--                    <additionalArguments>&#45;&#45;template-generator JdbiSqlObjects:${basedir}/target/generated-sources/java/</additionalArguments>-->
             </configuration>
             <dependencies>
                 <dependency>
@@ -94,11 +94,11 @@ todolist.si
 ```sql
 DATABASE ExampleDatabase
 PACKAGE com.example.db
-
+SERVER ExampleServer
 SCHEMA ToDoList_App
 
 TABLE ToDoList
-   ID               UUID
+   ID               SEQUENCE
    ListName         CHAR(255)
    ListType         SHORT (Private=1, Public=2)
    Description      CHAR
@@ -111,7 +111,7 @@ KEY PKEY PRIMARY
 PROC Insert Returning
 PROC Update
 PROC SelectOne
-PROC Delete
+PROC DeleteOne
 
 //More complex custom queries can be defined using standard SQL
 PROC SelectListNameAndListTypeAsString
@@ -123,11 +123,11 @@ OUTPUT
 SQLCODE
 SELECT
     ListName,
-    CASE 
+    CASE
         WHEN ListType = 1 THEN 'Private'
         WHEN ListType = 2 THEN 'Public'
 END
-FROM 
+FROM
     TodoList
 WHERE
     ID = :ID
@@ -142,7 +142,7 @@ PROC SelectWithDynamicQuery
 INPUT
     ListName    =
 OUTPUT
-   ID               UUID
+   ID               BigSequence
    ListName         CHAR(255)
    ListType         SHORT (Private=1, Public=2)
    Description      CHAR
@@ -154,12 +154,14 @@ SELECT
    ,ListType
    ,Description
    ,LastUpdated
-FROM 
+FROM
     ToDoList
 WHERE
     ListName = :ListName
     AND &MyDynamicWhereClause
 ENDCODE
+
+
 ```
 
 Now create a file called todo_items.si in the same directory (${basedir}/src/main/sql/)
@@ -167,12 +169,12 @@ todo_items.si
 ```sql
 DATABASE ExampleDatabase
 PACKAGE com.example.db
-
+SERVER ExampleServer
 SCHEMA ToDoList_App
 
 TABLE ToDo_Item
    ID               SEQUENCE
-   TodoList_ID      BIGINT     //This is a foreign key to the ToDoList table
+   TodoList_ID      INT     //This is a foreign key to the ToDoList table
    ItemName         CHAR(255)
    ItemDescription  CLOB
    LastUpdated      TIMESTAMP
@@ -184,7 +186,7 @@ KEY PKEY PRIMARY
 PROC Insert Returning
 PROC Update
 PROC SelectOne
-PROC Delete
+PROC DeleteOne
 
 //The SelectBy function automatically creates
 //a SELECT query using the given fields as the
@@ -194,7 +196,10 @@ OUTPUT
     ID                  =
     ItemName            =
     ItemDescription     =
-    LastUpdated
+    LastUpdated         =
+
+
+
 ```
 
 Now compile your maven project. If all went well, you should see 2 files inside
