@@ -142,7 +142,7 @@ PROC SelectWithDynamicQuery
 INPUT
     ListName    =
 OUTPUT
-   ID               BigSequence
+   ID               SEQUENCE
    ListName         CHAR(255)
    ListType         SHORT (Private=1, Public=2)
    Description      CHAR
@@ -160,7 +160,6 @@ WHERE
     ListName = :ListName
     AND &MyDynamicWhereClause
 ENDCODE
-
 
 ```
 
