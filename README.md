@@ -236,3 +236,6 @@ table name: ExampleTable
     name
     surname
 ```
+
+# Documentation
+For comprehensive documentation. Refer to the [docs](docs/index.md)
