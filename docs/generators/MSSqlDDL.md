@@ -269,26 +269,26 @@ KEY INX2
 ```
 Example output:
 ```
-CREATE TABLE DiscoveryCard.Example
+CREATE TABLE ExampleSchema.Example
 (
   ID INTEGER IDENTITY(1,1) NOT NULL
 , SOME_DATA VARCHAR(100) NOT NULL
 , USER_ID VARCHAR(50) NOT NULL
 , TMSTAMP DATETIME NOT NULL
 , TIMESTAMP
-, CONSTRAINT PK_DiscoveryCard_Example_PKEY PRIMARY KEY (
+, CONSTRAINT PK_ExampleSchema_Example_PKEY PRIMARY KEY (
     ID
   )
 )
 GO
 
-CREATE INDEX INX1 ON DiscoveryCard.Example
+CREATE INDEX INX1 ON ExampleSchema.Example
 (
   SOME_DATA
 )
 GO
 
-CREATE INDEX INX2 ON DiscoveryCard.Example
+CREATE INDEX INX2 ON ExampleSchema.Example
 (
   ID
 , SOME_DATA
@@ -317,17 +317,17 @@ KEY INX1 UNIQUE
 
 Example Output:
 ```
-CREATE TABLE DiscoveryCard.Example
+CREATE TABLE ExampleSchema.Example
 (
   ID INTEGER IDENTITY(1,1) NOT NULL
 , SOME_DATA VARCHAR(100) NOT NULL
 , USER_ID VARCHAR(50) NOT NULL
 , TMSTAMP DATETIME NOT NULL
 , TIMESTAMP
-, CONSTRAINT PK_DiscoveryCard_Example_PKEY PRIMARY KEY (
+, CONSTRAINT PK_ExampleSchema_Example_PKEY PRIMARY KEY (
     ID
   )
-, CONSTRAINT UK_DiscoveryCard_Example_INX1 UNIQUE (
+, CONSTRAINT UK_ExampleSchema_Example_INX1 UNIQUE (
     SOME_DATA
   )
 )
@@ -350,14 +350,14 @@ LINK Example2.ExampleTable2 SOME_DATA
 
 Example Output:
 ```
-CREATE TABLE DiscoveryCard.Example
+CREATE TABLE ExampleSchema.Example
 (
   ID INTEGER IDENTITY(1,1) NOT NULL
 , SOME_DATA VARCHAR(100) NOT NULL
 , USER_ID VARCHAR(50) NOT NULL
 , TMSTAMP DATETIME NOT NULL
 , TIMESTAMP
-, CONSTRAINT FK_DiscoveryCard_Example_Example2_ExampleTable2_SOME_DATA FOREIGN KEY (
+, CONSTRAINT FK_ExampleSchema_Example_Example2_ExampleTable2_SOME_DATA FOREIGN KEY (
     SOME_DATA
   )
   REFERENCES Example2.ExampleTable2
@@ -382,14 +382,14 @@ LINK Example2.ExampleTable2 DELETE UPDATE CASCADE SOME_DATA
 
 Example Output File:
 ```
-CREATE TABLE DiscoveryCard.Example
+CREATE TABLE ExampleSchema.Example
 (
   ID INTEGER IDENTITY(1,1) NOT NULL
 , SOME_DATA VARCHAR(100) NOT NULL
 , USER_ID VARCHAR(50) NOT NULL
 , TMSTAMP DATETIME NOT NULL
 , TIMESTAMP
-, CONSTRAINT FK_DiscoveryCard_Example_Example2_ExampleTable2_SOME_DATA FOREIGN KEY (
+, CONSTRAINT FK_ExampleSchema_Example_Example2_ExampleTable2_SOME_DATA FOREIGN KEY (
     SOME_DATA
   )
   REFERENCES Example2.ExampleTable2
@@ -415,7 +415,7 @@ GRANT SELECT INSERT DELETE UPDATE TO FreeTextUserName
 
 Example Output:
 ```
-CREATE TABLE DiscoveryCard.Example
+CREATE TABLE ExampleSchema.Example
 (
   ID INTEGER IDENTITY(1,1) NOT NULL
 , SOME_DATA VARCHAR(100) NOT NULL
@@ -425,16 +425,16 @@ CREATE TABLE DiscoveryCard.Example
 )
 GO
 
-GRANT select ON DiscoveryCard.Example TO FreeTextUserName
+GRANT select ON ExampleSchema.Example TO FreeTextUserName
 GO
 
-GRANT insert ON DiscoveryCard.Example TO FreeTextUserName
+GRANT insert ON ExampleSchema.Example TO FreeTextUserName
 GO
 
-GRANT delete ON DiscoveryCard.Example TO FreeTextUserName
+GRANT delete ON ExampleSchema.Example TO FreeTextUserName
 GO
 
-GRANT update ON DiscoveryCard.Example TO FreeTextUserName
+GRANT update ON ExampleSchema.Example TO FreeTextUserName
 GO
 ```
 
@@ -458,7 +458,7 @@ ENDCODE
 
 Example output:
 ```
-CREATE TABLE DiscoveryCard.Example
+CREATE TABLE ExampleSchema.Example
 (
   ID INTEGER IDENTITY(1,1) NOT NULL
 , SOME_DATA VARCHAR(100) NOT NULL
@@ -468,11 +468,11 @@ CREATE TABLE DiscoveryCard.Example
 )
 GO
 
-IF OBJECT_ID('DiscoveryCard.ExampleGetSomeData','V') IS NOT NULL
-    DROP VIEW DiscoveryCard.ExampleGetSomeData
+IF OBJECT_ID('ExampleSchema.ExampleGetSomeData','V') IS NOT NULL
+    DROP VIEW ExampleSchema.ExampleGetSomeData
 GO
 
-CREATE VIEW DiscoveryCard.ExampleGetSomeData
+CREATE VIEW ExampleSchema.ExampleGetSomeData
 (
 ) AS
 (
@@ -480,7 +480,7 @@ select SOME_DATA from ExampleSchema.ExampleTable
 )
 GO
 
-GRANT SELECT ON DiscoveryCard.ExampleGetSomeData TO FreeTextUser
+GRANT SELECT ON ExampleSchema.ExampleGetSomeData TO FreeTextUser
 GO
 ```
 
