@@ -13,7 +13,7 @@ To use it, you define database tables using a small, easy-to-understand Domain-S
     * Code stubs that can be used in other generators to create Client/Server and other Applications
     * Anything else you want to generate off your database structure
 
-JPortal2 has a number of built-in code generators written in Java, but also has built-in Freemarker support to allow you to easily add you own generators.
+JPortal2 has a number of built-in code generators written in Java, but also has built-in Freemarker support to allow you to easily add your own generators.
 
 ## History
 ### JPortal
