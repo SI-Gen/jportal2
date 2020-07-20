@@ -64,7 +64,7 @@ and plugins:
                 <compilerFlags>
                     <compilerFlag>utilizeEnums</compilerFlag>
                 </compilerFlags>
-                <additionalArguments>--template-generator JdbiSqlObjects:${basedir}/target/generated-sources/java/</additionalArguments>
+<!--                    <additionalArguments>&#45;&#45;template-generator JdbiSqlObjects:${basedir}/target/generated-sources/java/</additionalArguments>-->
             </configuration>
             <dependencies>
                 <dependency>
@@ -94,11 +94,11 @@ todolist.si
 ```sql
 DATABASE ExampleDatabase
 PACKAGE com.example.db
-
+SERVER ExampleServer
 SCHEMA ToDoList_App
 
 TABLE ToDoList
-   ID               UUID
+   ID               SEQUENCE
    ListName         CHAR(255)
    ListType         SHORT (Private=1, Public=2)
    Description      CHAR
@@ -111,7 +111,7 @@ KEY PKEY PRIMARY
 PROC Insert Returning
 PROC Update
 PROC SelectOne
-PROC Delete
+PROC DeleteOne
 
 //More complex custom queries can be defined using standard SQL
 PROC SelectListNameAndListTypeAsString
@@ -123,11 +123,11 @@ OUTPUT
 SQLCODE
 SELECT
     ListName,
-    CASE 
+    CASE
         WHEN ListType = 1 THEN 'Private'
         WHEN ListType = 2 THEN 'Public'
 END
-FROM 
+FROM
     TodoList
 WHERE
     ID = :ID
@@ -142,7 +142,7 @@ PROC SelectWithDynamicQuery
 INPUT
     ListName    =
 OUTPUT
-   ID               UUID
+   ID               SEQUENCE
    ListName         CHAR(255)
    ListType         SHORT (Private=1, Public=2)
    Description      CHAR
@@ -154,12 +154,13 @@ SELECT
    ,ListType
    ,Description
    ,LastUpdated
-FROM 
+FROM
     ToDoList
 WHERE
     ListName = :ListName
     AND &MyDynamicWhereClause
 ENDCODE
+
 ```
 
 Now create a file called todo_items.si in the same directory (${basedir}/src/main/sql/)
@@ -167,30 +168,37 @@ todo_items.si
 ```sql
 DATABASE ExampleDatabase
 PACKAGE com.example.db
-
+SERVER ExampleServer
 SCHEMA ToDoList_App
 
 TABLE ToDo_Item
    ID               SEQUENCE
-   TodoList_ID      BIGINT
+   TodoList_ID      INT     //This is a foreign key to the ToDoList table
    ItemName         CHAR(255)
    ItemDescription  CLOB
    LastUpdated      TIMESTAMP
 
+//This define ID as the Primary Key
 KEY PKEY PRIMARY
     ID
 
 PROC Insert Returning
 PROC Update
 PROC SelectOne
-PROC Delete
+PROC DeleteOne
 
+//The SelectBy function automatically creates
+//a SELECT query using the given fields as the
+//WHERE clause
 PROC SelectBy TodoList_ID
 OUTPUT
     ID                  =
     ItemName            =
     ItemDescription     =
-    LastUpdated
+    LastUpdated         =
+
+
+
 ```
 
 Now compile your maven project. If all went well, you should see 2 files inside
@@ -228,3 +236,33 @@ table name: ExampleTable
     name
     surname
 ```
+
+
+## Using Literals
+Occasionally you will want to use a word that is a reserved word, as the name of a table or a column. For example, consider the following SI file:
+
+todolist.si
+```sql
+DATABASE ExampleDatabase
+PACKAGE com.example.db
+SERVER ExampleServer
+SCHEMA ToDoList_App
+
+TABLE ToDoList
+   ID               SEQUENCE
+   ListName         CHAR(255)
+   ListType         SHORT (Private=1, Public=2)
+   L'Desc'          CHAR   //DESC is a reserved keyword!
+   LastUpdated      TIMESTAMP
+
+KEY PKEY PRIMARY
+    ID
+
+//Simple CRUD queries are available out of the box with JPortal2
+PROC Insert Returning
+PROC Update
+PROC SelectOne
+PROC DeleteOne
+```
+
+Notice that the Description column is named 'Desc', which is a reserved word (both in JPortal, as well as in SQL). This will cause a JPortal compilation issue. To work around this, we turn the column name into a *literal* by writing it as L'Desc'. This will allow the SI file to compile.
