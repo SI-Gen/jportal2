@@ -107,12 +107,12 @@ public class Database implements Serializable
     userid = "";
     password = "";
     packageName = "";
-      tables = new Vector<>();
-      flags = new Vector<>();
-      sequences = new Vector<>();
-      views = new Vector<>();
-      imports = new Vector<>();
-      generatedOutputFiles = new ArrayList<>();
+    tables = new Vector<>();
+    flags = new Vector<>();
+    sequences = new Vector<>();
+    views = new Vector<>();
+    imports = new Vector<>();
+    generatedOutputFiles = new ArrayList<>();
   }
   /**
    * Check for the existance of a table

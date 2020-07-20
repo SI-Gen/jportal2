@@ -40,7 +40,7 @@ public class Link implements Serializable
   public Link()
   {
     name      = "";
-    linkName = "";
+    linkName  = "";
     fields    = new Vector<String>();
     linkFields = new Vector<String>();
     options = new Vector<String>();

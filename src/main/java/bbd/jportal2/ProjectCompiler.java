@@ -40,11 +40,14 @@ public class ProjectCompiler {
     }
 
     public void addInputFiles(List<String> inputFiles) {
-        this.inputFiles.addAll(inputFiles);
+        for (String filePath : inputFiles) {
+            addInputFile(filePath);
+        }
     }
 
-    public void addInputFile(String inputFile) {
-        this.inputFiles.add(inputFile);
+    public void addInputFile(String inputFileName) {
+        if ("si".compareTo(FilenameUtils.getExtension(inputFileName)) == 0)
+            inputFiles.add(inputFileName);
     }
 
     public int compileAll() throws Exception {
@@ -63,16 +66,26 @@ public class ProjectCompiler {
             rc = 1;
         }
 
-        //Only run if return code is still 0
-        if (rc == 0)
-        {
-            SingleFileCompiler sfCompiler = new SingleFileCompiler();
-            for (String filename : allInputFiles) {
-                if ("si".compareTo(FilenameUtils.getExtension(filename)) == 0) {
-                    logger.info("Generating for SI File: " + filename);
-                    rc |= sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, false);
-                }
-            }
+        if (rc != 0)
+            return rc;
+
+        SingleFileCompiler sfCompiler = new SingleFileCompiler();
+
+        for (String filename : allInputFiles) {
+            int resultRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, true);
+            if (resultRc > 0)
+                rc = resultRc;
+        }
+
+        if (rc != 0)
+            return rc;
+
+        for (String filename : allInputFiles) {
+            logger.info("Generating for SI File: " + filename);
+            int localRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, false);
+            if (localRc > 0)
+                rc = 1;
+
         }
         return rc;
     }
