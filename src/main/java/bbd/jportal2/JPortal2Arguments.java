@@ -49,14 +49,13 @@ public class JPortal2Arguments {
     private List<String> templatePostProcessors = new ArrayList<>();
 
     @Parameter(names = {"--template-location", "-tl"}, description = "Freemarker template location. Default is <current_working_directory>/jportal2_templates")
-    private List<String> templateLocations = Arrays.asList(Paths.get(System.getProperty("user.dir"), "jportal_templates").toString());
+    private List<String> templateLocations = Arrays.asList(Paths.get(System.getProperty("user.dir"), "jportal2_templates").toString());
 
     @Parameter(names = {"--flag", "-F"}, description = "Flags to pass to the generator")
     private List<String> flags = new ArrayList<>();
 
     @Parameter(names = {"--help", "-h", "-?"}, help = true)
     private boolean help;
-
 
     public String getLogFileName() {
         return logFileName;
