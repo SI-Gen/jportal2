@@ -1786,11 +1786,19 @@ void jStdProc() :
       }
   | <BULKINSERT> (jRowCount())?
     {
+      table.hasSequenceReturning = table.hasSequence;
       proc.name = "BulkInsert";
       table.buildBulkInsert(proc);
       table.hasStdProcs = true;
+      if (table.hasIdentity)
+        {
+          table.procs.addElement(proc);
+          proc = new Proc();
+          proc.table = table;
+          proc.name = "Identity";
+          table.buildIdentity(proc);
+        }
     }
-
   | <MAXTMSTAMP>
     {
       proc.name = "MaxTmStamp";
