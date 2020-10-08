@@ -184,6 +184,30 @@ public class Table implements Serializable {
         return fields;
     }
 
+    public Link getLinkForField(Field field) {
+        for (Link link : getLinks())
+        {
+            if (link.fields.size() < 1) {
+                System.out.println("ERR");
+                continue;
+            }
+            if (link.getFields().get(0).compareTo(field.name) == 0) {
+                return link;
+            }
+        }
+        return null;
+    }
+
+    public Field getFieldForLink(Link link) {
+        for (Field field : getFields())
+        {
+            if (link.getFields().get(0).compareTo(field.name) == 0) {
+                return field;
+            }
+        }
+        return null;
+    }
+
     public Vector<Key> getKeys() {
         return keys;
     }
@@ -695,7 +719,7 @@ public class Table implements Serializable {
                 proc.hasUpdates = true;
             } else if (isSequence(field)) {
 
-                if (proc.hasReturning || proc.isMultipleInput) {
+                if (proc.hasReturning) {
                     proc.lines.addElement(new Line(line + field.name + comma));
                 }
 
@@ -728,7 +752,7 @@ public class Table implements Serializable {
                 continue;
 
             if (isSequence(field)) {
-                if (proc.hasReturning || proc.isMultipleInput) {
+                if (proc.hasReturning) {
                     proc.lines.addElement(new Line("_ret.sequence", true));
                 }
             } else {

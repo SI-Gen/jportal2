@@ -676,6 +676,6 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
     case Field.UID:
       return field.name + " UNIQUEIDENTIFIER";
     }
-    return "unknown";
+    throw new Error(String.format("Undefined SI type for field: \"%s\"", field.name));
   }
 }
