@@ -112,7 +112,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13-beta-3</version>
+            <version>4.13.1</version>
             <scope>test</scope>
         </dependency>
         <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.sonatype.plugins/nexus-staging-maven-plugin &ndash;&gt;-->
@@ -324,7 +324,7 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>5.0.0</version>
+                <version>6.0.0</version>
                 <configuration>
                     <failBuildOnCVSS>8</failBuildOnCVSS>
                     <skipProvidedScope>true</skipProvidedScope>
