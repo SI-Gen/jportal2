@@ -579,11 +579,15 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             Field field = pair.field;
 
             if (field.isNull) {
-                outData.println("    if(" + field.useLowerName() + " == null) {");
-                outData.print("        prep.setNull(");
+                if (proc.isMultipleInput) {
+                    outData.println(extraTab + extraTab  +"    if (record." + field.useLowerName() + " == null) {");
+                } else {
+                    outData.println("    if (" + field.useLowerName() + " == null) {");
+                }
+                outData.print(extraTab + extraTab  +"        prep.setNull(");
                 outData.print(i + 1);
                 outData.println(", java.sql.Types.NULL);");
-                outData.println("    } else {");
+                outData.println(extraTab + extraTab  +"    } else {");
                 outData.print("    ");
             }
 
@@ -609,7 +613,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                     String.format(enumToInt, field.useLowerName())));
 
             if (field.isNull) {
-                outData.println("    };");
+                outData.println(extraTab + extraTab  +"    };");
             }
 
         }
