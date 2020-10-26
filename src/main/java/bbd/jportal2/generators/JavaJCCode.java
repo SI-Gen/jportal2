@@ -564,14 +564,14 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             Field field = proc.inputs.elementAt(i);
             if (proc.isInsert) {
                 if (field.type == Field.BIGSEQUENCE)
-                    outData.println("    " + field.useLowerName() + " = connector.getBigSequence(\"" + proc.table.name + "\");");
+                    outData.println("    " + extraTab + extraTab + field.useLowerName() + " = connector.getBigSequence(\"" + proc.table.name + "\");");
                 else if (field.type == Field.SEQUENCE)
-                    outData.println("    " + field.useLowerName() + " = connector.getSequence(\"" + proc.table.name + "\");");
+                    outData.println("    " + extraTab + extraTab + field.useLowerName() + " = connector.getSequence(\"" + proc.table.name + "\");");
             }
             if (field.type == Field.TIMESTAMP)
-                outData.println("    " + field.useLowerName() + " = connector.getTimestamp();");
+                outData.println("    " + extraTab + extraTab  + field.useLowerName() + " = connector.getTimestamp();");
             if (field.type == Field.USERSTAMP)
-                outData.println("    " + field.useLowerName() + " = connector.getUserstamp();");
+                outData.println("    " + extraTab + extraTab + field.useLowerName() + " = connector.getUserstamp();");
         }
         Vector<PlaceHolderPairs> pairs = placeHolders.getPairs();
         for (int i = 0; i < pairs.size(); i++) {
@@ -594,8 +594,16 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             }
 
             String prepSet = "    prep.set%s(%d, %s);";
+
             if (proc.isMultipleInput) {
-                prepSet = extraTab + "        prep.set%s(%d, record.%s);";
+
+                if (field.type == Field.TIMESTAMP ||
+                    field.type == Field.USERSTAMP ||
+                   (proc.isInsert && (field.type == Field.BIGSEQUENCE || field.type == Field.SEQUENCE))) {
+                    prepSet = extraTab + "        prep.set%s(%d, %s);";
+                } else {
+                    prepSet = extraTab + "        prep.set%s(%d, record.%s);";
+                }
             }
             outData.println(String.format(prepSet, setType(field), i + 1,
                     String.format(enumToInt, field.useLowerName())));
