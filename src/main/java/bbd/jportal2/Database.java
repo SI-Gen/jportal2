@@ -96,7 +96,7 @@ public class Database implements Serializable
   public Vector<String> imports;
 
 
-    public ArrayList<GeneratedFiles> generatedOutputFiles;
+  public ArrayList<GeneratedFiles> generatedOutputFiles;
 
   public Database()
   {

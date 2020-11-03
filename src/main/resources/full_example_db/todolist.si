@@ -1,0 +1,68 @@
+DATABASE ExampleDatabase
+PACKAGE com.example.db
+SERVER ExampleServer
+SCHEMA ToDoList_App
+
+TABLE ToDoList
+   ID               SEQUENCE
+   ListName         CHAR(255)
+   ListType         SHORT (Private=1, Public=2)
+   Description      CHAR
+   LastUpdated      TIMESTAMP
+
+KEY PKEY PRIMARY
+    ID
+
+//Simple CRUD queries are available out of the box with JPortal2
+PROC Insert Returning
+PROC Update
+PROC SelectOne
+PROC DeleteOne
+
+//More complex custom queries can be defined using standard SQL
+PROC SelectListNameAndListTypeAsString
+INPUT
+    ID          =
+OUTPUT
+    ListName    =
+    ListType    CHAR
+SQLCODE
+SELECT
+    ListName,
+    CASE
+        WHEN ListType = 1 THEN 'Private'
+        WHEN ListType = 2 THEN 'Public'
+END
+FROM
+    TodoList
+WHERE
+    ID = :ID
+ENDCODE
+
+//Dynamic queries can be done with the ampersand below
+//REMEMBER!!! Dynamic SQL is open to SQL injection! So use with care and make sure to sanitize inputs!
+//Dynamic SQL is a last resort escape hatch, not the first tool to reach for!!
+//In the DAL class created for the below query, a property called MyDynamicWhereClause will be created
+//This will allow you to pass through the remainder of the where clause as a string.
+PROC SelectWithDynamicQuery
+INPUT
+    ListName    =
+OUTPUT
+   ID               SEQUENCE
+   ListName         CHAR(255)
+   ListType         SHORT (Private=1, Public=2)
+   Description      CHAR
+   LastUpdated      TIMESTAMP
+SQLCODE
+SELECT
+   ID
+   ,ListName
+   ,ListType
+   ,Description
+   ,LastUpdated
+FROM
+    ToDoList
+WHERE
+    ListName = :ListName
+    AND &MyDynamicWhereClause
+ENDCODE

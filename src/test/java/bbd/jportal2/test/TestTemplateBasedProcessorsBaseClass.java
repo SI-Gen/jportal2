@@ -4,9 +4,8 @@ import bbd.jportal2.ITemplateBasedGenerator;
 import bbd.jportal2.ITemplateBasedPostProcessor;
 import bbd.jportal2.ITemplateBasedSIProcessor;
 import bbd.jportal2.ProjectCompiler;
-import net.sf.extcos.ComponentQuery;
-import net.sf.extcos.ComponentScanner;
 import org.junit.Assert;
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,18 +69,10 @@ public class TestTemplateBasedProcessorsBaseClass<TYPE_TO_TEST extends ITemplate
 
 
     private Set<Class<? extends TYPE_TO_TEST>> findClasses() {
-        final Set<Class<? extends TYPE_TO_TEST>> foundClasses = new HashSet<>();
-        ComponentScanner scanner = new ComponentScanner();
 
-        Set<Class<?>> classes = scanner.getClasses(new ComponentQuery() {
+        Reflections reflections = new Reflections("bbd.jportal2");
+        Set<Class<? extends TYPE_TO_TEST>> foundClasses = reflections.getSubTypesOf(CLASS_TO_TEST);
 
-            protected void query() {
-                select().from("bbd.jportal2").andStore(
-                        thoseImplementing(CLASS_TO_TEST).into(foundClasses));
-                //thoseAnnotatedWith(SampleAnnotation.class).into(samples));
-            }
-
-        });
         return foundClasses;
     }
 
