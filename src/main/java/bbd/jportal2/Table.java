@@ -719,7 +719,7 @@ public class Table implements Serializable {
                 proc.hasUpdates = true;
             } else if (isSequence(field)) {
 
-                if (proc.hasReturning || proc.isMultipleInput) {
+                if (proc.hasReturning) {
                     proc.lines.addElement(new Line(line + field.name + comma));
                 }
 
@@ -752,7 +752,7 @@ public class Table implements Serializable {
                 continue;
 
             if (isSequence(field)) {
-                if (proc.hasReturning || proc.isMultipleInput) {
+                if (proc.hasReturning) {
                     proc.lines.addElement(new Line("_ret.sequence", true));
                 }
             } else {
