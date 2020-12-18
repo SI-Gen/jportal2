@@ -15,7 +15,7 @@ public class JavaJCCodeGeneratorTest {
 
     @Test
     public void generateJavaCodeWithExtensiveEnumUtilisation() throws Exception {
-        ProjectCompiler pj = new ProjectCompiler();
+        ProjectCompiler pj = new ProjectCompiler(false);
         pj.addCompilerFlags(Collections.singletonList("utilizeEnums"));
         pj.addTemplateLocation(SI_PROCESSOR_TEMPLATE_DIR);
         Path outputPath = Paths.get(OUTPUT_DIR, "JavaJCCode", "JavaJCCodeWithEnum");
@@ -26,7 +26,7 @@ public class JavaJCCodeGeneratorTest {
 
     @Test
     public void generateJavaCodeWithLombokAnnotations() throws Exception {
-        ProjectCompiler pj = new ProjectCompiler();
+        ProjectCompiler pj = new ProjectCompiler(false);
         pj.addCompilerFlags(Collections.singletonList("generateLombok"));
         pj.addTemplateLocation(SI_PROCESSOR_TEMPLATE_DIR);
         Path outputPath = Paths.get(OUTPUT_DIR, "JavaJCCode", "JavaJCCodeWithLombok");

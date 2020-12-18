@@ -25,6 +25,12 @@ public class ProjectCompiler {
     private List<String> templateBasedPostProcessors = new ArrayList<>();
     private List<String> templateLocations = new ArrayList<>();
 
+    private Boolean projectCompile = false;
+
+    public ProjectCompiler(Boolean projectCompile) {
+        this.projectCompile = projectCompile;
+    }
+
     public void addInputDirs(List<String> listOfInputDirs) {
         this.inputDirs.addAll(listOfInputDirs);
     }
@@ -43,7 +49,6 @@ public class ProjectCompiler {
         if ("si".compareTo(FilenameUtils.getExtension(inputFileName)) == 0)
             inputFiles.add(inputFileName);
     }
-
 
     public int compileAll() throws Exception {
         List<String> allInputFiles = new ArrayList<>();
@@ -67,7 +72,7 @@ public class ProjectCompiler {
         SingleFileCompiler sfCompiler = new SingleFileCompiler();
 
         for (String filename : allInputFiles) {
-            int resultRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations);
+            int resultRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, true);
             if (resultRc > 0)
                 rc = resultRc;
         }
@@ -77,7 +82,7 @@ public class ProjectCompiler {
 
         for (String filename : allInputFiles) {
             logger.info("Generating for SI File: " + filename);
-            int localRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations);
+            int localRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, false);
             if (localRc > 0)
                 rc = 1;
 

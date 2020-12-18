@@ -1,5 +1,5 @@
 <#import "/helpers/JPortalJavaHelpers.function.ftl" as JavaHelpers>
-class Test${database.tables[0].name}
+class Test${table.name}
 {
     //Fields
 <#-- Create field values -->
@@ -20,7 +20,7 @@ class Test${database.tables[0].name}
 
 </#list>
 
-Test${database.tables[0].name}()
+Test${table.name}()
 {}
 
 
