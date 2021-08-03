@@ -1,11 +1,11 @@
 #Project information
-site_name: Metis BBD Kubernetes
-site_description: Resources for Metis
-#site_url: https://ramitsurana.github.io/awesome-kubernetes/
+site_name: JPortal2
+site_description: Portal2 is the newest version of the JPortal SI-file based generator.
+
 
 # Repository
-repo_name: bbdsoftware/metis-cluster-bootstraps
-repo_url: https://github.com/bbdsoftware/metis-cluster-bootstraps
+repo_name: SI-Gen/jportal2
+repo_url: https://github.com/SI-Gen/jportal2
 
 # Copyright
 copyright: Copyright &copy; 2021
