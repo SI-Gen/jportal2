@@ -1,13 +1,9 @@
-
-
 # JPortal2
 
 [![GitHub release](https://img.shields.io/github/release/SI-Gen/jportal2.svg)](https://github.com/SI-Gen/jportal2/releases)
 [![Documentation Site](https://img.shields.io/badge/DOCS_SITE-YES-GREEN.svg)](https://si-gen.github.io/jportal2/)
 [<img src="https://dieterrosch.visualstudio.com/_apis/public/build/definitions/62fc2ca3-38b4-432f-8341-af383b7ba8e4/3/badge"/>](https://dieterrosch.visualstudio.com/_apis/public/build/definitions/62fc2ca3-38b4-432f-8341-af383b7ba8e4/3/badge)
 [![GitHub forks](https://img.shields.io/github/forks/SI-Gen/jportal2.svg?style=social&label=Fork&maxAge=2592000)](https://github.com/SI-Gen/jportal2/network/)
-
-
 
 JPortal2 is the newest version of the JPortal SI-file based generator.
 

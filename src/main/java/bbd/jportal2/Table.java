@@ -739,7 +739,7 @@ public class Table implements Serializable {
         proc.lines.addElement(new Line(" ) "));
 
         if (hasIdentity == true) {
-            proc.lines.addElement(new Line(" output inserted." + identityName));
+            proc.lines.addElement(new Line(" OUTPUT INSERTED." + identityName));
         } else if (proc.hasReturning) {
             proc.lines.addElement(new Line("_ret.output", true));
         }
