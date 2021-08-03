@@ -1,0 +1,62 @@
+#Project information
+site_name: Metis BBD Kubernetes
+site_description: Resources for Metis
+#site_url: https://ramitsurana.github.io/awesome-kubernetes/
+
+# Repository
+repo_name: bbdsoftware/metis-cluster-bootstraps
+repo_url: https://github.com/bbdsoftware/metis-cluster-bootstraps
+
+# Copyright
+copyright: Copyright &copy; 2021
+
+# Configuration
+theme:
+  name: material
+  language: en
+  features:
+    - tabs
+    - instant
+  palette:
+    primary: red
+    accent: reds
+  font:
+    text: Roboto
+    code: Roboto Mono
+  icon:
+    logo: assest/metisiconsmall.png
+    repo: material/ship-wheel
+  favicon: assest/metisiconsmall.png
+  logo: assest/metisiconsmall.png
+
+# Extras
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/ramitsurana
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/ramitsurana
+    - icon: fontawesome/brands/linkedin
+      link: https://linkedin.com/in/ramitsurana
+
+## Google Analytics
+#google_analytics:
+#  - UA-71344758-5
+#  - auto
+# leave out nave to genreate from folder structure
+#nav:
+#  - Home: README.md
+#  - Getting Started:
+#      - Installing Appsets : gettingstarted/setup.md
+#  - User Manual:
+#    - Chart Modules: charts/modules/main.md
+#    - Chart Boostrap: charts/bootstrap/main.md
+#  - Releases: releases.md
+# Extensions
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+
+plugins:
+  - search # necessary for search to work
