@@ -7,7 +7,7 @@ on:
       last_commit_age_days:
         description: 'Number of days since last commit'
         required: false
-        default: '100'
+        default: 100
 
 
 #A branch must meet all the following criteria to be deemed abandoned and safe to delete:
