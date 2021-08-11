@@ -3,19 +3,53 @@ name: Build
 on: [push]
 jobs:
   build:
+    name: 'Build Repo'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up JDK 11
+      - name: 'Set up JDK 11'
         uses: actions/setup-java@v2
         with:
           java-version: '11'
           distribution: 'adopt'
-      - name: Cache Maven packages
+      - name: 'Cache Maven packages'
         uses: actions/cache@v2
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-      - name: Build with Maven
+      - name: 'Build with Maven'
         run: mvn --batch-mode --update-snapshots verify
+
+#  pre-release:
+#    name: 'Pre-Release'
+#    if: ${{ github.ref == 'refs/heads/master' }}
+#    needs: build
+#    runs-on: "ubuntu-latest"
+#    steps:
+#      - uses: actions/checkout@v2.2.0
+#        with:
+#          fetch-depth: 0
+#
+#      - name: 'Retrieve Tag'
+#        id: tag_version
+#        uses: mathieudutour/github-tag-action@v5.6
+#        with:
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+#          default_bump: patch
+#          tag_prefix: ""
+#
+#      - name: 'Create a Pre-Release'
+#        uses: actions/create-release@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+#          release_name: ${{ steps.tag_version.outputs.new_tag }}
+#          body: 'Pre-Release - ${{ steps.tag_version.outputs.new_tag }}'
+#          prerelease: true
+
+
+
+
+
