@@ -51,12 +51,12 @@ jobs:
 
         with:
           release-branch-name: 'master'
-          git-release-bot-name: '${{ secrets.BBD_GITHUB_BOT_USERNAME}}'
-          git-release-bot-email: '${{ secrets.BBD_GITHUB_BOT_EMAIL }}'
+          git-release-bot-name: 'bbd-bot'
+          git-release-bot-email: 'bot@a.com'
           
 #          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-          gpg-enabled: true
+          gpg-enabled: false
           gpg-key-id: ${{ secrets.GPG_ID }}
           gpg-key: ${{ secrets.GPG_KEY }}
 
