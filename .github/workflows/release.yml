@@ -43,25 +43,16 @@ jobs:
           default_bump: ${{github.event.inputs.release_type}}
           tag_prefix: ''
 
-#      - name: 'Get Previous tag'
-#        id: previoustag
-#        uses: "WyriHaximus/github-action-get-previous-tag@v1"
-#
-#      - name: 'Get next minor version'
-#        id: semvers
-#        uses: "WyriHaximus/github-action-next-semvers@v1"
-#        with:
-#          version: ${{ steps.previoustag.outputs.tag }}
-
       - name: 'Maven Release'
         uses: qcastel/github-actions-maven-release@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JAVA_HOME: /usr/lib/jvm/java-11-openjdk/
         with:
           release-branch-name: 'master'
           git-release-bot-name: '${{ secrets.BBD_GITHUB_BOT_USERNAME}}'
           git-release-bot-email: '${{ secrets.BBD_GITHUB_BOT_EMAIL }}'
+          
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
           gpg-enabled: true
           gpg-key-id: ${{ secrets.GPG_ID }}
