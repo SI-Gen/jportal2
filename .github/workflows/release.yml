@@ -71,10 +71,10 @@ jobs:
           maven-development-version-number: ${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT
 
       - name: 'GitHub release'
-          uses: actions/create-release@v1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            tag_name: ${{ steps.tag_version.outputs.new_tag }}
-            release_name: ${{ steps.tag_version.outputs.new_tag }}
-            body: '${{github.event.inputs.release_description}} - ${{ steps.tag_version.outputs.new_tag }}'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          release_name: ${{ steps.tag_version.outputs.new_tag }}
+          body: '${{github.event.inputs.release_description}} - ${{ steps.tag_version.outputs.new_tag }}'
