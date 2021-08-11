@@ -41,7 +41,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: ${{github.event.inputs.release_type}}
-          tag_prefix: ''
+          tag_prefix: 'v'
 
       - name: 'Maven Release'
         uses: qcastel/github-actions-maven-release@master
@@ -60,7 +60,7 @@ jobs:
           gpg-key: ${{ secrets.GPG_KEY }}
 
           maven-args: '-Dmaven.javadoc.skip=true -DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Dmaven.deploy.skip=true'
-          maven-development-version-number: ${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT
+          maven-development-version-number: ${{ steps.tag_version.outputs.new_version  }}-SNAPSHOT
 
       - name: 'GitHub release'
         uses: actions/create-release@v1
