@@ -43,9 +43,7 @@ jobs:
           tag_prefix: ''
 
       - name: 'Echo Release'
-        run: |
-          echo ${{ steps.tag_version.outputs.tag }}
-          echo ${{ steps.tag_version.outputs.new_tag }}
+        run: echo ${{ steps.tag_version.outputs.new_tag }}
           
       - name: 'GitHub release'
         uses: actions/create-release@v1
@@ -55,10 +53,6 @@ jobs:
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           release_name: ${{ steps.tag_version.outputs.new_tag }}
           body: '${{github.event.inputs.release_description}} - ${{ steps.tag_version.outputs.new_tag }}'
-
-      - name: 'Get Previous tag'
-        id: current_version
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
 
       - name: 'Maven Release'
         uses: qcastel/github-actions-maven-release@master
@@ -71,6 +65,10 @@ jobs:
           git-release-bot-name: 'bbd-github-bot'
           git-release-bot-email: 'bbdgithubbot@gmail.com'
 #          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+          maven-development-version-number: '${{ steps.tag_version.outputs.new_tag  }}-SNAPSHOT'
+          maven-args: '-Dmaven.javadoc.skip=true -DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central'
+
           maven-repo-server-id: ossrh
           maven-repo-server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
           maven-repo-server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
@@ -78,6 +76,3 @@ jobs:
           gpg-enabled: 'false'
 #          gpg-key-id: ${{ secrets.GPG_ID }}
 #          gpg-key: ${{ secrets.GPG_KEY }}
-
-          maven-args: '-Dmaven.javadoc.skip=true -DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central'
-          maven-development-version-number: '${{ steps.current_version.outputs.tag  }}-SNAPSHOT'
