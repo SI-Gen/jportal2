@@ -54,7 +54,7 @@ jobs:
           
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-          gpg-enabled: true
+          gpg-enabled: false
           gpg-key-id: ${{ secrets.GPG_ID }}
           gpg-key: ${{ secrets.GPG_KEY }}
 
