@@ -57,8 +57,8 @@ jobs:
           body: '${{github.event.inputs.release_description}} - ${{ steps.tag_version.outputs.new_tag }}'
 
       - name: 'Get Previous tag'
-          id: current_version
-          uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        id: current_version
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
 
       - name: 'Maven Release'
         uses: qcastel/github-actions-maven-release@master
