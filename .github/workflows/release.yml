@@ -51,8 +51,8 @@ jobs:
 
         with:
           release-branch-name: 'master'
-          git-release-bot-name: 'bbd-bot'
-          git-release-bot-email: 'bot@a.com'
+          git-release-bot-name: 'bbd-github-bot'
+          git-release-bot-email: 'bbdgithubbot@gmail.com'
           
 #          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
