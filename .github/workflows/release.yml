@@ -46,15 +46,16 @@ jobs:
       - name: 'Maven Release'
         uses: qcastel/github-actions-maven-release@master
         env:
+          access-token: ${{ secrets.GITHUB_ACCESS_TOKEN }}
           JAVA_HOME: /usr/lib/jvm/java-11-openjdk/
         with:
           release-branch-name: 'master'
           git-release-bot-name: '${{ secrets.BBD_GITHUB_BOT_USERNAME}}'
           git-release-bot-email: '${{ secrets.BBD_GITHUB_BOT_EMAIL }}'
           
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-          gpg-enabled: false
+          gpg-enabled: true
           gpg-key-id: ${{ secrets.GPG_ID }}
           gpg-key: ${{ secrets.GPG_KEY }}
 
