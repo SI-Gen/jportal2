@@ -360,6 +360,7 @@
                 </snapshotRepository>
                 <repository>
                     <id>ossrh</id>
+                    <name>AppName</name>
                     <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
                 </repository>
             </distributionManagement>

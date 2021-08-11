@@ -50,7 +50,7 @@ jobs:
           gpg-key-id: ${{ secrets.GPG_ID }}
           gpg-key: ${{ secrets.GPG_KEY }}
 
-          maven-args: '-Dmaven.javadoc.skip=true -DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip'
+          maven-args: '-Dmaven.javadoc.skip=true -DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central'
           maven-development-version-number: ${{ steps.tag_version.outputs.new_version  }}-SNAPSHOT
 
       - name: 'GitHub release'
