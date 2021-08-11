@@ -48,6 +48,7 @@ jobs:
         env:
           access-token: ${{ secrets.GITHUB_TOKEN }}
 #          JAVA_HOME: /usr/lib/jvm/java-11-openjdk/
+
         with:
           release-branch-name: 'master'
           git-release-bot-name: '${{ secrets.BBD_GITHUB_BOT_USERNAME}}'
