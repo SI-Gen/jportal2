@@ -1,4 +1,4 @@
-name: Release
+name: Release 2.0
 
 on:
   workflow_dispatch:
@@ -16,7 +16,6 @@ jobs:
   maven_release:
     name: 'Maven Release'
     runs-on: ubuntu-latest
-    needs: build
     if: "!contains(github.event.head_commit.message, '[Github-Bot]')"
 
     steps:
