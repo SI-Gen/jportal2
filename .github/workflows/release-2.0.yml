@@ -70,4 +70,7 @@ jobs:
             --no-transfer-progress \
             --batch-mode \
             -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} \
+            -Prelease-oss-maven-central \
+            -Dmaven.javadoc.skip=true \
+            -DskipTests -DskipITs \
             clean deploy
