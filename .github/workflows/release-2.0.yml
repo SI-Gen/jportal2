@@ -31,11 +31,11 @@ jobs:
           default_bump: ${{github.event.inputs.release_type}}
           tag_prefix: ''
 
-      - name: Change something
+      - name: 'Change Maven Version'
         run: |
           mvn versions:set -DnewVersion=${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT
 
-      - name: Commit changes
+      - name: 'Commit Maven Version'
         uses: EndBug/add-and-commit@v7
         with:
           author_name: 'bbd-github-bot'
@@ -52,3 +52,20 @@ jobs:
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           release_name: ${{ steps.tag_version.outputs.new_tag }}
           body: '${{github.event.inputs.release_description}} - ${{ steps.tag_version.outputs.new_tag }}'
+
+      - name: Set up Apache Maven Central
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+          server-id: ossrh
+          server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
+          server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
+          gpg-passphrase:  ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+
+        - name: Publish to Apache Maven Central
+          run: mvn clean deploy
+          env:
+            MAVEN_USERNAME: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
+            MAVEN_CENTRAL_TOKEN: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
+            MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
