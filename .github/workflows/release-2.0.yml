@@ -61,6 +61,11 @@ jobs:
           server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
           server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
 
+      - name: Install gpg secret key
+        run: |
+          cat <(echo -e "${{ secrets.MAVEN_GPG_PRIVATE_KEY }}") | gpg --batch --import
+          gpg --list-secret-keys --keyid-format LONG
+
       - name: Publish to Central Repository
         env:
           MAVEN_USERNAME: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
