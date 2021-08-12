@@ -15,7 +15,7 @@
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
 <!--        <url>https://github.com/SI-Gen/jportal2</url>-->
         <url>https://github.com/BradPirie/jportal2</url>
-<!--        <tag>latest</tag>-->
+        <tag>latest</tag>
     </scm>
 
 
