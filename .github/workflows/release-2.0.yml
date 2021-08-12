@@ -35,14 +35,14 @@ jobs:
         run: |
           mvn versions:set -DnewVersion=${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT
 
-      - name: Commit and push changes
-        uses: devops-infra/action-commit-push@v0.3
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v7
         with:
-          github_token: "${{ secrets.GITHUB_TOKEN }}"
-          add_timestamp: true
-          commit_prefix: "[Github-Bot]"
-          commit_message: "Changed Maven version"
-          target_branch: update/version
+          author_name: 'bbd-github-bot'
+          author_email: 'bbdgithubbot@gmail.com'
+          message: '[Github-bot] - changed maven version'
+          push: true
+          add: 'pom.xml'
           
       - name: 'GitHub release'
         uses: actions/create-release@v1
