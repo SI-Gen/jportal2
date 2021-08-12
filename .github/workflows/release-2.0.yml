@@ -61,7 +61,7 @@ jobs:
           server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
           server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
           gpg-passphrase:  ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-private-key: ${{ secrets.GPG_KEY }}
 
       - name: Publish to Apache Maven Central
         run: mvn clean deploy
