@@ -11,11 +11,11 @@
     <description>Database, Module and Application code generators for varying platforms, vendors and languages.
     </description>
     <scm>
-        <connection>scm:git:${project.scm.url}</connection>
-        <developerConnection>scm:git:${project.scm.url}</developerConnection>
-<!--        <url>https://github.com/SI-Gen/jportal2</url>-->
-        <url>https://github.com/BradPirie/jportal2</url>
-<!--        <tag>latest</tag>-->
+<!--        <connection>scm:git:${project.scm.url}</connection>-->
+<!--        <developerConnection>scm:git:${project.scm.url}</developerConnection>-->
+<!--&lt;!&ndash;        <url>https://github.com/SI-Gen/jportal2</url>&ndash;&gt;-->
+<!--        <url>https://github.com/BradPirie/jportal2</url>-->
+<!--&lt;!&ndash;        <tag>latest</tag>&ndash;&gt;-->
     </scm>
 
 
@@ -332,7 +332,7 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>6.0.0</version>
+                <version>6.2.2</version>
                 <configuration>
                     <failBuildOnCVSS>11</failBuildOnCVSS>
                     <skipProvidedScope>true</skipProvidedScope>
