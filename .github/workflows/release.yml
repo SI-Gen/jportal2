@@ -66,8 +66,8 @@ jobs:
           git-release-bot-email: 'bbdgithubbot@gmail.com'
 
           maven-args: '-Dmaven.javadoc.skip=true -DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Dmaven.deploy.skip=true'
-#          maven-development-version-number: ${{ steps.tag_version.outputs.new_tag  }}-SNAPSHOT
-#
-#          maven-repo-server-id: ossrh
-#          maven-repo-server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
-#          maven-repo-server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
+          version-minor: true
+
+          maven-repo-server-id: ossrh
+          maven-repo-server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
+          maven-repo-server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
