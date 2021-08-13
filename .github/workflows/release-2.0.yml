@@ -39,7 +39,7 @@ jobs:
       # Changes Maven Version
       - name: 'Change Maven Version'
         run: |
-          mvn versions:set -DnewVersion=${{ steps.tag_version.outputs.new_tag }}${{github.event.inputs.release_type}}
+          mvn versions:set -DnewVersion=${{ steps.tag_version.outputs.new_tag }}${{github.event.inputs.release_snapshot}}
 
       # Commits Version Change
       - name: 'Commit Maven Version'
@@ -71,8 +71,8 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/jportal2-${{ steps.tag_version.outputs.new_tag }}${{github.event.inputs.release_type}}.jar
-          asset_name: jportal2-${{ steps.tag_version.outputs.new_tag }}${{github.event.inputs.release_type}}.jar
+          file: target/jportal2-${{ steps.tag_version.outputs.new_tag }}${{github.event.inputs.release_snapshot}}.jar
+          asset_name: jportal2-${{ steps.tag_version.outputs.new_tag }}${{github.event.inputs.release_snapshot}}.jar
           tag: ${{ steps.tag_version.outputs.new_tag }}
           overwrite: true
           body: jportal2-${{ steps.tag_version.outputs.new_tag }}${{github.event.inputs.release_type}}.jar
