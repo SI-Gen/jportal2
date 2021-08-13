@@ -95,7 +95,7 @@ jobs:
         env:
           MAVEN_USERNAME: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
           MAVEN_CENTRAL_TOKEN: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.MVN_GPG_PASSPHRASE }
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MVN_GPG_PASSPHRASE }}
         run: |
           mvn \
             --no-transfer-progress \
