@@ -100,7 +100,7 @@ jobs:
 
       # Publish to Central Repository
       - name: Release on nexus
-          uses: monkeyWie/maven-nexus-release@v1.0.0
-          with:
-            maven-repo-server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
-            maven-repo-server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
+        uses: monkeyWie/maven-nexus-release@v1.0.0
+        with:
+          maven-repo-server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
+           maven-repo-server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
