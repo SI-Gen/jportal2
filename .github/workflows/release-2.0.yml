@@ -23,6 +23,7 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Bump Git Release Version
       - name: 'Retrieve & Bump Tag'
         id: tag_version
         uses: mathieudutour/github-tag-action@v5.6
@@ -31,10 +32,12 @@ jobs:
           default_bump: ${{github.event.inputs.release_type}}
           tag_prefix: ''
 
+      # Changes Maven Version
       - name: 'Change Maven Version'
         run: |
           mvn versions:set -DnewVersion=${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT
 
+      # Commits Version Change
       - name: 'Commit Maven Version'
         uses: EndBug/add-and-commit@v7
         with:
@@ -43,7 +46,8 @@ jobs:
           message: '[Github-bot] - changed maven version'
           push: true
           add: 'pom.xml'
-          
+
+      # Generates new GitHub Release
       - name: 'GitHub release'
         uses: actions/create-release@v1
         env:
@@ -53,6 +57,7 @@ jobs:
           release_name: ${{ steps.tag_version.outputs.new_tag }}
           body: '${{github.event.inputs.release_description}} - ${{ steps.tag_version.outputs.new_tag }}'
 
+      # Prepares Maven Central
       - name: Set up Maven Central Repository
         uses: actions/setup-java@v1
         with:
@@ -61,11 +66,13 @@ jobs:
           server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
           server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
 
-      - name: Install gpg secret key
-        run: |
-          cat <(echo -e "${{ secrets.MAVEN_GPG_PRIVATE_KEY }}") | gpg --batch --import
-          gpg --list-secret-keys --keyid-format LONG
+      # Installs GPG Key
+#      - name: Install gpg secret key
+#        run: |
+#          cat <(echo -e "${{ secrets.MAVEN_GPG_PRIVATE_KEY }}") | gpg --batch --import
+#          gpg --list-secret-keys --keyid-format LONG
 
+      # Publish to Central Repository
       - name: Publish to Central Repository
         env:
           MAVEN_USERNAME: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
