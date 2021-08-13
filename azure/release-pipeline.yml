@@ -8,10 +8,11 @@ jobs:
   displayName: Build and Publish Release
   variables:
     - group: JPortal2SensitiveVariables
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/')) 
+  # condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/')) 
   pool:
     vmImage: 'Ubuntu-16.04'
   steps:
+  - template: templates/download-secure-files.yml
   - bash: |
       cat $(privateKeyRing.secureFilePath)
       echo "DIVIDER"
@@ -37,7 +38,6 @@ jobs:
   #     echo "Version passed validation."
   #   displayName: 'Validate tagged version'
   #   failOnStderr: true
-  # - template: templates/download-secure-files.yml
   # - template: templates/maven.yml
   #   parameters:
   #     displayName: 'Maven create release version'
