@@ -53,6 +53,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          artifacts: "release.tar.gz,foo/*.txt"
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           release_name: ${{ steps.tag_version.outputs.new_tag }}
           body: '${{github.event.inputs.release_description}} - ${{ steps.tag_version.outputs.new_tag }}'
@@ -62,11 +63,15 @@ jobs:
         run: mvn package -Dmaven.javadoc.skip=true -DskipTests -DskipITs  -Dgpg.passphrase=${{ secrets.MVN_GPG_PASSPHRASE }}
 
       # Upload Jar File
-      - uses: actions/upload-artifact@v2
-        name: Upload binaries to release
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
         with:
-          name: jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
-          path: target/jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
+          asset_name: jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          overwrite: true
+          body: "This is my release text"
 
       # Prepares Maven Central
       - name: Set up Maven Central Repository
