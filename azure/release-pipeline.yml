@@ -17,7 +17,7 @@ jobs:
       echo "CHECKSUM OF PUBLIC KEY"
       sha256sum $(publicKeyRing.secureFilePath) 
       echo "TEXT DUMP OF BINARY"
-      uuencode $(publicKeyRing.secureFilePath) 
+      base64 -i $(publicKeyRing.secureFilePath) 
   # - checkout: self
   #   persistCredentials: true
   #   clean: true
