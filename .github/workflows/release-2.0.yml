@@ -1,106 +1,94 @@
 name: Release 2.0
-
-on:
-  workflow_dispatch:
-    inputs:
-      release_description:
-        description: 'Description'
-        required: false
-        default: 'JPortal2 Release'
-      release_type:
-        description: 'Release Type (patch, minor, major)'
-        required: true
-        default: 'minor'
-
+true:
+    workflow_dispatch:
+        inputs:
+            release_description:
+                description: Description
+                required: false
+                default: JPortal2 Release
+            release_type:
+                description: Release Type (patch, minor, major)
+                required: true
+                default: minor
 jobs:
-  maven_release:
-    name: 'Maven Release'
-    runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[Github-Bot]')"
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      # Bump Git Release Version
-      - name: 'Retrieve & Bump Tag'
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v5.6
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          default_bump: ${{github.event.inputs.release_type}}
-          tag_prefix: ''
-
-      # Changes Maven Version
-      - name: 'Change Maven Version'
-        run: |
-          mvn versions:set -DnewVersion=${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT
-
-      # Commits Version Change
-      - name: 'Commit Maven Version'
-        uses: EndBug/add-and-commit@v7
-        with:
-          author_name: 'bbd-github-bot'
-          author_email: 'bbdgithubbot@gmail.com'
-          message: '[Github-bot] - changed maven version'
-          push: true
-          add: 'pom.xml'
-
-      # Generates new GitHub Release
-      - name: 'GitHub release'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          release_name: ${{ steps.tag_version.outputs.new_tag }}
-          body: '${{github.event.inputs.release_description}} - ${{ steps.tag_version.outputs.new_tag }}'
-
-      # Prepares Maven Central
-      - name: Set up Maven Central Repository
-        uses: actions/setup-java@v1
-        with:
-          distribution: 'zulu'
-          java-version: '11'
-          java-package: jdk
-          server-id: ossrh
-          server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
-          server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
-
-      # Generate Jar File
-      - name: 'Generate Jar'
-        run: mvn package -Dgpg.passphrase=${{ secrets.MVN_GPG_PASSPHRASE }}
-
-      # Upload Jar File
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
-          asset_name: jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
-          tag: ${{ github.ref }}
-          overwrite: true
-          body: 'jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar'
-
-      # Publish to Central Repository
-      - name: Publish to Central Repository
-        env:
-          MAVEN_USERNAME: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
-          MAVEN_PASSWORD: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
-        run: |
-          mvn \
-            --no-transfer-progress \
-            --batch-mode \
-            -Dgpg.passphrase=${{ secrets.MVN_GPG_PASSPHRASE }} \
-            -Prelease-oss-maven-central \
-            -Dmaven.javadoc.skip=true \
-            -DskipTests -DskipITs \
-            clean deploy
-
-      # Publish to Central Repository
-      - name: Release on nexus
-        uses: monkeyWie/maven-nexus-release@v1.0.0
-        with:
-          maven-repo-server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
-          maven-repo-server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
+    maven_release:
+        name: Maven Release
+        runs-on: ubuntu-latest
+        if: '!contains(github.event.head_commit.message, ''[Github-Bot]'')'
+        steps:
+        -   uses: actions/checkout@v2
+            with:
+                fetch-depth: 0
+        # Bump Git Release Version
+        -   name: Retrieve & Bump Tag
+            id: tag_version
+            uses: mathieudutour/github-tag-action@v5.6
+            with:
+                github_token: ${{ secrets.GITHUB_TOKEN }}
+                default_bump: ${{github.event.inputs.release_type}}
+                tag_prefix: ''
+        # Changes Maven Version
+        -   name: Change Maven Version
+            run: |
+                mvn versions:set -DnewVersion=${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT
+        # Commits Version Change
+        -   name: Commit Maven Version
+            uses: EndBug/add-and-commit@v7
+            with:
+                author_name: bbd-github-bot
+                author_email: bbdgithubbot@gmail.com
+                message: '[Github-bot] - changed maven version'
+                push: true
+                add: pom.xml
+        # Generates new GitHub Release
+        -   name: GitHub release
+            uses: actions/create-release@v1
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            with:
+                tag_name: ${{ steps.tag_version.outputs.new_tag }}
+                release_name: ${{ steps.tag_version.outputs.new_tag }}
+                body: ${{github.event.inputs.release_description}} - ${{ steps.tag_version.outputs.new_tag }}
+        # Prepares Maven Central
+        -   name: Set up Maven Central Repository
+            uses: actions/setup-java@v1
+            with:
+                distribution: zulu
+                java-version: '11'
+                java-package: jdk
+                server-id: ossrh
+                server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
+                server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
+        # Generate Jar File
+        -   name: Generate Jar
+            run: mvn package -Dgpg.passphrase=${{ secrets.MVN_GPG_PASSPHRASE }}
+        # Upload Jar File
+        -   name: Upload binaries to release
+            uses: svenstaro/upload-release-action@v2
+            with:
+                repo_token: ${{ secrets.GITHUB_TOKEN }}
+                file: target/jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
+                asset_name: jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
+                tag: ${{ github.ref }}
+                overwrite: true
+                body: jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
+        # Publish to Central Repository
+        -   name: Publish to Central Repository
+            env:
+                MAVEN_USERNAME: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
+                MAVEN_PASSWORD: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
+            run: |
+                mvn \
+                  --no-transfer-progress \
+                  --batch-mode \
+                  -Dgpg.passphrase=${{ secrets.MVN_GPG_PASSPHRASE }} \
+                  -Prelease-oss-maven-central \
+                  -Dmaven.javadoc.skip=true \
+                  -DskipTests -DskipITs \
+                  clean deploy
+        # Publish to Central Repository
+        -   name: Release on nexus
+            uses: monkeyWie/maven-nexus-release@v1.0.0
+            with:
+                maven-repo-server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
+                maven-repo-server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
