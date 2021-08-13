@@ -34,40 +34,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Bump Git Release Version
-      - name: 'Retrieve & Bump Tag'
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v5.6
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          default_bump: ${{github.event.inputs.release_type}}
-          tag_prefix: ''
-
-      # Generates new GitHub Release
-      - name: 'GitHub release'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          release_name: ${{ steps.tag_version.outputs.new_tag }}
-          body: '${{github.event.inputs.release_description}} - ${{ steps.tag_version.outputs.new_tag }}'
-
       # Prepares Maven Release
       - name: 'Maven Release'
         uses: qcastel/github-actions-maven-release@master
         env:
           JAVA_HOME: /usr/lib/jvm/java-11-openjdk/
-
         with:
           access-token: ${{ secrets.GITHUB_TOKEN }}
           release-branch-name: 'master'
           git-release-bot-name: 'bbd-github-bot'
           git-release-bot-email: 'bbdgithubbot@gmail.com'
 
-          maven-args: '-Dmaven.javadoc.skip=true -DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Dmaven.deploy.skip=true'
-          version-minor: ${{ github.event.inputs.release_type == 'minor' || github.event.inputs.release_type == 'patch'}}
-          version-major: ${{ github.event.inputs.release_type == 'major' }}
+          maven-args: '-Dmaven.javadoc.skip=true -DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central'
 
           maven-repo-server-id: ossrh
           maven-repo-server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
