@@ -61,16 +61,27 @@ jobs:
       - name: Set up Maven Central Repository
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          distribution: 'zulu'
+          java-version: '11'
+          java-package: jdk
           server-id: ossrh
           server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
           server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
 
-      # Installs GPG Key
-#      - name: Install gpg secret key
-#        run: |
-#          cat <(echo -e "${{ secrets.MAVEN_GPG_PRIVATE_KEY }}") | gpg --batch --import
-#          gpg --list-secret-keys --keyid-format LONG
+      # Generate Jar File
+      - name: 'Generate Jar'
+        run: mvn package -Dgpg.passphrase=${{ secrets.MVN_GPG_PASSPHRASE }}
+
+      # Upload Jar File
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
+          asset_name: jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
+          tag: ${{ github.ref }}
+          overwrite: true
+          body: 'jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar'
 
       # Publish to Central Repository
       - name: Publish to Central Repository
@@ -81,8 +92,15 @@ jobs:
           mvn \
             --no-transfer-progress \
             --batch-mode \
-            -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} \
+            -Dgpg.passphrase=${{ secrets.MVN_GPG_PASSPHRASE }} \
             -Prelease-oss-maven-central \
             -Dmaven.javadoc.skip=true \
             -DskipTests -DskipITs \
             clean deploy
+
+      # Publish to Central Repository
+      - name: Release on nexus
+          uses: monkeyWie/maven-nexus-release@v1.0.0
+          with:
+            maven-repo-server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
+            maven-repo-server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
