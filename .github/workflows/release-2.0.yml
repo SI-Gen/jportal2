@@ -57,6 +57,17 @@ jobs:
           release_name: ${{ steps.tag_version.outputs.new_tag }}
           body: '${{github.event.inputs.release_description}} - ${{ steps.tag_version.outputs.new_tag }}'
 
+      # Generate Jar File
+      - name: 'Generate Jar'
+        run: mvn package -Dmaven.javadoc.skip=true -DskipTests -DskipITs  -Dgpg.passphrase=${{ secrets.MVN_GPG_PASSPHRASE }}
+
+      # Upload Jar File
+      - uses: actions/upload-artifact@v2
+        name: Upload binaries to release
+        with:
+          name: jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
+          path: target/jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
+
       # Prepares Maven Central
       - name: Set up Maven Central Repository
         uses: actions/setup-java@v1
@@ -67,21 +78,6 @@ jobs:
           server-id: ossrh
           server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
           server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
-
-      # Generate Jar File
-      - name: 'Generate Jar'
-        run: mvn package -Dgpg.passphrase=${{ secrets.MVN_GPG_PASSPHRASE }}
-
-      # Upload Jar File
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
-          asset_name: jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
-          tag: ${{ github.ref }}
-          overwrite: true
-          body: 'jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar'
 
       # Publish to Central Repository
       - name: Publish to Central Repository
