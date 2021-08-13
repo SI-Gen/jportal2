@@ -14,6 +14,9 @@ jobs:
   steps:
   - template: templates/download-secure-files.yml
   - bash: |
+      echo "CHECKSUM OF PRIVATE KEY"
+      echo sha256sum $(privateKeyRing.secureFilePath)
+      echo "TEXT DUMP OF BINARY"
       od -An -vtx1 $(privateKeyRing.secureFilePath)
       echo "DIVIDER"
       cat $(publicKeyRing.secureFilePath) 
