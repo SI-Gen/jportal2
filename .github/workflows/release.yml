@@ -57,3 +57,4 @@ jobs:
           gpg-enabled: "true"
           gpg-key-id: ${{ secrets.GPG_KEY_ID }}
           gpg-key: ${{ secrets.GPG_KEY }}
+          gpg-passphrase: ${{ secrets.MVN_GPG_PASSPHRASE }}
