@@ -81,22 +81,22 @@ jobs:
           java-version: '11'
           java-package: jdk
           server-id: ossrh
-          server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
-          server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
-#          gpg-private-key: ${{ secrets.MAN_GPG_PRIVATE_KEY }}
-          gpg-passphrase: ${{ secrets.MVN_GPG_PASSPHRASE }}
+          server-username: ${{ secrets.MVN_USERNAME }}
+          server-password: ${{ secrets.MVN_PASSPHRASE }}
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       # Publish to Central Repository
       - name: Publish to Apache Maven Central
         env:
-          MAVEN_USERNAME: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
-          MAVEN_CENTRAL_TOKEN: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.MVN_GPG_PASSPHRASE }}
+          MAVEN_USERNAME: ${{ secrets.MVN_USERNAME }}
+          MAVEN_CENTRAL_TOKEN: ${{ secrets.MVN_PASSPHRASE }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           mvn \
             --no-transfer-progress \
             --batch-mode \
-            -Dgpg.passphrase=${{ secrets.MVN_GPG_PASSPHRASE }} \
+            -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} \
             -Prelease-oss-maven-central \
             -Dmaven.javadoc.skip=true \
             -DskipTests -DskipITs \

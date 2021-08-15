@@ -51,10 +51,10 @@ jobs:
           version-minor: ${{ steps.tag_version.outputs.new_tag == 'minor' }}
 
           maven-repo-server-id: ossrh
-          maven-repo-server-username: ${{ secrets.MVN_REPO_PRIVATE_REPO_USER }}
-          maven-repo-server-password: ${{ secrets.MVN_REPO_PRIVATE_REPO_PASSWORD }}
+          maven-repo-server-username: ${{ secrets.MVN_USERNAME }}
+          maven-repo-server-password: ${{ secrets.MVN_PASSPHRASE }}
 
           gpg-enabled: "true"
           gpg-key-id: ${{ secrets.GPG_KEY_ID }}
-          gpg-key: ${{ secrets.GPG_KEY }}
+          gpg-key: ${{ secrets.GPG_PASSPHRASE }}
           gpg-passphrase: ${{ secrets.MVN_GPG_PASSPHRASE }}
