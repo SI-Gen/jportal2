@@ -60,7 +60,7 @@ jobs:
 
       # Generate Jar File
       - name: 'Generate Jar'
-        run: mvn package -Dmaven.javadoc.skip=true -DskipTests -DskipITs  -Dgpg.passphrase=${{ secrets.MVN_GPG_PASSPHRASE }}
+        run: mvn package -Dmaven.javadoc.skip=true -DskipTests -DskipITs  -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
 
       # Upload Jar File
       - name: Upload Jar Files to Release
