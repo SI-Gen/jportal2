@@ -15,7 +15,7 @@
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
 <!--        <url>https://github.com/SI-Gen/jportal2</url>-->
         <url>https://github.com/BradPirie/jportal2</url>
-        <tag>1.6.0</tag>
+        <tag>@{project.version}</tag>
     </scm>
 
 
@@ -379,15 +379,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-release-plugin</artifactId>
-                        <version>3.0.0-M4</version>
-                        <configuration>
-                            <scmCommentPrefix>[Github-Bot]</scmCommentPrefix>
-                            <tagNameFormat>@{project.version}</tagNameFormat>
-                        </configuration>
-                    </plugin>
                     <!--<plugin>-->
                     <!--<groupId>org.sonatype.plugins</groupId>-->
                     <!--<artifactId>nexus-staging-maven-plugin</artifactId>-->
@@ -420,7 +411,7 @@
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
-                                <phase>verify</phase>
+                                <phase>deploy</phase>
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
