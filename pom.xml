@@ -178,7 +178,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>2.4.2</version>
+                    <version>3.0.0-M4</version>
                     <configuration>
                         <scmCommentPrefix>[Github-Bot]</scmCommentPrefix>
                         <tagNameFormat>@{project.version}</tagNameFormat>
@@ -378,6 +378,15 @@
                                 <phase>none</phase>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <version>3.0.0-M4</version>
+                        <configuration>
+                            <scmCommentPrefix>[Github-Bot]</scmCommentPrefix>
+                            <tagNameFormat>@{project.version}</tagNameFormat>
+                        </configuration>
                     </plugin>
                     <!--<plugin>-->
                     <!--<groupId>org.sonatype.plugins</groupId>-->
