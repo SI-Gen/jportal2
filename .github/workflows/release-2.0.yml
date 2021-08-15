@@ -29,7 +29,7 @@ jobs:
         uses: mathieudutour/github-tag-action@v5.6
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          default_bump: ${{ steps.tag_version.outputs.new_tag }}
+          default_bump: ${{ github.event.inputs.release_type }}
           tag_prefix: ''
 
       # Changes Maven Version
