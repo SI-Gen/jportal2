@@ -60,7 +60,7 @@ jobs:
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
   upload_jar:
-    name: 'Maven Release'
+    name: 'Upload Jar'
     runs-on: ubuntu-latest
     needs: maven_release
     steps:
