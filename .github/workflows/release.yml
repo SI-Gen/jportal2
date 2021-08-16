@@ -8,7 +8,7 @@ on:
         required: false
         default: 'JPortal2 Release'
       release_type:
-        description: 'Release Type (minor, major)'
+        description: 'Release Type (patch, minor, major)'
         required: true
         default: 'minor'
 
@@ -46,9 +46,9 @@ jobs:
           git-release-bot-name: 'bbdsoftware'
           git-release-bot-email: 'mavencentral@bbd.co.za'
 
-          maven-args: '-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central'
-#          version-major: ${{ steps.tag_version.outputs.new_tag == 'major' }}
-          version-minor: true
+          maven-args: '-X -DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central'
+          version-major: ${{github.event.inputs.release_type == 'major'}}
+          version-minor: ${{github.event.inputs.release_type == 'minor'}}
 
           maven-repo-server-id: ossrh
           maven-repo-server-username: ${{ secrets.MVN_USERNAME }}
