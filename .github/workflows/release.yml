@@ -46,7 +46,7 @@ jobs:
           git-release-bot-name: 'bbdsoftware'
           git-release-bot-email: 'mavencentral@bbd.co.za'
 
-          maven-args: '-Dmaven.javadoc.skip=true -DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central'
+          maven-args: '-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central'
           version-major: ${{ steps.tag_version.outputs.new_tag == 'major' }}
           version-minor: ${{ steps.tag_version.outputs.new_tag == 'minor' }}
 
@@ -58,4 +58,24 @@ jobs:
           gpg-key-id: ${{ secrets.GPG_KEY_ID }}
           gpg-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+#  upload_jar:
+#    name: 'Maven Release'
+#    runs-on: ubuntu-latest
+#    needs: maven_release
+#    steps:
+#      # Generate Jar File
+#      - name: 'Generate Jar'
+#        run: mvn package -Dmaven.javadoc.skip=true -DskipTests -DskipITs  -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
+#
+#      # Upload Jar File
+#      - name: Upload Jar Files to Release
+#        uses: svenstaro/upload-release-action@v2
+#        with:
+#          repo_token: ${{ secrets.GITHUB_TOKEN }}
+#          file: target/jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
+#          asset_name: jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
+#          tag: ${{ steps.tag_version.outputs.new_tag }}
+#          overwrite: true
+#          body: jportal2-${{ steps.tag_version.outputs.new_tag }}-SNAPSHOT.jar
           
