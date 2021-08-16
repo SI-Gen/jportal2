@@ -93,5 +93,5 @@ jobs:
           asset_name: jportal2-${{ steps.previoustag.outputs.tag }}-SNAPSHOT.jar
           tag: ${{ steps.previoustag.outputs.tag }}
           overwrite: true
-          body: jportal2-${{ steps.previoustag.outputs.tag }}-SNAPSHOT.jar
+          body: 'jportal2 - Release<br/><br/>${{github.event.inputs.release_description}}'
           
