@@ -64,7 +64,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: maven_release
     steps:
-
+      - uses: actions/checkout@v2.2.0
+      with:
+        fetch-depth: 0
+        
       # Get Previous tag
       - name: 'Get Previous tag'
         id: previoustag
