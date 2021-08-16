@@ -43,8 +43,8 @@ jobs:
         with:
           access-token: ${{ secrets.GITHUB_TOKEN }}
           release-branch-name: 'master'
-          git-release-bot-name: 'bbd-github-bot'
-          git-release-bot-email: 'bbdgithubbot@gmail.com'
+          git-release-bot-name: 'bbdsoftware'
+          git-release-bot-email: 'mavencentral@bbd.co.za'
 
           maven-args: '-Dmaven.javadoc.skip=true -DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central'
           version-major: ${{ steps.tag_version.outputs.new_tag == 'major' }}
