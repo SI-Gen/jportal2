@@ -47,8 +47,8 @@ jobs:
           git-release-bot-email: 'mavencentral@bbd.co.za'
 
           maven-args: '-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central'
-          version-major: ${{ steps.tag_version.outputs.new_tag == 'major' }}
-          version-minor: ${{ steps.tag_version.outputs.new_tag == 'minor' }}
+#          version-major: ${{ steps.tag_version.outputs.new_tag == 'major' }}
+          version-minor: true
 
           maven-repo-server-id: ossrh
           maven-repo-server-username: ${{ secrets.MVN_USERNAME }}
@@ -67,7 +67,7 @@ jobs:
       - uses: actions/checkout@v2.2.0
       with:
         fetch-depth: 0
-        
+
       # Get Previous tag
       - name: 'Get Previous tag'
         id: previoustag
