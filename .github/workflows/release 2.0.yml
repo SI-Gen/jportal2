@@ -13,49 +13,23 @@ on:
         default: 'patch'
 
 jobs:
-  build:
+  publish:
+    environment: mavenCentralPublish
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Cache local Maven repository
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-      - name: Set up JDK 11
+      - name: Setup Java
         uses: actions/setup-java@v2
         with:
-          java-version: '11'
           distribution: 'adopt'
-          server-id: ossrh
-          server-username: ${{ secrets.MVN_USERNAME }}
-          server-password: ${{ secrets.MVN_PASSPHRASE }}
-      - name: Set up Toolchain
-        shell: bash
-        run: |
-          mkdir -p $HOME/.m2 \
-          && cat << EOF > $HOME/.m2/toolchains.xml
-          <?xml version="1.0" encoding="UTF8"?>
-          <toolchains>
-            <toolchain>
-              <type>jdk</type>
-                <provides>
-                  <version>11</version>
-                  <vendor>adopt</vendor>
-                </provides>
-                <configuration>
-                  <jdkHome>${{ env.JAVA_HOME }}</jdkHome>
-                </configuration>
-            </toolchain>
-          </toolchains>
-          EOF
-      - name: Deploy
-        run: mvn -B -U -Prelease-oss-maven-central deploy -DperformRelease=true
+          java-version: '11'
+      - name: Setup Maven settings
+        uses: s4u/maven-settings-action@v2.4.0
+        with:
+          servers: '[{"id": "ossrh", "username": "${{ secrets.MVN_USERNAME }}", "password": "${{ secrets.MVN_PASSWORD }}"}]'
+      - name: Publish to Maven Central
         env:
-          MAVEN_USERNAME: ${{ secrets.MVN_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.MVN_PASSPHRASE }}
-          SIGN_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          SIGN_KEY: ${{ secrets.GPG_KEY }}
           SIGN_KEY_PASS: ${{ secrets.GPG_PASSPHRASE }}
+        run: mvn clean packagev-P -Dmaven.test.skip=true sign:sign nexus-staging:deploy -B
