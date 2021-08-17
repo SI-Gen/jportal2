@@ -55,7 +55,7 @@ jobs:
           maven-repo-server-username: ${{ secrets.MVN_USERNAME }}
           maven-repo-server-password: ${{ secrets.MVN_PASSPHRASE }}
 
-          gpg-enabled: false
+          gpg-enabled: true
           gpg-key-id: ${{ secrets.GPG_KEY_ID }}
           gpg-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -104,7 +104,7 @@ jobs:
 
 
 #  deploy:
-#    name: 'Maven Deploy'
+#    name: 'Maven Nexus Release'
 #    runs-on: ubuntu-latest
 #    needs: upload_jar
 #    steps:
@@ -120,7 +120,6 @@ jobs:
 #          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 #
 #      # Maven Deploy
-#      - name: 'Maven Deploy'
+#      - name: 'Maven Nexus Release'
 #        run: |
-#          mvn deploy
-#
+#          mvn nexus-staging:release
