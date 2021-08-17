@@ -13,23 +13,131 @@ on:
         default: 'patch'
 
 jobs:
-  publish:
-    environment: mavenCentralPublish
-    runs-on: ubuntu-latest
+  build-and-test-job:
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ 8, 11 ]
+        os: [ ubuntu-latest, macOS-latest, windows-latest ]
+        experimental: [ false ]
+        include:
+          - java: '>11'
+            os: ubuntu-latest
+            experimental: true
+
+    name: JDK${{ matrix.java }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+
     steps:
-      - name: Checkout
+      - name: Checkout source code
         uses: actions/checkout@v2
+        with:
+          submodules: true
+
       - name: Setup Java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v1
         with:
-          distribution: 'adopt'
-          java-version: '11'
-      - name: Setup Maven settings
-        uses: s4u/maven-settings-action@v2.4.0
+          java-version: ${{ matrix.java }}
+
+      - name: Setup Maven cache
+        uses: actions/cache@v1
         with:
-          servers: '[{"id": "ossrh", "username": "${{ secrets.MVN_USERNAME }}", "password": "${{ secrets.MVN_PASSWORD }}"}]'
-      - name: Publish to Maven Central
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build and (headless) test with Maven
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: mvn -B -ntp package
+
+  snapshot-job:
+    needs: build-and-test-job
+    if: startsWith(github.repository, 'jdemetra/') && startsWith(github.ref, 'refs/heads/develop')
+    strategy:
+      matrix:
+        java: [ 11 ]
+        os: [ ubuntu-latest ]
+
+    name: Snapshot on develop
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Setup Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+
+      - name: Setup Maven cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Deploy snapshot with Maven if settings defined
+        run: test ! -f ci.settings.xml || mvn -B -ntp deploy -DskipTests=true -s ci.settings.xml -P base-deploy,snapshot-deploy,!non-deployable-modules
         env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+          SIGN_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          SIGN_KEY_PASS: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+
+  release-job:
+    needs: build-and-test-job
+    if: startsWith(github.repository, 'jdemetra/') && startsWith(github.ref, 'refs/tags/v')
+    strategy:
+      matrix:
+        java: [ 11 ]
+        os: [ ubuntu-latest ]
+
+    name: Release on tag
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Setup Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+
+      - name: Setup Maven cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Deploy with Maven if settings defined
+        run: test ! -f ci.settings.xml || mvn -B -ntp deploy -Prelease-oss-maven-central -DskipTests=true -s ci.settings.xml -P base-deploy,release-deploy,!non-deployable-modules
+        env:
+          OSSRH_USERNAME: ${{ secrets.MVN_USERNAME }}
+          OSSRH_TOKEN: ${{ secrets.MVN_PASSWORD }}
           SIGN_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           SIGN_KEY_PASS: ${{ secrets.GPG_PASSPHRASE }}
-        run: mvn clean package -Prelease-oss-maven-central -Dmaven.test.skip=true sign:sign nexus-staging:deploy -B
+
+      - name: Build assets with Maven
+        run: mvn -B -ntp install -DskipTests=true -P base-deploy
+        env:
+          SIGN_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          SIGN_KEY_PASS: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Create dummy file if no assets
+        run: test -d "binaries" || (mkdir binaries && echo "no assets" > binaries/no_assets.txt)
+
+      - name: Create draft release and upload assets
+        uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: 'binaries/*'
