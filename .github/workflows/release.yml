@@ -36,7 +36,8 @@ jobs:
           git config --global gpg.program gpg2
           git config --list
           gpg2 --version
-          apt-get install pinentry
+          sudo apt install pinentry-tty
+          sudo update-alternatives --config pinentry
           gpg --no-use-agent
 
       - uses: actions/checkout@v2
