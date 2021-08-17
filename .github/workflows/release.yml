@@ -6,7 +6,7 @@ on:
       release_description:
         description: 'Description'
         required: false
-        default: 'JPortal2 Release'
+        default: 'JPortal2 - Release'
       release_type:
         description: 'Next Maven Release Version (patch, minor, major)'
         required: true
@@ -76,6 +76,12 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
+      - name: Build Changelog
+        id: github_release
+        uses: mikepenz/release-changelog-builder-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       # Changes Maven Version
       - name: 'Change Maven Version'
         run: |
@@ -94,18 +100,8 @@ jobs:
           asset_name: jportal2-${{ steps.previoustag.outputs.tag }}-SNAPSHOT.jar
           tag: ${{ steps.previoustag.outputs.tag }}
           overwrite: true
-          body:
+          body: '${{github.event.inputs.release_description}}<br/><br/><b>Change Log<b><br/>${{steps.github_release.outputs.changelog}}'
 
-       # Upload Jar File
-      - name: Deploy to
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/jportal2-${{ steps.previoustag.outputs.tag }}-SNAPSHOT.jar
-          asset_name: jportal2-${{ steps.previoustag.outputs.tag }}-SNAPSHOT.jar
-          tag: ${{ steps.previoustag.outputs.tag }}
-          overwrite: true
-          body: 'jportal2 - Release<br/><br/>${{github.event.inputs.release_description}}'
 
   deploy:
     name: 'Maven Deploy'
