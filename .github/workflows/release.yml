@@ -10,7 +10,7 @@ on:
       release_type:
         description: 'Next Maven Release Version (patch, minor, major)'
         required: true
-        default: 'minor'
+        default: 'patch'
 
 jobs:
   build:
