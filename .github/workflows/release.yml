@@ -8,7 +8,7 @@ on:
         required: false
         default: 'JPortal2 Release'
       release_type:
-        description: 'Release Type (patch, minor, major)'
+        description: 'Next Maven Release Version (patch, minor, major)'
         required: true
         default: 'minor'
 
@@ -55,7 +55,7 @@ jobs:
           maven-repo-server-username: ${{ secrets.MVN_USERNAME }}
           maven-repo-server-password: ${{ secrets.MVN_PASSPHRASE }}
 
-          gpg-enabled: true
+          gpg-enabled: false
           gpg-key-id: ${{ secrets.GPG_KEY_ID }}
           gpg-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -94,5 +94,37 @@ jobs:
           asset_name: jportal2-${{ steps.previoustag.outputs.tag }}-SNAPSHOT.jar
           tag: ${{ steps.previoustag.outputs.tag }}
           overwrite: true
+          body:
+
+       # Upload Jar File
+      - name: Deploy to
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/jportal2-${{ steps.previoustag.outputs.tag }}-SNAPSHOT.jar
+          asset_name: jportal2-${{ steps.previoustag.outputs.tag }}-SNAPSHOT.jar
+          tag: ${{ steps.previoustag.outputs.tag }}
+          overwrite: true
           body: 'jportal2 - Release<br/><br/>${{github.event.inputs.release_description}}'
+
+  deploy:
+    name: 'Maven Deploy'
+    runs-on: ubuntu-latest
+    needs: upload_jar
+    steps:
+      - uses: actions/checkout@v2.2.0
+        with:
+          fetch-depth: 0
+
+      # Get Previous tag
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      # Maven Deploy
+      - name: 'Maven Deploy'
+        run: |
+          mvn deploy
           
