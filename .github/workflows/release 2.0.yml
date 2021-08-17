@@ -124,7 +124,7 @@ jobs:
       - name: Build assets with Maven
         run: mvn -B -ntp install -DskipTests=true -P base-deploy
         env:
-          SIGN_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          SIGN_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           SIGN_KEY_PASS: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Create dummy file if no assets
