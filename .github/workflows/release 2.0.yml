@@ -117,7 +117,7 @@ jobs:
         run: test ! -f ci.settings.xml || mvn -B -ntp deploy -Prelease-oss-maven-central -DskipTests=true -s ci.settings.xml -P base-deploy,release-deploy,!non-deployable-modules
         env:
           OSSRH_USERNAME: ${{ secrets.MVN_USERNAME }}
-          OSSRH_TOKEN: ${{ secrets.MVN_PASSWORD }}
+          OSSRH_TOKEN: ${{ secrets.MVN_PASSPHRASE }}
           SIGN_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           SIGN_KEY_PASS: ${{ secrets.GPG_PASSPHRASE }}
 
