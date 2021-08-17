@@ -36,6 +36,7 @@ jobs:
           echo 'XXXXXXXXXXXXXXXXXXXX'
           git config --global gpg.program gpg2
           git config --list
+          gpg2 --version
 
       - uses: actions/checkout@v2
         with:
