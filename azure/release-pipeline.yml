@@ -14,10 +14,8 @@ jobs:
   steps:
   - template: templates/download-secure-files.yml
   - bash: |
-      echo "CHECKSUM OF PUBLIC KEY"
-      sha256sum $(publicKeyRing.secureFilePath) 
-      echo "TEXT DUMP OF BINARY"
-      base64 -i $(publicKeyRing.secureFilePath) 
+      echo "maven settings file"
+      cat $(mavenSettings.secureFilePath)
   # - checkout: self
   #   persistCredentials: true
   #   clean: true
