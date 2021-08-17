@@ -1,4 +1,4 @@
-name: Release
+name: Release 2.0
 
 on:
   workflow_dispatch:
@@ -53,7 +53,7 @@ jobs:
           </toolchains>
           EOF
       - name: Deploy
-        run: mvn -B -U deploy -DperformRelease=true
+        run: mvn -B -U -Prelease-oss-maven-central deploy -DperformRelease=true
         env:
           MAVEN_USERNAME: ${{ secrets.MVN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MVN_PASSPHRASE }}
