@@ -31,12 +31,13 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[Github-Bot]')"
 
     steps:
-      - name: 'Git Config'
+      - name: 'GPG Config'
         run: |
-          echo 'XXXXXXXXXXXXXXXXXXXX'
           git config --global gpg.program gpg2
           git config --list
           gpg2 --version
+          apt-get install pinentry
+          gpg --no-use-agent
 
       - uses: actions/checkout@v2
         with:
