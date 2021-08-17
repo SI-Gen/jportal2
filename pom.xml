@@ -8,7 +8,6 @@
     <properties>
         <slf4j.version>1.7.25</slf4j.version>
     </properties>
-    <name>JPortal2</name>
     <description>
         Database, Module and Application code generators for varying platforms, vendors and languages.
     </description>
