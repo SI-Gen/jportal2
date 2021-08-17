@@ -30,6 +30,6 @@ jobs:
           servers: '[{"id": "ossrh", "username": "${{ secrets.MVN_USERNAME }}", "password": "${{ secrets.MVN_PASSWORD }}"}]'
       - name: Publish to Maven Central
         env:
-          SIGN_KEY: ${{ secrets.GPG_KEY }}
+          SIGN_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           SIGN_KEY_PASS: ${{ secrets.GPG_PASSPHRASE }}
-        run: mvn clean packagev-P -Dmaven.test.skip=true sign:sign nexus-staging:deploy -B
+        run: mvn clean package -Prelease-oss-maven-central -Dmaven.test.skip=true sign:sign nexus-staging:deploy -B
