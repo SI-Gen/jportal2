@@ -17,8 +17,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ 8, 11 ]
-        os: [ ubuntu-latest, macOS-latest, windows-latest ]
+        java: 11
+        os: ubuntu-latest
         experimental: [ false ]
         include:
           - java: '>11'
