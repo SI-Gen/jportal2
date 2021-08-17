@@ -18,6 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/master' }}
     steps:
+      - name: 'Git Config'
+        run: |
+          echo 'XXXXXXXXXXXXXXXXXXXX'
+          git config --list
+
       - uses: actions/checkout@v2
       - name: 'Build and Test'
         uses: qcastel/github-actions-maven-cmd@master
@@ -102,24 +107,28 @@ jobs:
           overwrite: true
           body: '${{github.event.inputs.release_description}}<br/><br/><b>Change Log<b><br/>${{steps.github_release.outputs.changelog}}'
 
+  deploy:
+    name: 'Maven Nexus Release'
+    runs-on: ubuntu-latest
+    needs: upload_jar
+    steps:
+      - uses: actions/checkout@v2.2.0
+        with:
+          fetch-depth: 0
 
-#  deploy:
-#    name: 'Maven Nexus Release'
-#    runs-on: ubuntu-latest
-#    needs: upload_jar
-#    steps:
-#      - uses: actions/checkout@v2.2.0
-#        with:
-#          fetch-depth: 0
-#
-#      # Get Previous tag
-#      - name: 'Get Previous tag'
-#        id: previoustag
-#        uses: "WyriHaximus/github-action-get-previous-tag@v1"
-#        env:
-#          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-#
-#      # Maven Deploy
-#      - name: 'Maven Nexus Release'
-#        run: |
-#          mvn nexus-staging:release
+      # Get Previous tag
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      # Changes Maven Version
+      - name: 'Change Maven Version'
+        run: |
+          mvn versions:set -DnewVersion=${{ steps.previoustag.outputs.tag }}-SNAPSHOT
+
+      # Maven Deploy
+      - name: 'Maven Nexus Release'
+        run: |
+          mvn clean deploy -Prelease
