@@ -34,7 +34,6 @@ jobs:
       - name: 'Git Config'
         run: |
           echo 'XXXXXXXXXXXXXXXXXXXX'
-          echo "test" | gpg2 --clearsign
           git config --global gpg.program gpg2
           git config --list
 
