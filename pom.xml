@@ -423,7 +423,6 @@
                                 <arg>--pinentry-mode</arg>
                                 <arg>loopback</arg>
                                 <arg>--use-agent</arg>
-                                <arg>--pinentry-timeout 30</arg>
                             </gpgArguments>
 
                         </configuration>
