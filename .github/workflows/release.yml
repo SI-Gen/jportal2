@@ -13,45 +13,45 @@ on:
         default: 'patch'
 
 jobs:
-#  build:
-#    name: 'Building Repo'
-#    runs-on: ubuntu-latest
-#    if: ${{ github.ref == 'refs/heads/master' }}
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: 'Build and Test'
-#        uses: qcastel/github-actions-maven-cmd@master
-#        with:
-#          maven-args: "clean install -Ddockerfile.skip -DdockerCompose.skip -Djib.skip"
+  build:
+    name: 'Building Repo'
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/master' }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'Build and Test'
+        uses: qcastel/github-actions-maven-cmd@master
+        with:
+          maven-args: "clean install -Ddockerfile.skip -DdockerCompose.skip -Djib.skip"
 
   maven_release:
     name: 'Maven Release'
     runs-on: ubuntu-latest
-#    needs: build
+    needs: build
     if: "!contains(github.event.head_commit.message, '[Github-Bot]')"
 
     steps:
-      - name: 'GPG Config'
-        run: |
-          git config --global gpg.program gpg2
-          git config --list
-          gpg2 --version
-          echo "PIN-ENTRY"
-          git clone git://git.gnupg.org/pinentry.git
-          pinentry --version
-
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+          with:
+            fetch-depth: 0
 
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v3
-        with:
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
-          git-user-signingkey: true
-          git-commit-gpgsign: true
+#      - name: 'GPG Config'
+#        run: |
+#          git config --global gpg.program gpg2
+#          git config --list
+#          gpg2 --version
+#          echo "PIN-ENTRY"
+#          git clone git://git.gnupg.org/pinentry.git
+#          pinentry --version
+#
+#      - name: Import GPG key
+#        id: import_gpg
+#        uses: crazy-max/ghaction-import-gpg@v3
+#        with:
+#          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+#          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+#          git-user-signingkey: true
+#          git-commit-gpgsign: true
 
       # Prepares Maven Release
       - name: 'Maven Release'
@@ -144,4 +144,5 @@ jobs:
       # Maven Deploy
       - name: 'Maven Nexus Release'
         run: |
-          mvn clean deploy -Prelease-oss-maven-central
+          mvn clean deploy -Prelease
+
