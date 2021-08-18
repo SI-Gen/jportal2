@@ -145,5 +145,5 @@ jobs:
       # Maven Deploy
       - name: 'Maven Nexus Release'
         run: |
-          mvn clean deploy -DskipTests -Dmaven.install.skip=true
+          mvn clean deploy -Prelease-oss-maven-central -DskipTests -Dmaven.install.skip=true -DaltDeploymentRepository=ossrh
 
