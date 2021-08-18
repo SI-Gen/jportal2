@@ -136,7 +136,7 @@ jobs:
           server-username: ${{ secrets.MVN_USERNAME }}
           server-password: ${{ secrets.MVN_PASSPHRASE }}
       - name: Publish package
-        run: mvn --batch-mode -Prelease-oss-maven-central -DskipTests -Dmaven.install.skip=true -DaltDeploymentRepository=ossrh::default::https://oss.sonatype.org/service/local/staging/deploy/maven2/
+        run: mvn --batch-mode clean deploy -Prelease-oss-maven-central -DskipTests -Dmaven.install.skip=true -DaltDeploymentRepository=ossrh::default::https://oss.sonatype.org/service/local/staging/deploy/maven2/
         env:
           MAVEN_USERNAME: ${{ secrets.MVN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MVN_PASSPHRASE }}
