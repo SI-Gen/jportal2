@@ -73,7 +73,7 @@ jobs:
           maven-repo-server-username: ${{ secrets.MVN_USERNAME }}
           maven-repo-server-password: ${{ secrets.MVN_PASSPHRASE }}
 
-          gpg-enabled: true
+          gpg-enabled: false
           gpg-key-id: ${{ secrets.GPG_KEY_ID }}
           gpg-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -144,4 +144,4 @@ jobs:
       # Maven Deploy
       - name: 'Maven Nexus Release'
         run: |
-          mvn clean deploy -P release-oss-maven-central
+          mvn clean deploy -Prelease-oss-maven-central
