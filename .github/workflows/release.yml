@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: 'GPG Config'
-        run: ./gpg_config.sh
+        run: gpg_config.sh
 
       - uses: actions/checkout@v2
         with:
