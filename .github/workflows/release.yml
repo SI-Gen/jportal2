@@ -26,7 +26,7 @@ jobs:
           maven-args: "clean install -Ddockerfile.skip -DdockerCompose.skip -Djib.skip"
 
   maven_release:
-    name: 'Maven Release'
+    name: 'Maven Staging'
     runs-on: ubuntu-latest
     needs: build
     if: "!contains(github.event.head_commit.message, '[Github-Bot]')"
@@ -104,7 +104,7 @@ jobs:
       # Changes Maven Version
       - name: 'Change Maven Version'
         run: |
-          mvn versions:set -DnewVersion=${{ steps.previoustag.outputs.tag }}-SNAPSHOT
+          mvn versions:set -DnewVersion=${{ steps.previoustag.outputs.tag }}
 
       # Generate Jar File
       - name: 'Generate Jar'
@@ -115,35 +115,29 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/jportal2-${{ steps.previoustag.outputs.tag }}-SNAPSHOT.jar
-          asset_name: jportal2-${{ steps.previoustag.outputs.tag }}-SNAPSHOT.jar
+          file: target/jportal2-${{ steps.previoustag.outputs.tag }}.jar
+          asset_name: jportal2-${{ steps.previoustag.outputs.tag }}.jar
           tag: ${{ steps.previoustag.outputs.tag }}
           overwrite: true
           body: '${{github.event.inputs.release_description}}<br/><br/><b>Change Log<b><br/>${{steps.github_release.outputs.changelog}}'
 
-  deploy:
-    name: 'Maven Nexus Release'
+  publish:
+    name: 'Maven Publish'
     runs-on: ubuntu-latest
     needs: upload_jar
     steps:
-      - uses: actions/checkout@v2.2.0
+      - uses: actions/checkout@v2
+      - name: Set up Maven Central Repository
+        uses: actions/setup-java@v2
         with:
-          fetch-depth: 0
-
-      # Get Previous tag
-      - name: 'Get Previous tag'
-        id: previoustag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+          java-version: '11'
+          distribution: 'adopt'
+          server-id: ossrh
+          server-username: ${{ secrets.MVN_USERNAME }}
+          server-password: ${{ secrets.MVN_PASSPHRASE }}
+      - name: Publish package
+        run: mvn --batch-mode deploy
         env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-
-      # Changes Maven Version
-      - name: 'Change Maven Version'
-        run: |
-          mvn versions:set -DnewVersion=${{ steps.previoustag.outputs.tag }}-SNAPSHOT
-
-      # Maven Deploy
-      - name: 'Maven Nexus Release'
-        run: |
-          mvn clean deploy -Prelease-oss-maven-central -DskipTests -Dmaven.install.skip=true -DaltDeploymentRepository=ossrh::default::https://oss.sonatype.org/service/local/staging/deploy/maven2/
+          MAVEN_USERNAME: ${{ secrets.MVN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MVN_PASSPHRASE }}
 
