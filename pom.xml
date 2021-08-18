@@ -420,9 +420,8 @@
                         <configuration>
                             <skip>false</skip>
                             <gpgArguments>
-                                <arg>--pinentry-mode</arg>
-                                <arg>loopback</arg>
-                                <arg>--use-agent</arg>
+                                <arg>--pinentry-mode loopback</arg>
+<!--                                <arg>&#45;&#45;use-agent</arg>-->
                             </gpgArguments>
 
                         </configuration>
