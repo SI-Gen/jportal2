@@ -36,6 +36,9 @@ jobs:
           git config --global gpg.program gpg2
           git config --list
           gpg2 --version
+          git clone git://git.gnupg.org/pinentry.git
+          pinentry --version
+          gpg-connect-agent reloadagent /bye
 
       - uses: actions/checkout@v2
         with:
