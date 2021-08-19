@@ -80,7 +80,7 @@ jobs:
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
   upload_jar:
-    name: 'Upload Jar'
+    name: 'Upload Jar and Publish maven'
     runs-on: ubuntu-latest
     needs: maven_release
     steps:
@@ -111,7 +111,7 @@ jobs:
         run: mvn package -Dmaven.javadoc.skip=true -DskipTests -DskipITs  -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
 
       # Upload Jar File
-      - name: Upload Jar Files to Release
+      - name: 'Upload Jar Files to Release'
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -121,37 +121,19 @@ jobs:
           overwrite: true
           body: '${{github.event.inputs.release_description}}<br/><br/><b>Change Log<b><br/>${{steps.github_release.outputs.changelog}}'
 
-  publish:
-    name: 'Maven Publish'
-    runs-on: ubuntu-latest
-    needs: upload_jar
-    steps:
-      - uses: actions/checkout@v2
-
-      # Get Previous tag
-      - name: 'Get Previous tag'
-        id: previoustag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-
-      # Changes Maven Version
-      - name: 'Change Maven Version'
-        run: |
-          mvn versions:set -DnewVersion=${{ steps.previoustag.outputs.tag }}
-
-      - name: Set up Maven Central Repository
+      - name: 'Set up Maven Central Repository'
         uses: actions/setup-java@v2
         with:
           java-version: '11'
           distribution: 'adopt'
           server-id: ossrh
-          server-username: ${{ secrets.MVN_USERNAME }}
-          server-password: ${{ secrets.MVN_PASSPHRASE }}
+          server-username: ${{ secrets.OSSRH_USERNAME }}
+          server-password: ${{ secrets.OSSRH_TOKEN }}
 
-      - name: Publish package
+      - name: 'Publish package'
         run: mvn --batch-mode clean deploy -Prelease-oss-maven-central -DskipTests -Dmaven.install.skip=true -DaltDeploymentRepository=ossrh::default::https://oss.sonatype.org/service/local/staging/deploy/maven2/
         env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+          MAVEN_USERNAME: ${{ secrets.MVN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MVN_PASSPHRASE }}
+
 
