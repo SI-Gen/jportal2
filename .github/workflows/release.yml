@@ -36,32 +36,13 @@ jobs:
         with:
           fetch-depth: 0
 
-#      - name: 'GPG Config'
-#        run: |
-#          git config --global gpg.program gpg2
-#          git config --list
-#          gpg2 --version
-#          echo "PIN-ENTRY"
-#          git clone git://git.gnupg.org/pinentry.git
-#          pinentry --version
-#
-#      - name: Import GPG key
-#        id: import_gpg
-#        uses: crazy-max/ghaction-import-gpg@v3
-#        with:
-#          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-#          passphrase: ${{ secrets.GPG_PASSPHRASE }}
-#          git-user-signingkey: true
-#          git-commit-gpgsign: true
-
       # Prepares Maven Release
       - name: 'Maven Release Test'
         uses: SI-Gen/github-actions-maven-release@master
         env:
           JAVA_HOME: /usr/lib/jvm/java-11-openjdk/
         with:
-#          access-token: ${{ secrets.GITHUB_TOKEN }}
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          access-token: ${{ secrets.GITHUB_TOKEN }}
           release-branch-name: 'master'
           git-release-bot-name: 'bbdsoftware'
           git-release-bot-email: 'mavencentral@bbd.co.za'
@@ -74,7 +55,7 @@ jobs:
           maven-repo-server-username: ${{ secrets.OSSRH_USERNAME }}
           maven-repo-server-password: ${{ secrets.OSSRH_TOKEN }}
 
-          gpg-enabled: false
+          gpg-enabled: true
           gpg-key-id: ${{ secrets.GPG_KEY_ID }}
           gpg-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
