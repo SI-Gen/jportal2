@@ -55,9 +55,8 @@ jobs:
 #          git-commit-gpgsign: true
 
       # Prepares Maven Release
-      - name: 'Maven Release'
+      - name: 'Maven Release Test'
         uses: SI-Gen/github-actions-maven-release@master
-#       uses: qcastel/github-actions-maven-release@master
         env:
           JAVA_HOME: /usr/lib/jvm/java-11-openjdk/
         with:
