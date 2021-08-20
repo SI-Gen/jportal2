@@ -419,12 +419,6 @@
                         <version>3.0.1</version>
                         <configuration>
                             <skip>false</skip>
-                            <gpgArguments>
-                                <arg>--pinentry-mode</arg>
-                                <arg>loopback</arg>
-                                <arg>--use-agent</arg>
-                            </gpgArguments>
-
                         </configuration>
                         <executions>
                             <execution>
