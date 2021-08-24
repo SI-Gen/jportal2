@@ -47,7 +47,7 @@ jobs:
           git-release-bot-name: 'bbdsoftware'
           git-release-bot-email: 'mavencentral@bbd.co.za'
 
-          maven-args: '-X -DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central'
+          maven-args: '-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central'
           version-major: ${{github.event.inputs.release_type == 'major'}}
           version-minor: ${{github.event.inputs.release_type == 'minor'}}
 
