@@ -439,7 +439,7 @@
                                             <arg>loopback</arg>
                                         </gpgArguments>
                                         <keyname>${gpg.keyname}</keyname>
-                                        <passphrase>${gpg.passphrase}</passphrase>
+                                        <passphrase><![CDATA[${gpg.passphrase}]]></passphrase>
                                   </configuration>
                             </execution>
                         </executions>
