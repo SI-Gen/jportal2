@@ -32,3 +32,8 @@ hs_err_pid*
 # MacOS
 .DS_Store
 /log.name_IS_UNDEFINED
+.settings/*.prefs
+pom.xml.releaseBackup
+release.properties
+.project
+.classpath

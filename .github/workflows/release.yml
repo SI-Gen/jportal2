@@ -13,22 +13,11 @@ on:
         default: 'patch'
 
 jobs:
-  build:
-    name: 'Building Repo'
-    runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/master' }}
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: 'Build and Test'
-        uses: qcastel/github-actions-maven-cmd@master
-        with:
-          maven-args: "clean install -Ddockerfile.skip -DdockerCompose.skip -Djib.skip"
 
   maven_release:
-    name: 'Maven Staging'
+    name: 'Maven Release'
     runs-on: ubuntu-latest
-    needs: build
+
     if: "!contains(github.event.head_commit.message, '[Github-Bot]')"
 
     steps:
@@ -47,7 +36,7 @@ jobs:
           git-release-bot-name: 'bbdsoftware'
           git-release-bot-email: 'mavencentral@bbd.co.za'
 
-          maven-args: '-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central'
+          maven-args: '-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central,gpg'
           version-major: ${{github.event.inputs.release_type == 'major'}}
           version-minor: ${{github.event.inputs.release_type == 'minor'}}
 
@@ -102,19 +91,9 @@ jobs:
           overwrite: true
           body: '${{github.event.inputs.release_description}}<br/><br/><b>Change Log<b><br/>${{steps.github_release.outputs.changelog}}'
 
-      - name: 'Set up Maven Central Repository'
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'adopt'
-          server-id: ossrh
-          server-username: ${{ secrets.MVN_USERNAME }}
-          server-password: ${{ secrets.MVN_PASSPHRASE }}
+#      - name: 'Publish package'
+#          run: mvn nexus-staging:release -DstagingDescription="Yippie!"
 
-      - name: 'Publish package'
-        run: mvn clean source:jar deploy -Prelease-oss-maven-central -DuniqueVersion=false -Dmaven.source.useDefaultManifestFile=true -Dmaven.source.includePom=true -Dmaven.install.skip=true -DdeplyAtEnd=true -DaltDeploymentRepository=ossrh::default::https://oss.sonatype.org/service/local/staging/deploy/maven2/
-        env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+
 
 
