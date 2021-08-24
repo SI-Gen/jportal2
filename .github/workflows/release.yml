@@ -13,17 +13,6 @@ on:
         default: 'patch'
 
 jobs:
-  # build:
-  #   name: 'Building Repo'
-  #   runs-on: ubuntu-latest
-  #   if: ${{ github.ref == 'refs/heads/master' }}
-  #   steps:
-  #     - uses: actions/checkout@v2
-
-  #     - name: 'Build and Test'
-  #       uses: qcastel/github-actions-maven-cmd@master
-  #       with:
-  #         maven-args: "clean install -Ddockerfile.skip -DdockerCompose.skip -Djib.skip"
 
   maven_release:
     name: 'Maven Release'
@@ -82,7 +71,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-            # Upload Jar File
+      # Changes Maven Version
+      - name: 'Change Maven Version'
+        run: |
+          mvn versions:set -DnewVersion=${{ steps.previoustag.outputs.tag }}
+
+      # Generate Jar File
+      - name: 'Generate Jar'
+        run: mvn package -Dmaven.javadoc.skip=true -DskipTests -DskipITs  -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
+
+      # Upload Jar File
       - name: 'Upload Jar Files to Release'
         uses: svenstaro/upload-release-action@v2
         with:
@@ -92,6 +90,10 @@ jobs:
           tag: ${{ steps.previoustag.outputs.tag }}
           overwrite: true
           body: '${{github.event.inputs.release_description}}<br/><br/><b>Change Log<b><br/>${{steps.github_release.outputs.changelog}}'
+
+#      - name: 'Publish package'
+#          run: mvn nexus-staging:release -DstagingDescription="Yippie!"
+
 
 
 
