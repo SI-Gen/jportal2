@@ -420,11 +420,35 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>
+                    <!-- <plugin>
                         <groupId>org.simplify4u.plugins</groupId>
                         <artifactId>sign-maven-plugin</artifactId>
                         <version>0.3.1</version>
+                     </plugin> -->
+                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                  <configuration>
+                                        <gpgArguments>
+                                            <arg>--pinentry-mode</arg>
+                                            <arg>loopback</arg>
+                                        </gpgArguments>
+                                        <!-- <keyname>${gpg.keyname}</keyname>
+                                        <passphrase>${gpg.passphrase}</passphrase>
+                                        <passphraseServerId>gpg</passphraseServerId> -->
+                                  </configuration>
+                            </execution>
+                        </executions>
                      </plugin>
+
                      <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-release-plugin</artifactId>
