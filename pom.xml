@@ -428,7 +428,7 @@
                      <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
+                        <version>3.0.1</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -437,6 +437,7 @@
                                     <goal>sign</goal>
                                 </goals>
                                   <configuration>
+                                        <passphraseServerId>gpg.passphrase</passphraseServerId>
                                         <gpgArguments>
                                             <arg>--pinentry-mode</arg>
                                             <arg>loopback</arg>
