@@ -13,20 +13,20 @@ on:
         default: 'patch'
 
 jobs:
-  build:
-    name: 'Building Repo'
-    runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/master' }}
-    steps:
-      - uses: actions/checkout@v2
+  # build:
+  #   name: 'Building Repo'
+  #   runs-on: ubuntu-latest
+  #   if: ${{ github.ref == 'refs/heads/master' }}
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: 'Build and Test'
-        uses: qcastel/github-actions-maven-cmd@master
-        with:
-          maven-args: "clean install -Ddockerfile.skip -DdockerCompose.skip -Djib.skip"
+  #     - name: 'Build and Test'
+  #       uses: qcastel/github-actions-maven-cmd@master
+  #       with:
+  #         maven-args: "clean install -Ddockerfile.skip -DdockerCompose.skip -Djib.skip"
 
   maven_release:
-    name: 'Maven Staging'
+    name: 'Maven Release'
     runs-on: ubuntu-latest
     needs: build
     if: "!contains(github.event.head_commit.message, '[Github-Bot]')"
