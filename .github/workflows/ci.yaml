@@ -49,16 +49,16 @@ jobs:
           body: 'Pre-Release - ${{ steps.tag_version.outputs.new_tag }}'
           prerelease: true
 
-
       - name: 'Change Maven Version'
         run: |
           mvn versions:set -DnewVersion=${{ steps.previoustag.outputs.tag }}-SNAPSHOT
 
-      - uses: stefanzweifel/git-auto-commit-action@v4
-          with:
-            commit_message: Pre-Release.
-            commit_user_name: 'bbdsoftware'
-            commit_user_email: 'mavencentral@bbd.co.za'
+      - name: 'Commit Changes'
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Pre-Release
+          commit_user_name: 'bbdsoftware'
+          commit_user_email: 'mavencentral@bbd.co.za'
 
 
 
