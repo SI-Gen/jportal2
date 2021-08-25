@@ -22,7 +22,7 @@ steps:
       sonar.java.source=1.8
       # # sonar.exclusions=**/*.bin
       # #sonar.projectKey=XXX$(SonarSource-JPortal2-ID)
-
+      sonar.junit.reportPaths=./target/surefire-reports
 - task: SonarSource.sonarcloud.ce096e50-6155-4de8-8800-4221aaeed4a1.SonarCloudAnalyze@1
   displayName: 'Run Code Analysis'
 
