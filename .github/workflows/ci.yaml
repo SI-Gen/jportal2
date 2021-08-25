@@ -49,14 +49,17 @@ jobs:
           body: 'Pre-Release - ${{ steps.tag_version.outputs.new_tag }}'
           prerelease: true
 
-      - name: Generate release tag
-        uses: amitsingh-007/next-release-tag@v1.0.0
+      - name: 'Next Release version'
+        id: next_version
+        uses: zwaldowski/semver-release-action@v1
         with:
+          dry_run: true
+          bump: patch
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Change Maven Version'
         run: |
-          mvn versions:set -DnewVersion=${{ env.release_tag }}-SNAPSHOT
+          mvn versions:set -DnewVersion=${{ steps.next_version.outputs.version }}-SNAPSHOT
 
       - name: 'Commit Changes'
         uses: stefanzweifel/git-auto-commit-action@v4
