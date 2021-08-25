@@ -49,17 +49,15 @@ jobs:
           body: 'Pre-Release - ${{ steps.tag_version.outputs.new_tag }}'
           prerelease: true
 
-      - name: 'Next Release version'
-        id: next_version
-        uses: zwaldowski/semver-release-action@v1
-        with:
-          dry_run: true
-          bump: patch
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: 'Get next minor version'
+          id: next_version
+          uses: "WyriHaximus/github-action-next-semvers@v1"
+          with:
+            version: ${{ steps.tag_version.outputs.new_tag }}
 
       - name: 'Change Maven Version'
         run: |
-          mvn versions:set -DnewVersion=${{ steps.next_version.outputs.version }}-SNAPSHOT
+          mvn versions:set -DnewVersion=${{ steps.next_version.outputs.minor }}-SNAPSHOT
 
       - name: 'Commit Changes'
         uses: stefanzweifel/git-auto-commit-action@v4
