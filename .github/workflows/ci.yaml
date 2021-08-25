@@ -50,10 +50,10 @@ jobs:
           prerelease: true
 
       - name: 'Get next minor version'
-          id: next_version
-          uses: "WyriHaximus/github-action-next-semvers@v1"
-          with:
-            version: ${{ steps.tag_version.outputs.new_tag }}
+        id: next_version
+        uses: "WyriHaximus/github-action-next-semvers@v1"
+        with:
+          version: ${{ steps.tag_version.outputs.new_tag }}
 
       - name: 'Change Maven Version'
         run: |
