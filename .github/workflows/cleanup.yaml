@@ -1,4 +1,5 @@
 name: HouseKeeping
+
 on:
   schedule:
     - cron: "0 0 * * *"
@@ -7,7 +8,7 @@ on:
       last_commit_age_days:
         description: 'Number of days since last commit'
         required: false
-        default: 100
+        default: ${DEFAULT_DEPLOYMENT_PREFIX}
 
 
 #A branch must meet all the following criteria to be deemed abandoned and safe to delete:
@@ -19,6 +20,10 @@ on:
 #  Must NOT be in an optional list of branches to ignore
 #  Must be older than a given amount of days
 
+env:
+  NUM_DAYS: ${{ github.event.inputs.last_commit_age_days || 100 }}
+
+
 jobs:
   cleanup_old_branches:
     runs-on: ubuntu-latest
@@ -29,7 +34,7 @@ jobs:
         id: delete_stuff
         with:
           github_token: ${{ github.token }}
-          last_commit_age_days: ${{github.event.inputs.last_commit_age_days}}
+          last_commit_age_days: ${{env.NUM_DAYS}}
           ignore_branches: develop,master
 
           # Disable dry run and actually get stuff deleted
