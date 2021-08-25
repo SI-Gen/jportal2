@@ -275,5 +275,6 @@ PROC DeleteOne
 Notice that the Description column is named 'Desc', which is a reserved word (both in JPortal, as well as in SQL). This will cause a JPortal compilation issue. To work around this, we turn the column name into a *literal* by writing it as L'Desc'. This will allow the SI file to compile.
 
 
-### Contribution
-Feel free to add any suggestions or any help in the [Contribution.md](/docs/Contribution.md)
+### Workflow
+A detailed description of the workflow process is mentioned in the [Contribution.md](/docs/Contribution.md)
+Feel free to add any suggestions or any help in the 

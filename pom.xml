@@ -19,8 +19,7 @@
     <scm>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
-        <!--        <url>https://github.com/SI-Gen/jportal2</url>-->
-        <url>https://github.com/BradPirie/jportal2</url>
+        <url>https://github.com/SI-Gen/jportal2</url>
         <tag>HEAD</tag>
     </scm>
     <licenses>
