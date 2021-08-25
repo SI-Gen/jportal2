@@ -67,6 +67,8 @@ jobs:
           commit_message: Pre-Release
           commit_user_name: 'bbdsoftware'
           commit_user_email: 'mavencentral@bbd.co.za'
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
 
 
