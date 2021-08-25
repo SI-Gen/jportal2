@@ -14,6 +14,9 @@ The workflow will provide a release to nexus and then prep the pom for the next 
 and what the next version of the release will be (patch, minor, major).
 4. Initiate Workflow and let the magic happen.
 
+![Work Flow](/docs/img/workflow.png "Work Flow")
+
+
 
 ### Contributions
 * [GitHub Actions](https://github.com/features/actions)
