@@ -57,7 +57,7 @@ jobs:
 
       - name: 'Change Maven Version'
         run: |
-          mvn versions:set -DnewVersion=${{ steps.next_version.outputs.minor }}-SNAPSHOT
+          mvn versions:set -DnewVersion=${{ steps.next_version.outputs.patch }}-SNAPSHOT
 
       - name: 'Commit Changes'
         uses: stefanzweifel/git-auto-commit-action@v4
