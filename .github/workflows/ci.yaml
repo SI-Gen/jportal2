@@ -44,8 +44,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          release_name: ${{ steps.tag_version.outputs.new_tag }}
+          tag_name: jportal2-${{ steps.tag_version.outputs.new_tag }}
+          release_name: jportal2-${{ steps.tag_version.outputs.new_tag }}
           body: 'Pre-Release - ${{ steps.tag_version.outputs.new_tag }}'
           prerelease: true
 
