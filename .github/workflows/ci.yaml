@@ -23,7 +23,7 @@ jobs:
 
   pre-release:
     name: 'Pre-Release'
-    if: ${{ github.ref == 'refs/heads/master' }}
+    if: ${{ github.event.pull_request.merged == true && github.event.pull_request.head.ref == github.ref == 'refs/heads/master' }}
     needs: build
     runs-on: "ubuntu-latest"
     steps:
@@ -49,9 +49,14 @@ jobs:
           body: 'Pre-Release - ${{ steps.tag_version.outputs.new_tag }}'
           prerelease: true
 
+      - name: Generate release tag
+        uses: amitsingh-007/next-release-tag@v1.0.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: 'Change Maven Version'
         run: |
-          mvn versions:set -DnewVersion=${{ steps.previoustag.outputs.tag }}-SNAPSHOT
+          mvn versions:set -DnewVersion=${{ env.release_tag }}-SNAPSHOT
 
       - name: 'Commit Changes'
         uses: stefanzweifel/git-auto-commit-action@v4
