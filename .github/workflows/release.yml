@@ -91,9 +91,6 @@ jobs:
           overwrite: true
           body: '${{github.event.inputs.release_description}}<br/><br/><b>Change Log<b><br/>${{steps.github_release.outputs.changelog}}'
 
-#      - name: 'Publish package'
-#          run: mvn nexus-staging:release -DstagingDescription="Yippie!"
-
 
 
 

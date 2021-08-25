@@ -21,33 +21,44 @@ jobs:
       - name: 'Build with Maven'
         run: mvn --batch-mode --update-snapshots verify
 
-#  pre-release:
-#    name: 'Pre-Release'
-#    if: ${{ github.ref == 'refs/heads/master' }}
-#    needs: build
-#    runs-on: "ubuntu-latest"
-#    steps:
-#      - uses: actions/checkout@v2.2.0
-#        with:
-#          fetch-depth: 0
-#
-#      - name: 'Retrieve Tag'
-#        id: tag_version
-#        uses: mathieudutour/github-tag-action@v5.6
-#        with:
-#          github_token: ${{ secrets.GITHUB_TOKEN }}
-#          default_bump: patch
-#          tag_prefix: ""
-#
-#      - name: 'Create a Pre-Release'
-#        uses: actions/create-release@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          tag_name: ${{ steps.tag_version.outputs.new_tag }}
-#          release_name: ${{ steps.tag_version.outputs.new_tag }}
-#          body: 'Pre-Release - ${{ steps.tag_version.outputs.new_tag }}'
-#          prerelease: true
+  pre-release:
+    name: 'Pre-Release'
+    if: ${{ github.ref == 'refs/heads/master' }}
+    needs: build
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v2.2.0
+        with:
+          fetch-depth: 0
+
+      - name: 'Retrieve Tag'
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v5.6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch
+          tag_prefix: ""
+
+      - name: 'Create a Pre-Release'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          release_name: ${{ steps.tag_version.outputs.new_tag }}
+          body: 'Pre-Release - ${{ steps.tag_version.outputs.new_tag }}'
+          prerelease: true
+
+
+      - name: 'Change Maven Version'
+        run: |
+          mvn versions:set -DnewVersion=${{ steps.previoustag.outputs.tag }}-SNAPSHOT
+
+      - uses: stefanzweifel/git-auto-commit-action@v4
+          with:
+            commit_message: Pre-Release.
+            commit_user_name: 'bbdsoftware'
+            commit_user_email: 'mavencentral@bbd.co.za'
 
 
 
