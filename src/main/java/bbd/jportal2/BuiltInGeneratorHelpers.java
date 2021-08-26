@@ -19,8 +19,6 @@ public class BuiltInGeneratorHelpers {
 
     private Set<Class<?>> findClasses(Class T) {
         Reflections reflections = new Reflections("bbd.jportal2");
-        Set<Class<?>> foundClasses = reflections.getSubTypesOf(T);
-
-        return foundClasses;
+        return  (Set<Class<?>>) reflections.getSubTypesOf(T);
     }
 }
