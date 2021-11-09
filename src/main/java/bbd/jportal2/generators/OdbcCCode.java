@@ -410,7 +410,13 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
       if (field.type == Field.BLOB) define += "Blob";
       writeln(1, "q_." + define + "(" + padder("" + j + ",", 4) + cppDefine(field) + ");");
     }
+    }
     writeln(1, "q_.Exec();");
+    if (doReturning)
+    {
+      Field field = proc.outputs.elementAt(0);
+      writeln(1, format("%s = atoll(%s_ODBC_LONG);", field.useName(), field.useName()));
+    }
     for (int j = 0; j < blobs.size(); j++)
     {
       Field field = (Field) blobs.elementAt(j);
@@ -936,9 +942,9 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
         return field.useName() + ", 18, 2";
       case Field.BIGSEQUENCE:
         if (isInsert)
-          return "q_.Sequence(" + field.useName() + ", \"" + tableName + "Seq\")";
+          return format("q_.AsChar(%s_ODBC_LONG, q_.Sequence(%s, \"%sSeq\")), 18", field.useName(), field.useName(), tableName);
         else
-          return field.useName();
+          return "q_.AsChar(" + field.useName() + "_ODBC_LONG, " + field.useName() + "), 18";
       case Field.LONG:
         return "q_.AsChar(" + field.useName() + "_ODBC_LONG, " + field.useName() + "), 18";
       case Field.TLOB:
@@ -1048,8 +1054,6 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
       case Field.BLOB:
         return padder(field.useName() + ".len, " + field.useName() + ".data,", 32) +
                 " q_.data+" + field.useName().toUpperCase() + "_POS, sizeof(" + field.useName() + ")";
-      //case Field.BIGXML:
-      //  return field.useName() + ".setBigXML(" + field.useName().toUpperCase() + "_POS, " + field.length + ")";
       case Field.DATE:
         return padder("TJDate(" + field.useName() + "),", 32) + " q_.data+" + field.useName().toUpperCase() + "_POS";
       case Field.TIME:
