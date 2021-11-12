@@ -90,7 +90,12 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
     }
   }
 
-  private void getFlags(Database database)
+  private boolean useLongAsChar()
+  {
+    return cppRetType.equalsIgnoreCase("ORACLE");
+  }
+
+  private static void getFlags(Database database)
   {
     for (int i = database.flags.size() - 1; i >= 0; i--)
     {
@@ -412,7 +417,7 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
     }
     }
     writeln(1, "q_.Exec();");
-    if (doReturning)
+    if (doReturning && useLongAsChar())
     {
       Field field = proc.outputs.elementAt(0);
       writeln(1, format("%s = atoll(%s_ODBC_LONG);", field.useName(), field.useName()));
@@ -588,7 +593,8 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
       case Field.LONG:
       case Field.BIGSEQUENCE:
       case Field.BIGIDENTITY:
-        writeln(1, "char " + field.useName() + "_ODBC_LONG[19];");
+        if (useLongAsChar())
+          writeln(1, "char " + field.useName() + "_ODBC_LONG[19];");
         break;
     }
   }
@@ -793,7 +799,10 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
       case Field.LONG:
       case Field.BIGSEQUENCE:
       case Field.BIGIDENTITY:
-        return "sizeof(SQLLEN)";
+        if (useLongAsChar())
+          return "19";
+        else
+          return "sizeof(SQLLEN)";
       case Field.CHAR:
       case Field.ANSICHAR:
       case Field.TLOB:
@@ -890,19 +899,28 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
         return field.useName();
       case Field.LONG:
       case Field.BIGSEQUENCE:
-        return "q_.AsChar(" + field.useName() + "_ODBC_LONG, " + field.useName() + "), 18";
+        if (useLongAsChar())
+          return "q_.AsChar(" + field.useName() + "_ODBC_LONG, " + field.useName() + "), 18";
+        else
+          return field.useName();
       case Field.FLOAT:
       case Field.DOUBLE:
         return field.useName() + ", " + (field.precision) + ", " + (field.scale);
       case Field.MONEY:
         return field.useName() + ", 18, 2";
-      case Field.TLOB:
+      //case Field.TLOB:
       case Field.XML:
         return field.useName() + ", " + (field.length);
       case Field.CHAR:
         return field.useName() + ", " + (field.length);
       case Field.ANSICHAR:
-        return field.useName() + ", " + (field.length);
+        return field.useName() + ", " + (field.length + 1);
+      //case Field.BLOB:
+      case Field.TLOB:
+      case Field.IMAGE:
+        return "q_.LobLocator(q_.ociLobs[" + field.useName().toUpperCase()
+                + "_LOB], " + field.useName() + "), " + field.useName().toUpperCase()
+                + "_LOB_TYPE";
       case Field.USERSTAMP:
         return "q_.UserStamp(" + field.useName() + "), 8";
       case Field.DATE:
@@ -941,12 +959,26 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
       case Field.MONEY:
         return field.useName() + ", 18, 2";
       case Field.BIGSEQUENCE:
-        if (isInsert)
-          return format("q_.AsChar(%s_ODBC_LONG, q_.Sequence(%s, \"%sSeq\")), 18", field.useName(), field.useName(), tableName);
+        if (useLongAsChar())
+        {
+          if (isInsert)
+            return format("q_.AsChar(%s_ODBC_LONG, q_.Sequence(%s, \"%sSeq\")), 18", field.useName(), field.useName(), tableName);
+          else
+            return "q_.AsChar(" + field.useName() + "_ODBC_LONG, " + field.useName() + "), 18";
+        }
         else
-          return "q_.AsChar(" + field.useName() + "_ODBC_LONG, " + field.useName() + "), 18";
+        {
+
+          if (isInsert)
+            return format("q_.Sequence(%s, \"%sSeq\")", field.useName(), tableName);
+          else
+            return field.useName();
+        }
       case Field.LONG:
+        if (useLongAsChar())
         return "q_.AsChar(" + field.useName() + "_ODBC_LONG, " + field.useName() + "), 18";
+        else
+          return field.useName();
       case Field.TLOB:
       case Field.XML:
         return field.useName() + ", " + (field.length);
