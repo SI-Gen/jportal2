@@ -420,7 +420,8 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
     if (doReturning && useLongAsChar())
     {
       Field field = proc.outputs.elementAt(0);
-      writeln(1, format("%s = atoll(%s_ODBC_LONG);", field.useName(), field.useName()));
+      if (field.type == Field.BIGSEQUENCE)
+        writeln(1, format("%s = atoll(%s_ODBC_LONG);", field.useName(), field.useName()));
     }
     for (int j = 0; j < blobs.size(); j++)
     {
@@ -915,12 +916,9 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
         return field.useName() + ", " + (field.length);
       case Field.ANSICHAR:
         return field.useName() + ", " + (field.length + 1);
-      //case Field.BLOB:
+      case Field.BLOB:
       case Field.TLOB:
-      case Field.IMAGE:
-        return "q_.LobLocator(q_.ociLobs[" + field.useName().toUpperCase()
-                + "_LOB], " + field.useName() + "), " + field.useName().toUpperCase()
-                + "_LOB_TYPE";
+        return "(char*)&" + field.useName() + ", sizeof(" + field.useName() + ".data)";
       case Field.USERSTAMP:
         return "q_.UserStamp(" + field.useName() + "), 8";
       case Field.DATE:
@@ -933,8 +931,6 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
         return "q_.TimeStamp(" + field.useName() + "_CLITimeStamp, " + field.useName() + ")";
       case Field.AUTOTIMESTAMP:
         return "q_.TimeStamp(" + field.useName() + "_CLITimeStamp, " + field.useName() + ")";
-      case Field.BLOB:
-        return "(char*)&" + field.useName() + ", sizeof(" + field.useName() + ".data)";
     }
     return field.useName() + ", <unsupported>";
   }
@@ -979,7 +975,6 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
         return "q_.AsChar(" + field.useName() + "_ODBC_LONG, " + field.useName() + "), 18";
         else
           return field.useName();
-      case Field.TLOB:
       case Field.XML:
         return field.useName() + ", " + (field.length);
       case Field.CHAR:
@@ -998,6 +993,7 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
         return "q_.TimeStamp(" + field.useName() + "_CLITimeStamp, " + field.useName() + ")";
       case Field.AUTOTIMESTAMP:
         return "q_.TimeStamp(" + field.useName() + "_CLITimeStamp, " + field.useName() + ")";
+      case Field.TLOB:
       case Field.BLOB:
         return "(char*)&" + field.useName() + ", sizeof(" + field.useName() + ".data)";
     }
@@ -1750,15 +1746,6 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
     writeln(1, "void SetData(DataBuilder &dBuild) {SetData(dBuild, \"" + useName + "\");}");
     writeln(1, "#endif");
   }
-
-//  private String padder(String s, int length)
-//  {
-//    StringBuilder sBuilder = new StringBuilder(s);
-//    for (int i = sBuilder.length(); i < length; i++)
-//      sBuilder.append(" ");
-//    s = sBuilder.toString();
-//    return s;
-//  }
 
   public void generateEnumOrdinals(Table table)
   {

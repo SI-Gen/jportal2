@@ -268,43 +268,6 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
     if (proc.outputs.size() > 0)
       writeln(1, "enum");
     String front = "  { ";
-    int lobNo = 0;
-    if (inputLobs > 0)
-    {
-      for (int j = 0; j < proc.inputs.size(); j++)
-      {
-        Field field = proc.inputs.elementAt(j);
-        if (isLob(field))
-        {
-          writeln(front
-                  + padder(field.useName().toUpperCase() + "_LOB", 24) + "= "
-                  + lobNo);
-          writeln(1, ", "
-                  + padder(field.useName().toUpperCase() + "_LOB_TYPE", 24) + "= "
-                  + (field.type == Field.TLOB || field.type == Field.IMAGE ? "SQLT_CLOB" : "SQLT_BLOB"));
-          lobNo++;
-          front = "  , ";
-        }
-      }
-    }
-    if (outputLobs > 0)
-    {
-      for (int j = 0; j < proc.outputs.size(); j++)
-      {
-        Field field = proc.outputs.elementAt(j);
-        if (isLob(field))
-        {
-          writeln(front
-                  + padder(field.useName().toUpperCase() + "_LOB", 24) + "= "
-                  + lobNo);
-          writeln("  , "
-                  + padder(field.useName().toUpperCase() + "_LOB_TYPE", 24) + "= "
-                  + (field.type == Field.TLOB || field.type == Field.IMAGE ? "SQLT_CLOB" : "SQLT_BLOB"));
-          lobNo++;
-          front = "  , ";
-        }
-      }
-    }
     if (proc.outputs.size() > 0)
     {
       Field field = proc.outputs.elementAt(0);
@@ -416,6 +379,7 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
     if (proc.isMultipleInput == true && proc.isInsert == true)
       isBulkSequence = true;
     int size = 1;
+    questionsSeen = 0;
     for (int i = 0; i < proc.lines.size(); i++)
     {
       Line l = proc.lines.elementAt(i);
@@ -720,7 +684,6 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
         return "64";
       case Field.BLOB:
       case Field.TLOB:
-      case Field.IMAGE:
         return format("%d", field.length);
       case Field.DATE:
       case Field.TIME:
@@ -761,7 +724,6 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
         return "const char*  a" + field.useName();
       case Field.BLOB:
       case Field.TLOB:
-      case Field.IMAGE:
         return format("TJBLob<%d>  a%s", field.length, field.useName());
       case Field.DATE:
         return "const char*  a" + field.useName();
@@ -856,7 +818,6 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
         return field.useName() + ", " + (field.length + 1);
       case Field.BLOB:
       case Field.TLOB:
-      case Field.IMAGE:
         return "q_.LobLocator(q_.ociLobs[" + field.useName().toUpperCase()
                 + "_LOB], " + field.useName() + "), " + field.useName().toUpperCase()
                 + "_LOB_TYPE";
@@ -902,7 +863,6 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
         return field.useName() + ", " + (field.length + 1);
       case Field.BLOB:
       case Field.TLOB:
-      case Field.IMAGE:
         return "(char*)&" + field.useName() + ", sizeof(" + field.useName() + ".data)";
       case Field.USERSTAMP:
         return "q_.UserStamp(" + field.useName() + "), 51";
@@ -949,7 +909,6 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
         return "(char*)   (q_.data+" + field.useName().toUpperCase() + "_POS), 51";
       case Field.BLOB:
       case Field.TLOB:
-      case Field.IMAGE:
         return "(char*)&" + field.useName() + ", sizeof(" + field.useName() + ".data)";
       case Field.DATE:
       case Field.TIME:
@@ -991,7 +950,6 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
         return "(char*)   (q_.data+" + field.useName().toUpperCase() + "_POS), 51";
       case Field.BLOB:
       case Field.TLOB:
-      case Field.IMAGE:
         return format("(char*) (q_.data+%s_POS), %d", field.useName().toUpperCase(), field.length);
       case Field.DATE:
       case Field.TIME:
@@ -1036,7 +994,6 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
                 + field.useName().toUpperCase() + "_POS, 51";
       case Field.BLOB:
       case Field.TLOB:
-      case Field.IMAGE:
         return format("%1$s.len, %1$s.data,  q_.data+%2$s_POS, sizeof(%1$s)", field.useName(), field.useName().toUpperCase());
       case Field.DATE:
         return padder("TJDate(" + field.useName() + "),", 32) + " q_.data+"
@@ -1082,7 +1039,6 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
                 + field.useName() + ", 51";
       case Field.BLOB:
       case Field.TLOB:
-      case Field.IMAGE:
         return padder("q_.data+" + field.useName().toUpperCase() + "_POS,", 32)
                 + field.useName();
       case Field.DATE:
@@ -1103,7 +1059,7 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
 
   boolean isLob(Field field)
   {
-    return field.type == Field.TLOB || field.type == Field.BLOB || field.type == Field.IMAGE;
+    return field.type == Field.TLOB || field.type == Field.BLOB;
   }
 
   boolean isNull(Field field)
