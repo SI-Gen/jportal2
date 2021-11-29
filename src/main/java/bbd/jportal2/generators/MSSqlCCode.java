@@ -955,6 +955,8 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       sequencer = "nextval for " + proc.table.tableName() + "seq";
       size += sequencer.length();
     }
+    if (placeHolder.limit != null)
+      size += placeHolder.limit.topRowsSize();
     for (int i = 0; i < lines.size(); i++)
     {
       String l = (String)lines.elementAt(i);
@@ -999,8 +1001,19 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     {
       for (int i = 0; i < lines.size(); i++)
       {
-        String l = (String)lines.elementAt(i);
-        if (l.charAt(0) != '"')
+        String str = (String)lines.elementAt(i);
+        if (i==0 && placeHolder.limit != null && str.toLowerCase().contains("select"))
+        {
+          str = str.replace("\"", "").substring(7);
+          String[] code = placeHolder.limit.topRowsLines();
+          outData.println("  strcat(q_.command, \"SELECT \");");
+          for (String line: code)
+            outData.println(line.substring(2));
+          if (str.length() > 0)
+            outData.println(String.format("  strcat(q_.command, \"%s \");", str));
+          continue;
+        }
+        if (str.charAt(0) != '"')
         {
           terminate = ");";
           strcat = "  strcat(q_.command, ";
@@ -1009,13 +1022,13 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
         }
         else if (i != 0)
           outData.println(terminate);
-        if (l.charAt(0) != '"')
-            outData.print(strcat + check(l));
+        if (str.charAt(0) != '"')
+            outData.print(strcat + check(str));
         else
         {
-            outData.print(strcat + l);
+            outData.print(strcat + str);
         }
-        if (l.charAt(0) == '"')
+        if (str.charAt(0) == '"')
         {
           terminate = "\"\\n\"";
           strcat = "                     ";

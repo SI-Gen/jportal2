@@ -83,7 +83,7 @@ public class PyDBApiCode extends BaseGenerator implements IBuiltInSIProcessor
     else if (flag.equalsIgnoreCase("format"))
       paramStyle = PlaceHolder.FORMAT;
     else if (flag.equalsIgnoreCase("pyformat"))
-      paramStyle = PlaceHolder.PERC_STRING;
+      paramStyle = PlaceHolder.PYFORMAT;
   }
 
   public void generate(Database database, String output) throws Exception

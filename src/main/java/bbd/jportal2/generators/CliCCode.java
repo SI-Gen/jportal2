@@ -814,6 +814,8 @@ public class CliCCode extends BaseGenerator implements IBuiltInSIProcessor {
             sequencer = "nextval for " + proc.table.tableName() + "seq";
             size += sequencer.length();
         }
+        if (placeHolder.limit != null)
+            size += placeHolder.limit.fetchRowsSize();
         for (int i = 0; i < lines.size(); i++) {
             String l = (String) lines.elementAt(i);
             if (l.charAt(0) == '"')
@@ -864,6 +866,12 @@ public class CliCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 }
             }
             outData.println(");");
+        }
+        if (placeHolder.limit != null)
+        {
+            String[] code = placeHolder.limit.fetchRowsLines();
+            for (String line: code)
+                outData.println(line);
         }
         //if (isReturning == true)
         //  outData.println("  strcat(q_.command, \"" + back + "\");");

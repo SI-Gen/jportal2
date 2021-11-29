@@ -527,6 +527,15 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
         }
       }
     }
+    if (placeHolder.limit != null)
+    {
+      switch (cppRetType)
+      {
+        case "ORACLE", "DB2" -> size += placeHolder.limit.fetchRowsSize();
+        case "MSSQL" -> size += placeHolder.limit.topRowsSize();
+        case "MYSQL", "POSTGRE" -> size += placeHolder.limit.limitRowsSize();
+      }
+    }
     writeln(1, format("size_t size = %d;", size));
     writeln(1, format("TJCppRet::setType(CPP_RET_%s);", cppRetType));
     if (isReturning == true || isBulkSequence == true)
@@ -543,8 +552,19 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
     {
       for (int i = 0; i < lines.size(); i++)
       {
-        String l = lines.elementAt(i);
-        if (l.charAt(0) != '"')
+        String str = lines.elementAt(i);
+        if (cppRetType.equals("MSSQL") && i==0 && placeHolder.limit != null && str.toLowerCase().contains("select"))
+        {
+          str = str.replace("\"", "").substring(7);
+          String[] code = placeHolder.limit.topRowsLines();
+          writeln(1, "strcat(q_.command, \"SELECT \");");
+          for (String line: code)
+            writeln(line);
+          if (str.length() > 0)
+            writeln(1, format("strcat(q_.command, \"%s \");", str));
+          continue;
+        }
+        if (str.charAt(0) != '"')
         {
           terminate = ");";
           strcat = "strcat(q_.command, ";
@@ -552,17 +572,28 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
             writeln(terminate);
         } else if (i != 0)
           writeln(terminate);
-        if (l.charAt(0) != '"')
-          write(1, strcat + check(l));
+        if (str.charAt(0) != '"')
+          write(1, strcat + check(str));
         else
-          write(1, strcat + l);
-        if (l.charAt(0) == '"')
+          write(1, strcat + str);
+        if (str.charAt(0) == '"')
         {
           terminate = "\"\\n\"";
           strcat = "    ";
         }
       }
       writeln(");");
+      if (placeHolder.limit != null)
+      {
+        String[] code = {};
+        switch (cppRetType)
+        {
+          case "ORACLE", "DB2" -> code=placeHolder.limit.fetchRowsLines();
+          case "MYSQL", "POSTGRE" -> code=placeHolder.limit.limitRowsLines();
+        }
+        for (String line: code)
+          writeln(line);
+      }
     }
   }
 
@@ -903,7 +934,6 @@ public class OdbcCCode extends BaseGenerator implements IBuiltInSIProcessor
     }
     return field.useName() + ", <unsupported>";
   }
-
   static private String cppBind(Field field, String tableName, boolean isInsert)
   {
     switch (field.type)

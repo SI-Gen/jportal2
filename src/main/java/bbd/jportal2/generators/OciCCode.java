@@ -42,6 +42,9 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
     return "Generate OCI C++ Code";
   }
 
+  static private PlaceHolder placeHolder;
+  static private byte paramStyle = PlaceHolder.COLON;
+
   /**
    * Generates the procedure classes for each table present.
    */
@@ -368,6 +371,7 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
     String fieldName = "";
     String tableName = proc.table.useName();
     String serverName = proc.table.database.server;
+    Vector<String> lines = placeHolder.getLines();
     if (proc.isInsert == true && proc.hasReturning == true && proc.outputs.size() == 1)
     {
       Field field = proc.outputs.elementAt(0);
@@ -380,15 +384,10 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
     if (proc.isMultipleInput == true && proc.isInsert == true)
       isBulkSequence = true;
     int size = 1;
-    questionsSeen = 0;
-    for (int i = 0; i < proc.lines.size(); i++)
-    {
-      Line l = proc.lines.elementAt(i);
-      if (l.isVar)
-        size += 256;
-      else
-        size += question(proc, l.line).length();
-    }
+    for (String line: lines)
+      size += line.length();
+    if (placeHolder.limit != null)
+      size += placeHolder.limit.fetchRowsSize();
     writeln(1, format("size_t size = %d;", size));
     if (isReturning == true || isBulkSequence == true)
     {
@@ -398,31 +397,40 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
     writeln(1, "if (q_.command != 0) delete [] q_.command;");
     writeln(1, "q_.command = new char [size];");
     writeln(1, "memset(q_.command, 0, size);");
-    if (proc.lines.size() > 0)
+    if (lines.size() > 0)
     {
+      String terminate = "";
       String strcat = "strcat(q_.command, ";
-      String tail = "";
-      questionsSeen = 0;
-      for (int i = 0; i < proc.lines.size(); i++)
+      boolean begin = true;
+      for (String line: lines)
       {
-        Line l = proc.lines.elementAt(i);
-        if (l.isVar)
+        if (line.charAt(0) != '"')
         {
-          tail = ");";
-          if (i != 0)
-            writeln(tail);
-          write(1, "strcat(q_.command, " + l.line + "");
+          terminate = ");";
           strcat = "strcat(q_.command, ";
-        } else
+          if (begin == false)
+            writeln(terminate);
+        }
+        else if (begin == false)
+          writeln(terminate);
+        begin = false;
+        if (line.charAt(0) != '"')
+          write(1, strcat + line);
+        else
+          write(1, strcat + line);
+        if (line.charAt(0) == '"')
         {
-          if (i != 0)
-            writeln(tail);
-          tail = "";
-          write(1, strcat + "\"" + question(proc, l.line) + "\"");
-          strcat = "                      ";
+          terminate = "\"\\n\"";
+          strcat = indent(2);
         }
       }
       writeln(");");
+      if (placeHolder.limit != null)
+      {
+        String[] code = placeHolder.limit.fetchRowsLines();
+        for (String line: code)
+          writeln(line);
+      }
     }
   }
 
@@ -495,6 +503,7 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
   static private void generateImplementation(Table table, Proc proc)
   {
     boolean doReturning = false;
+    placeHolder = new PlaceHolder(proc, paramStyle, "");
     String fullName = table.useName() + proc.name;
     writeln("void T" + fullName + "::Exec()");
     writeln("{");
