@@ -1,6 +1,6 @@
 
 find_package(Java 1.8 COMPONENTS Runtime REQUIRED)
-get_filename_component(jportaljar "${CONAN_JPORTAL_ROOT}/jportal2.jar" ABSOLUTE)
+get_filename_component(jportaljar "${CONAN_JPORTAL_ROOT}/jportal2-1.6.0-SNAPSHOT.jar" ABSOLUTE)
 
 macro(Jportal)
 SET(args "")
