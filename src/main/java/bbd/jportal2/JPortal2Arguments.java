@@ -14,6 +14,12 @@ public class JPortal2Arguments {
     @Parameter(names = {"--debug", "-D"}, description = "Enable debug logging")
     private Boolean debug = false;
 
+    @Parameter(names = {"--multiFileProject", "-mfp"}, description = "Enable Multi-File Project")
+    public Boolean multiFileProjectCompile = false;
+
+    @Parameter(names = {"--projectCompile", "-pc"}, description = "Enable project-level compilation")
+    public Boolean projectCompile = false;
+
     @Parameter(names = {"--log", "-l"}, description = "Logfile name i.e. --log=jportal2.log")
     private String logFileName = null;
 

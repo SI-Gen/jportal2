@@ -330,15 +330,15 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
         String comma = "( ";
         String linkname = "FK" + no + link.linkName.toUpperCase();
         outData.println("ADD CONSTRAINT " + makeMaxName(linkname, 128) + " FOREIGN KEY");
-        for (int i = 0; i < link.fields.size(); i++, comma = "    , ") {
-            String name = (String) link.fields.elementAt(i);
+        for (int i = 0; i < link.getFields().size(); i++, comma = "    , ") {
+            String name = (String) link.getFields().elementAt(i);
             outData.println(comma + name);
         }
         outData.print(") REFERENCES " + owner + link.name);
-        if (link.linkFields.size() > 0) {
+        if (link.getLinkFields().size() > 0) {
             comma = "(";
-            for (int i = 0; i < link.linkFields.size(); i++) {
-                String name = (String) link.linkFields.elementAt(i);
+            for (int i = 0; i < link.getLinkFields().size(); i++) {
+                String name = (String) link.getLinkFields().elementAt(i);
                 outData.print(comma + name);
                 comma = ", ";
             }

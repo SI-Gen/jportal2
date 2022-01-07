@@ -368,7 +368,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 if (proc.isData)
                     continue;
                 if (proc.isStd)
-                    emitProc(table, proc, outData);
+                    emitProc(proc, outData);
                 else if (proc.hasNoData())
                     emitStaticProc(proc, outData);
             }
@@ -443,7 +443,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println("    this.connector = connector;");
             outData.println("    connection = connector.connection;");
             outData.println("  }");
-            emitProc(table, proc, outData);
+            emitProc(proc, outData);
             outData.println("}");
             outData.flush();
         } catch (IOException e1) {
@@ -485,7 +485,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     /**
      * Emits class method for processing the database activity
      */
-    private void emitProc(Table table, Proc proc, PrintWriter outData) {
+    private void emitProc(Proc proc, PrintWriter outData) {
         outData.println("  /**");
         if (proc.comments.size() > 0) {
             for (int i = 0; i < proc.comments.size(); i++) {
@@ -498,27 +498,15 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
         else if (proc.isSingle) {
             outData.println("   * Returns at most one record.");
             outData.println("   * @return true if a record is found");
-        }
-        else if (proc.isMultipleInput) {
-            outData.println("   * Returns no output.");
-        }
-        else {
+        } else {
             outData.println("   * Returns any number of records.");
             outData.println("   * @return result set of records found");
         }
         outData.println("   * @exception SQLException is passed through");
         outData.println("   */");
         String procName = proc.lowerFirst();
-
-        extendsName = table.useName() + proc.upperFirst();
-        if (proc.isStd()) {
-            extendsName = table.useName();
-        }
-        if (proc.outputs.isEmpty() && !proc.isMultipleInput)
+        if (proc.outputs.isEmpty())
             outData.println("  public void " + procName + "() throws SQLException");
-        else if (proc.isMultipleInput) {
-            outData.println("  public void " + procName + "(List<"+extendsName+"> records) throws SQLException");
-        }
         else if (proc.isSingle)
             outData.println("  public boolean " + procName + "() throws SQLException");
         else
@@ -535,7 +523,8 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
         }
 
         if (proc.hasReturning)
-            outData.println("    Connector.Returning _ret = connector.getReturning(\"" + proc.table.name + "\",\"" + primaryKeyField.useName() + "\");");
+            outData.println("Connector.Returning _ret = connector.getReturning(\"" + proc.table.name + "\",\"" + primaryKeyField.useName() + "\");");
+
 
         outData.println("    String statement = ");
         String plus = "      ";
@@ -544,34 +533,19 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             plus = "    + ";
         }
         outData.println("    ;");
-
-        String extraTab = "";
-        if (proc.isMultipleInput) {
-            if (proc.noRows == 0) {
-                proc.noRows = 1000;
-            }
-            outData.println("    for (int batchSize=0; batchSize <= Math.ceil(records.size()/" + proc.noRows + "); batchSize++ ) {");
-            extraTab = "    ";
-        }
-
-        outData.println(extraTab+ "    PreparedStatement prep = connector.prepareStatement(statement);");
-
-        if (proc.isMultipleInput) {
-            outData.println(extraTab + "    for (int recCount=(batchSize*"+proc.noRows+"); recCount < (batchSize+1)*"+proc.noRows+" && recCount < records.size(); recCount++) {");
-            outData.println(extraTab + "        "+extendsName+" record = records.get(recCount);");
-        }
+        outData.println("    PreparedStatement prep = connector.prepareStatement(statement);");
         for (int i = 0; i < proc.inputs.size(); i++) {
             Field field = proc.inputs.elementAt(i);
             if (proc.isInsert) {
                 if (field.type == Field.BIGSEQUENCE)
-                    outData.println("    " + extraTab + extraTab + field.useLowerName() + " = connector.getBigSequence(\"" + proc.table.name + "\");");
+                    outData.println("    " + field.useLowerName() + " = connector.getBigSequence(\"" + proc.table.name + "\");");
                 else if (field.type == Field.SEQUENCE)
-                    outData.println("    " + extraTab + extraTab + field.useLowerName() + " = connector.getSequence(\"" + proc.table.name + "\");");
+                    outData.println("    " + field.useLowerName() + " = connector.getSequence(\"" + proc.table.name + "\");");
             }
             if (field.type == Field.TIMESTAMP)
-                outData.println("    " + extraTab + extraTab  + field.useLowerName() + " = connector.getTimestamp();");
+                outData.println("    " + field.useLowerName() + " = connector.getTimestamp();");
             if (field.type == Field.USERSTAMP)
-                outData.println("    " + extraTab + extraTab + field.useLowerName() + " = connector.getUserstamp();");
+                outData.println("    " + field.useLowerName() + " = connector.getUserstamp();");
         }
         Vector<PlaceHolderPairs> pairs = placeHolders.getPairs();
         for (int i = 0; i < pairs.size(); i++) {
@@ -579,15 +553,11 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             Field field = pair.field;
 
             if (field.isNull) {
-                if (proc.isMultipleInput) {
-                    outData.println(extraTab + extraTab  +"    if (record." + field.useLowerName() + " == null) {");
-                } else {
-                    outData.println("    if (" + field.useLowerName() + " == null) {");
-                }
-                outData.print(extraTab + extraTab  +"        prep.setNull(");
+                outData.println("    if(" + field.useLowerName() + " == null) {");
+                outData.print("        prep.setNull(");
                 outData.print(i + 1);
                 outData.println(", java.sql.Types.NULL);");
-                outData.println(extraTab + extraTab  +"    } else {");
+                outData.println("    } else {");
                 outData.print("    ");
             }
 
@@ -598,22 +568,11 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             }
 
             String prepSet = "    prep.set%s(%d, %s);";
-
-            if (proc.isMultipleInput) {
-
-                if (field.type == Field.TIMESTAMP ||
-                    field.type == Field.USERSTAMP ||
-                   (proc.isInsert && (field.type == Field.BIGSEQUENCE || field.type == Field.SEQUENCE))) {
-                    prepSet = extraTab + "        prep.set%s(%d, %s);";
-                } else {
-                    prepSet = extraTab + "        prep.set%s(%d, record.%s);";
-                }
-            }
             outData.println(String.format(prepSet, setType(field), i + 1,
                     String.format(enumToInt, field.useLowerName())));
 
             if (field.isNull) {
-                outData.println(extraTab + extraTab  +"    };");
+                outData.println("    };");
             }
 
         }
@@ -672,15 +631,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 outData.println("    prep.close();");
             }
             outData.println("    return true;");
-        }
-        else if (proc.isMultipleInput) {
-            outData.println(extraTab+"        prep.addBatch();");
-            outData.println(extraTab+"    }");
-            outData.println(extraTab+"    prep.executeBatch();");
-            outData.println(extraTab+"    prep.close();");
-            outData.println(extraTab+"}");
-        }
-        else {
+        } else {
             outData.println("    prep.executeUpdate();");
             outData.println("    prep.close();");
         }
@@ -711,7 +662,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println("    return result;");
             outData.println("  }");
         }
-        if ((!proc.inputs.isEmpty() || !proc.dynamics.isEmpty()) && !proc.isMultipleInput) {
+        if (!proc.inputs.isEmpty() || !proc.dynamics.isEmpty()) {
             outData.println("  /**");
             if (proc.outputs.isEmpty())
                 outData.println("   * Returns no records.");

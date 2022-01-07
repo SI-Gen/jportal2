@@ -13,10 +13,7 @@
 package bbd.jportal2;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.util.Map;
-import java.util.Vector;
 
 public interface ITemplateBasedGenerator extends IGenerator {
-    void generateTemplate(Database database, String templateBaseDir, String generatorName, File outputDirectory) throws Exception;
+    void generateTemplate(Database database, Table table, String templateBaseDir, String generatorName, File outputDirectory) throws Exception;
 }

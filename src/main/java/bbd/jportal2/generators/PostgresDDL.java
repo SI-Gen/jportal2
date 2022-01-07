@@ -168,8 +168,8 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
     private void generateLink(Link link, String tableOwner, PrintWriter outData) {
         String comma = "  ( ";
         outData.println(" ADD CONSTRAINT " + link.linkName + " FOREIGN KEY");
-        for (int i = 0; i < link.fields.size(); i++, comma = "  , ") {
-            String name = link.fields.elementAt(i);
+        for (int i = 0; i < link.getFields().size(); i++, comma = "  , ") {
+            String name = link.getFields().elementAt(i);
             outData.println(comma + name);
         }
         outData.println("  ) REFERENCES " + tableOwner + link.name + " MATCH FULL");

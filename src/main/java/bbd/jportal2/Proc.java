@@ -306,13 +306,13 @@ public class Proc implements Serializable
     noOf        = ids.readInt();
     for (int i=0; i<noOf; i++)
     {
-      Integer value = new Integer(ids.readInt());
+      Integer value = Integer.valueOf(ids.readInt());
       dynamicSizes.addElement(value);
     }
     noOf        = ids.readInt();
     for (int i=0; i<noOf; i++)
     {
-      Boolean value = new Boolean(ids.readBoolean());
+      Boolean value = Boolean.valueOf(ids.readBoolean());
       dynamicStrung.addElement(value);
     }
     noOf        = ids.readInt();
@@ -493,6 +493,16 @@ public class Proc implements Serializable
     }
     return false;
   }
+  public Integer inputPosition(String s)
+  {
+    for (int i=0; i<inputs.size(); i++)
+    {
+      Field field = (Field) inputs.elementAt(i);
+      if (field.name.equalsIgnoreCase(s))
+        return i;
+    }
+    return -1;
+  }
   public Field getInput(String s)
   {
     for (int i=0; i<inputs.size(); i++)
@@ -636,8 +646,11 @@ public class Proc implements Serializable
         if (p > 1)
         {
           String placeHolder = work2.substring(0, p);
-          if (hasInput(placeHolder))
+          if (hasInput(placeHolder)) {
             placeHolders.addElement(placeHolder);
+            code.placeHolder = placeHolder;
+            code.placeHolderInputPos = inputPosition(placeHolder);
+          }
           else
             System.out.println("placeHolder(" + placeHolder + ") is not defined as an Input for proc(" + name + ")");
         }

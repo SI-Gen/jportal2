@@ -12,7 +12,6 @@
 
 package bbd.jportal2;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -22,6 +21,6 @@ public interface ITemplateBasedPostProcessor extends IPostProcessor, ITemplateBa
     static final String POST_PROCESSOR_TEMPLATE_LOCATION = "/postprocessor_templates";
 
     public default Path getPostProcessorTemplateFilesLocation() {
-        return Paths.get(this.POST_PROCESSOR_TEMPLATE_LOCATION);
+        return Paths.get(ITemplateBasedPostProcessor.POST_PROCESSOR_TEMPLATE_LOCATION);
     }
 }

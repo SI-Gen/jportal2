@@ -20,7 +20,7 @@ public interface ITemplateBasedSIProcessor extends ISIProcessor, ITemplateBasedG
     static final String SI_PROCESSOR_TEMPLATE_LOCATION = "/si_processor_templates";
 
     public default Path getSIProcessorTemplateFilesLocation() {
-        return Paths.get(this.SI_PROCESSOR_TEMPLATE_LOCATION);
+        return Paths.get(ITemplateBasedSIProcessor.SI_PROCESSOR_TEMPLATE_LOCATION);
     }
 
 }

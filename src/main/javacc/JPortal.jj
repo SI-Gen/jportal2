@@ -12,7 +12,8 @@ PARSER_BEGIN(JPortal)
 /// which accompanies this distribution and is available at
 /// http://www.eclipse.org/legal/cpl-v10.html
 /// Contributors:
-///    Vincent Risi, Hennie Hammann
+///    Vincent Risi
+//     Hennie Hammann
 ///    Dieter Rosch
 ///    Zoran Pavlovic
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -103,6 +104,11 @@ public class JPortal
   {
     inDir = inNub;
   }
+
+  public static void clearDatabase() {
+      database = null;
+  }
+
   public static Database run(String inFile, Reader reader)
   {
     return run(inFile, "", reader);
@@ -119,7 +125,7 @@ public class JPortal
       }
       else
         JPortal.ReInit(reader);
-      database = null;
+      //database = null;
       table = null;
       entry = null;
       field = null;
@@ -136,6 +142,9 @@ public class JPortal
       line = null;
       isLiteral = false;
       literal = "";
+      if (database == null) {
+        database = new Database();
+      }
       JPortal.jInput();
       return database;
     }
@@ -268,14 +277,14 @@ public class JPortal
       s = s.substring(dE);
       int sB = dVar.indexOf("(");
       int sE = dVar.indexOf(")");
-      size = new Integer(256);
+      size = Integer.valueOf(256);
       if (sB > 0)
       {
         //int sE = dVar.indexOf(")");
         if (sE > sB)
         {
           String dSize = dVar.substring(sB+1, sE);
-          size = new Integer(dSize);
+          size = Integer.valueOf(dSize);
         }
         dVar = dVar.substring(0, sB);
       }
@@ -600,7 +609,7 @@ void jInput() :
 {
   <DATABASE> s = jIdent()
   {
-    database = new Database();
+    //database = new Database();
     database.name = s;
     database.userid = "";
     database.password = "";
@@ -1274,7 +1283,7 @@ int jNumber() :
   t = <NUMBER>
   {
     s = t.image;
-    i = new Integer(s);
+    i = Integer.valueOf(s);
     return i.intValue();
   }
 }
@@ -1530,8 +1539,9 @@ void jColumn() :
 {
   s = jIdent()
   {
-    if (!table.hasField(s))
-      logger.warn(key.name+" field "+s+" not present in table");
+    if (!table.hasField(s)) {
+      throw new ParseException(key.name+" field "+s+" not present in table " + table.name);
+    }
     else if (key.hasField(s))
       logger.warn(key.name+" field "+s+" already present in key");
     else
@@ -1591,8 +1601,9 @@ void jLinkColumn() :
 {
   s = jIdent()
   {
-    if (!table.hasField(s))
-      logger.warn(link.name+" field "+s+" not present in table");
+    if (!table.hasField(s)) {
+      throw new ParseException(link.name + " field " + s + " not present in table " + table.name);
+    }
     else if (link.hasField(s))
       logger.warn(link.name+" field "+s+" already present in link");
     else
@@ -1786,19 +1797,11 @@ void jStdProc() :
       }
   | <BULKINSERT> (jRowCount())?
     {
-      table.hasSequenceReturning = table.hasSequence;
       proc.name = "BulkInsert";
       table.buildBulkInsert(proc);
       table.hasStdProcs = true;
-      if (table.hasIdentity)
-        {
-          table.procs.addElement(proc);
-          proc = new Proc();
-          proc.table = table;
-          proc.name = "Identity";
-          table.buildIdentity(proc);
-        }
     }
+
   | <MAXTMSTAMP>
     {
       proc.name = "MaxTmStamp";
@@ -2160,8 +2163,9 @@ void jProcColumn() :
 {
   s = jIdent()
   {
-    if (!table.hasField(s))
-      logger.warn(proc.name+" field "+s+" not present in table");
+    if (!table.hasField(s)) {
+      throw new ParseException(proc.name + " field " + s + " not present in table " + table.name);
+    }
     else if (proc.hasFields(s))
       logger.warn(proc.name+" field "+s+" already present");
     else if (proc.hasUpdateFields(s))
@@ -2179,7 +2183,7 @@ void jOrderColumn() :
   s = jIdent()
   {
     if (!table.hasField(s))
-      logger.warn(proc.name+" field "+s+" not present in table");
+      logger.warn(proc.name+" field "+s+" not present in table " + table.name);
     else if (proc.hasOrders(s))
       logger.warn(proc.name+" field "+s+" already present");
     else
@@ -2195,7 +2199,7 @@ void jProcUpdateByColumn() :
   s = jIdent()
   {
     if (!table.hasField(s))
-      logger.warn(proc.name+" field "+s+" not present in table");
+      logger.warn(proc.name+" field "+s+" not present in table " + table.name);
     else if (proc.hasUpdateFields(s))
       logger.warn(proc.name+" field "+s+" already present");
     else
@@ -2435,7 +2439,7 @@ Integer jOptSize() :
   ( <LEFTPAREN> n = jNumber() <RIGHTPAREN>
   ) ?
   {
-    return new Integer(n);
+    return Integer.valueOf(n);
   }
 }
 

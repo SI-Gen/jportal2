@@ -4,10 +4,8 @@ import bbd.jportal2.ITemplateBasedGenerator;
 import bbd.jportal2.ITemplateBasedPostProcessor;
 import bbd.jportal2.ITemplateBasedSIProcessor;
 import bbd.jportal2.ProjectCompiler;
-import org.junit.Assert;
-import org.reflections.Reflections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.sf.extcos.ComponentQuery;
+import net.sf.extcos.ComponentScanner;
 
 import java.io.File;
 import java.net.URI;
@@ -21,8 +19,6 @@ import java.util.stream.Stream;
  * Unittest to test the FreeMarker template based generator
  */
 public class TestTemplateBasedProcessorsBaseClass<TYPE_TO_TEST extends ITemplateBasedGenerator> {
-    private static final Logger logger = LoggerFactory.getLogger(TestTemplateBasedProcessorsBaseClass.class);
-
     //private final String INPUT_DIRS = "src/test/resources/freemarker_input_dirs/";
 
     private final String SI_DIR = "src/main/resources/example_si_files/";
@@ -39,7 +35,7 @@ public class TestTemplateBasedProcessorsBaseClass<TYPE_TO_TEST extends ITemplate
     }
 
     public ProjectCompiler getProjectCompiler(String templateLocation) {
-        ProjectCompiler pj = new ProjectCompiler();
+        ProjectCompiler pj = new ProjectCompiler(false);
         pj.addTemplateLocation(templateLocation);
         return pj;
     }
@@ -48,8 +44,8 @@ public class TestTemplateBasedProcessorsBaseClass<TYPE_TO_TEST extends ITemplate
         Set<Class<? extends TYPE_TO_TEST>> ALL_FREEMARKER_GENERATORS = findClasses();
 
         List<String> templateGenerators = new ArrayList<>();
-        for (Class generatorClass : ALL_FREEMARKER_GENERATORS) {
-            TYPE_TO_TEST instanceOfC = (TYPE_TO_TEST) generatorClass.newInstance();
+        for (Class<?> generatorClass : ALL_FREEMARKER_GENERATORS) {
+            TYPE_TO_TEST instanceOfC = (TYPE_TO_TEST) generatorClass.getConstructor().newInstance();
 
             Set<String> templateDirs = findTemplateDirectories(instanceOfC);
             for (String template : templateDirs) {
@@ -67,12 +63,19 @@ public class TestTemplateBasedProcessorsBaseClass<TYPE_TO_TEST extends ITemplate
         return pj.compileAll();
     }
 
-
     private Set<Class<? extends TYPE_TO_TEST>> findClasses() {
+        final Set<Class<? extends TYPE_TO_TEST>> foundClasses = new HashSet<>();
+        ComponentScanner scanner = new ComponentScanner();
 
-        Reflections reflections = new Reflections("bbd.jportal2");
-        Set<Class<? extends TYPE_TO_TEST>> foundClasses = reflections.getSubTypesOf(CLASS_TO_TEST);
+        scanner.getClasses(new ComponentQuery() {
 
+            protected void query() {
+                select().from("bbd.jportal2").andStore(
+                        thoseImplementing(CLASS_TO_TEST).into(foundClasses));
+                //thoseAnnotatedWith(SampleAnnotation.class).into(samples));
+            }
+
+        });
         return foundClasses;
     }
 

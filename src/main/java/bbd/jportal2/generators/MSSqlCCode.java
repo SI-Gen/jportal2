@@ -12,15 +12,17 @@
 /// System : JPortal
 /// ------------------------------------------------------------------
 package bbd.jportal2.generators;
+
 import bbd.jportal2.*;
 import bbd.jportal2.Enum;
+import bbd.jportal2.generators.Common.*;
 import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-
 public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
 {
     public MSSqlCCode() {
@@ -31,6 +33,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
    * Reads input from stored repository
    */
 
+
   public String description()
   {
     return "Generate MSSql C++ Code ODBC";
@@ -39,13 +42,39 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
   {
     return "Generate MSSql C++ Code ODBC";
   }
+
+  private Vector<Flag> flagsVector;
+
+  private void flagDefaults() {}
+
+  public Vector<Flag> getFlags()
+{
+  if (flagsVector == null)
+  {
+    flagDefaults();
+    flagsVector = new Vector<>();
+  }
+  return flagsVector;
+}
+/**
+ * Sets generation getFlags.
+ */
+void setFlags(Database database)
+{
+  flagDefaults();
+}
+
   static PlaceHolder placeHolder;
   /**
    * Generates the procedure classes for each table present.
    */
   public void generate(Database database, String output) throws Exception {
+    setFlags(database);
     for (int i = 0; i < database.tables.size(); i++) {
       Table table = (Table) database.tables.elementAt(i);
+      table.useBrackets = true;
+      // This doesn't work as the insert is already generated at this point :/
+      table.useReturningOutput = false;
       generate(table, output);
     }
   }
@@ -57,7 +86,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       outData.println();
       outData.println("#include <stddef.h>");
       outData.println("#include \"padgen.h\"");
-      outData.println("#include \"mssapi.h\"");
+      outData.println("#include \"dbapi.h\"");
       outData.println("#include \"swapbytes.h\"");
       outData.println();
       if (table.hasStdProcs)
@@ -95,7 +124,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
           outData.println();
           outData.println("#include <stddef.h>");
           outData.println("#include \"padgen.h\"");
-          outData.println("#include \"mssapi.h\"");
+          outData.println("#include \"dbapi.h\"");
           outData.println("#include \"swapbytes.h\"");
           outData.println();
           if (table.hasStdProcs)
@@ -137,153 +166,10 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       outLog.println("Generate Procs IO Error");
     }
   }
-  private static void generateSnips(Table table, String output, PrintWriter outLog)
-  {
-    try
-    {
-      outLog.println("Code: " + output + table.useName().toLowerCase() + "_snips.h");
-      OutputStream outFile = new FileOutputStream(output + table.useName().toLowerCase() + "_snips.h");
-      try
-      {
-        PrintWriter outData = new PrintWriter(outFile);
-        try
-        {
-          outData.println("// This code was generated, do not modify it, modify it at source and regenerate it.");
-          outData.println("#ifndef _" + table.useName().toUpperCase() + "_SNIPS_H_");
-          outData.println("#define _" + table.useName().toUpperCase() + "_SNIPS_H_");
-          outData.println();
-          outData.println("#include \"list.h\"");
-          outData.println("#include \"" + table.useName().toLowerCase() + ".sh\"");
-          outData.println();
-          for (int i = 0; i < table.procs.size(); i++)
-          {
-            Proc proc = (Proc)table.procs.elementAt(i);
-            if (proc.isData)
-              continue;
-            //outData.println("#ifdef USE_" + table.useName().toUpperCase() + "_" + proc.name.toUpperCase());
-            if (proc.isMultipleInput)
-              generateSnipsBulkAction(table, proc, outData);
-            else if (proc.isInsert && proc.hasReturning)
-              generateSnipsAction(table, proc, outData);
-            else if (proc.outputs.size() > 0)
-              if (proc.isSingle)
-                generateSnipsSingle(table, proc, outData);
-              else
-                generateSnipsMultiple(table, proc, outData);
-            else
-              generateSnipsAction(table, proc, outData);
-            //outData.println("#endif");
-            outData.println();
-          }
-          outData.println("#endif");
-        }
-        finally
-        {
-          outData.flush();
-        }
-      }
-      finally
-      {
-        outFile.close();
-      }
-    }
-    catch (IOException e1)
-    {
-      outLog.println("Generate Procs IO Error");
-    }
-  }
-  private static void generateSnipsAction(Table table, Proc proc, PrintWriter outData)
-  {
-    String dataStruct;
-    if (proc.isStd || proc.isStdExtended())
-      dataStruct = table.useName();
-    else
-      dataStruct = table.useName() + proc.upperFirst();
-    boolean hasInput = (proc.inputs.size() > 0 || proc.dynamics.size() > 0);
-    outData.print("inline void " + table.useName() + proc.upperFirst() + "(TJConnector *connect");
-    if (hasInput || proc.hasModifieds())
-      outData.print(", D" + dataStruct + " *rec");
-    outData.println(")");
-    outData.println("{");
-    outData.println("  T" + table.useName() + proc.upperFirst() + " q(*connect, JP_MARK);");
-    if (hasInput || proc.hasModifieds())
-      outData.println("  q.Exec(*rec);");
-    else
-      outData.println("  q.Exec();");
-    if (proc.hasReturning && proc.outputs.size() > 0)
-    {
-      outData.println("  if (q.Fetch())");
-      outData.println("    *rec = *q.DRec();");
-    }
-    else if (proc.hasModifieds())
-      outData.println("  *rec = *q.DRec();");
-    outData.println("}");
-  }
-  private static void generateSnipsBulkAction(Table table, Proc proc, PrintWriter outData)
-  {
-    String dataStruct;
-    if (proc.isStd || proc.isStdExtended())
-      dataStruct = table.useName();
-    else
-      dataStruct = table.useName() + proc.upperFirst();
-    outData.print("inline void " + table.useName() + proc.upperFirst() + "(TJConnector *connect");
-    outData.print(", int noOf, D" + dataStruct + " *recs");
-    outData.println(")");
-    outData.println("{");
-    outData.println("  T" + table.useName() + proc.upperFirst() + " q(*connect, JP_MARK);");
-    outData.println("  q.Exec(noOf, recs);");
-    outData.println("}");
-  }
-  private static void generateSnipsSingle(Table table, Proc proc, PrintWriter outData)
-  {
-    String dataStruct;
-    if (proc.isStd || proc.isStdExtended())
-      dataStruct = table.useName();
-    else
-      dataStruct = table.useName() + proc.upperFirst();
-    boolean hasInput = (proc.inputs.size() > 0 || proc.dynamics.size() > 0);
-    outData.println("inline bool " + table.useName() + proc.upperFirst()
-                   + "(TJConnector *connect, D" + dataStruct + " *rec)");
-    outData.println("{");
-    outData.println("  T" + table.useName() + proc.upperFirst() + " q(*connect, JP_MARK);");
-    if (hasInput)
-      outData.println("  q.Exec(*rec);");
-    else
-      outData.println("  q.Exec();");
-    outData.println("  if (q.Fetch())");
-    outData.println("  {");
-    outData.println("    *rec = *q.DRec();");
-    outData.println("    return true;");
-    outData.println("  }");
-    outData.println("  return false;");
-    outData.println("}");
-  }
-  private static void generateSnipsMultiple(Table table, Proc proc, PrintWriter outData)
-  {
-    String dataStruct;
-    if (proc.isStd || proc.isStdExtended())
-      dataStruct = table.useName();
-    else
-      dataStruct = table.useName() + proc.upperFirst();
-    boolean hasInput = (proc.inputs.size() > 0 || proc.dynamics.size() > 0);
-    outData.print("inline void " + table.useName() + proc.upperFirst() + "(TJConnector *connect");
-    if (hasInput)
-      outData.print(", D" + dataStruct + "* inRec");
-    outData.println(", int32* noOf, O" + dataStruct + "*& outRecs)");
-    outData.println("{");
-    outData.println("  T" + table.useName() + proc.upperFirst() + " q(*connect, JP_MARK);");
-    if (hasInput)
-      outData.println("  q.Exec(*inRec);");
-    else
-      outData.println("  q.Exec();");
-    outData.println("  while (q.Fetch())");
-    outData.println("    SnipAddList(outRecs, *noOf, *q.ORec(), (int32)q.NOROWS);");
-    outData.println("}");
-  }
   /**
    * Build of output data rec for standard procedures
    */
-  static Vector nullVector = new Vector();
+  static Vector<String> nullVector = new Vector<String>();
   static String structName = "";
   static void generateStdOutputRec(Table table, PrintWriter outData)
   {
@@ -297,7 +183,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     outData.println("struct D" + table.useName());
     outData.println("{");
     boolean canExtend = true;
-    Vector fields = table.fields;
+    Vector<Field> fields = table.fields;
     for (int i = 0; i < fields.size(); i++)
     {
       Field field = (Field)fields.elementAt(i);
@@ -309,15 +195,15 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
           String s = (String)field.comments.elementAt(c);
           outData.println("  //" + s);
         }
-      outData.println("  " + padder(cppVar(field) + ";", 48) + generatePadding(field, filler++));
-      if (isNull(field))
+      outData.println("  " + CommonCCode.padder(CommonCCode.cppVar(field) + ";", 48) + CommonCCode.generatePadding(field, filler++));
+      if (CommonCCode.isNull(field))
       {
-        outData.println("  " + padder("int16  " + field.useName() + "IsNull;", 48) + generatePadding(filler++));
+        outData.println("  " + CommonCCode.padder("int16  " + field.useName() + "IsNull;", 48) + CommonCCode.generatePadding(filler++));
         filler++;
       }
     }
     outData.println();
-    headerSwaps(outData, "", fields, null);
+    headerSwaps(outData, "", fields, null, null);
     String useName = table.useName();
     if (canExtend == true)
       extendHeader(outData, "", fields, useName, nullVector, null);
@@ -343,7 +229,8 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       String work = "";
       String baseClass = "";
       boolean canExtend = true;
-      Vector fields = proc.outputs;
+      Vector<Field> fields = proc.outputs;
+      Map<String, Integer> duplicateFields = CommonCCode.GetDuplicatedFields(proc.inputs, proc.placeHolders);
       for (int j = 0; j < fields.size(); j++)
       {
         Field field = (Field)fields.elementAt(j);
@@ -382,12 +269,24 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
             String s = (String)field.comments.elementAt(c);
             outData.println("  //" + s);
           }
-          outData.println("  " + padder(cppVar(field) + ";", 48) + generatePadding(field, filler++));
-          if (isNull(field))
-            outData.println("  " + padder("int16  " + field.useName() + "IsNull;", 48) + generatePadding(filler++));
+          outData.println("  " + CommonCCode.padder(CommonCCode.cppVar(field) + ";", 48) + CommonCCode.generatePadding(field, filler++));
+          if (CommonCCode.isNull(field))
+            outData.println("  " + CommonCCode.padder("int16  " + field.useName() + "IsNull;", 48) + CommonCCode.generatePadding(filler++));
+
+          if (!proc.hasDiscreteInput() && duplicateFields.size() > 0 && duplicateFields.containsKey(field.name))
+          {
+            int val = duplicateFields.get(field.name);
+            if (val > 1)
+            {
+              for (int k = 0; k < val - 1; k++)
+              {
+                outData.println("  " + CommonCCode.padder(CommonCCode.cppVar(field.useName() + (k + 1), field.type, field.length, field.precision) + ";", 48) + CommonCCode.generatePadding(field, filler++));
+              }
+            }
+          }
         }
         outData.println();
-        headerSwaps(outData, "", fields, null);
+        headerSwaps(outData, "", fields, null, null);
         String useName = table.useName() + proc.upperFirst();
         if (canExtend == true)
           extendHeader(outData, "", fields, useName, nullVector, null);
@@ -404,7 +303,8 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
         outData.println("struct D" + table.useName() + proc.upperFirst() + work);
         outData.println("{");
         int filler = 0;
-        Vector inputs = proc.inputs;
+        Vector<Field> inputs = proc.inputs;
+
         for (int j = 0; j < inputs.size(); j++)
         {
           Field field = (Field)inputs.elementAt(j);
@@ -415,18 +315,26 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
             String s = (String)field.comments.elementAt(c);
             outData.println("  //" + s);
           }
-          outData.println("  " + padder(cppVar(field) + ";", 48) + generatePadding(field, filler++));
-          if (isNull(field))
-            outData.println("  " + padder("int16  " + field.useName() + "IsNull;", 48) + generatePadding(filler++));
+          outData.println("  " + CommonCCode.padder(CommonCCode.cppVar(field) + ";", 48) + CommonCCode.generatePadding(field, filler++));
+          int val = duplicateFields.get(field.name);
+          if (val > 1)
+          {
+            for (int k = 0; k < val - 1; k++)
+            {
+              outData.println("  " + CommonCCode.padder(CommonCCode.cppVar(field.useName() + (k + 1), field.type, field.length, field.precision) + ";", 48) + CommonCCode.generatePadding(field, filler++));
+            }
+          }
+          if (CommonCCode.isNull(field))
+            outData.println("  " + CommonCCode.padder("int16  " + field.useName() + "IsNull;", 48) + CommonCCode.generatePadding(filler++));
         }
         outData.println();
         for (int j = 0; j < proc.dynamics.size(); j++)
         {
           String s = (String)proc.dynamics.elementAt(j);
           Integer n = (Integer)proc.dynamicSizes.elementAt(j);
-          outData.println("  " + padder("char " + s + "[" + (n.intValue() + 1) + "];", 48) + charPadding(n.intValue() + 1, filler++));
+          outData.println("  " + CommonCCode.padder("char " + s + "[" + (n.intValue() + 1) + "];", 48) + CommonCCode.charPadding(n.intValue() + 1, filler++));
         }
-        headerSwaps(outData, baseClass, inputs, proc);
+        headerSwaps(outData, baseClass, inputs, proc, duplicateFields);
         String useName = table.useName() + proc.upperFirst();
         if (canExtend == true)
           extendHeader(outData, baseClass, inputs, useName, proc.dynamics, proc);
@@ -444,7 +352,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       }
     }
   }
-  private static void headerSwaps(PrintWriter outData, String baseClass, Vector inputs, Proc proc)
+  private static void headerSwaps(PrintWriter outData, String baseClass, Vector<Field> inputs, Proc proc, Map<String, Integer> duplicateFields)
   {
     outData.println("  void Clear()");
     outData.println("  {");
@@ -455,7 +363,18 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       Field field = (Field)inputs.elementAt(j);
       if (proc != null && proc.hasOutput(field.name))
         continue;
-      outData.println("    " + cppInit(field));
+      outData.println("    " + CommonCCode.cppInit(field));
+      if (duplicateFields != null)
+        {
+          int val = duplicateFields.get(field.name);
+          if (val > 1)
+          {
+            for (int k = 0; k < val - 1; k++)
+            {
+              outData.println("    " + CommonCCode.cppInit(field.useName() + (k + 1), field.type, field.precision));
+            }
+          }
+        }
     }
     if (proc != null)
       for (int j = 0; j < proc.dynamics.size(); j++)
@@ -475,19 +394,45 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       Field field = (Field)inputs.elementAt(j);
       if (proc != null && proc.hasOutput(field.name))
         continue;
-      if (notString(field) == false)
+      if (CommonCCode.notString(field) == false)
         continue;
-      if (isStruct(field) == false)
+      if (CommonCCode.isStruct(field) == false)
+      {
         outData.println("    SwapBytes(" + field.useName() + ");");
+        if (duplicateFields != null)
+        {
+          int val = duplicateFields.get(field.name);
+          if (val > 1)
+          {
+            for (int k = 0; k < val - 1; k++)
+            {
+              outData.println("    SwapBytes(" + field.useName() + (k + 1) + ");");
+            }
+          }
+        }
+      }
       else
         outData.println("    " + field.useName() + ".Swaps();");
-      if (isNull(field))
+      if (CommonCCode.isNull(field))
+      {
         outData.println("    SwapBytes(" + field.useName() + "IsNull);");
+        if (duplicateFields != null)
+        {
+          int val = duplicateFields.get(field.name);
+          if (val > 1)
+          {
+            for (int k = 0; k < val - 1; k++)
+            {
+              outData.println("    SwapBytes(" + field.useName() + (k + 1) + "IsNull);");
+            }
+          }
+        }
+      }
     }
     outData.println("  }");
     outData.println("  #endif");
   }
-  private static void extendHeader(PrintWriter outData, String baseClass, Vector inputs, String useName, Vector dynamics, Proc proc)
+  private static void extendHeader(PrintWriter outData, String baseClass, Vector<Field> inputs, String useName, Vector<String> dynamics, Proc proc)
   {
     outData.println("  #if defined(_TBUFFER_H_)");
     outData.println("  void _toXML(TBAmp &XRec)");
@@ -549,19 +494,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     outData.println("  #endif");
     extendDataBuildHeader(outData, baseClass, inputs, useName, dynamics, proc);
   }
-  private static String nullAdd(Field field)
-  {
-    if (isNull(field))
-      return ", " + field.useName() + "IsNull";
-    return "";
-  }
-  private static String nullSet(Field field)
-  {
-    if (isNull(field))
-      return ", " + field.useName() + "IsNull";
-    return "";
-  }
-  private static void extendDataBuildHeader(PrintWriter outData, String baseClass, Vector inputs, String useName, Vector dynamics, Proc proc)
+  private static void extendDataBuildHeader(PrintWriter outData, String baseClass, Vector<Field> inputs, String useName, Vector<String> dynamics, Proc proc)
   {
     outData.println("  #if defined(_DATABUILD_H_)");
     int inputNo = 0;
@@ -588,9 +521,9 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       if (proc != null && proc.hasOutput(field.name))
         continue;
       if (field.type == Field.BLOB)
-        outData.println("    dBuild.add(\"" + field.useName() + "\", " + field.useName() + ".len, " + field.useName() + ".data" + nullAdd(field) + ");");
+        outData.println("    dBuild.add(\"" + field.useName() + "\", " + field.useName() + ".len, " + field.useName() + ".data" + CommonCCode.nullAdd(field) + ");");
       else
-        outData.println("    dBuild.add(\"" + field.useName() + "\", " + field.useName() + nullAdd(field) + ");");
+        outData.println("    dBuild.add(\"" + field.useName() + "\", " + field.useName() + CommonCCode.nullAdd(field) + ");");
     }
     for (int j = 0; j < dynamics.size(); j++)
     {
@@ -614,9 +547,9 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       if (proc != null && proc.hasOutput(field.name))
         continue;
       if (field.type == Field.BLOB)
-        outData.println("    dBuild.set(\"" + field.useName() + "\", " + field.useName() + ".len, " + field.useName() + ".data, sizeof(" + field.useName() + ".data)" + nullSet(field) + ");");
+        outData.println("    dBuild.set(\"" + field.useName() + "\", " + field.useName() + ".len, " + field.useName() + ".data, sizeof(" + field.useName() + ".data)" + CommonCCode.nullSet(field) + ");");
       else
-        outData.println("    dBuild.set(\"" + field.useName() + "\", " + field.useName() + ", sizeof(" + field.useName() + ")" + nullSet(field) + ");");
+        outData.println("    dBuild.set(\"" + field.useName() + "\", " + field.useName() + ", sizeof(" + field.useName() + ")" + CommonCCode.nullSet(field) + ");");
     }
     for (int j = 0; j < dynamics.size(); j++)
     {
@@ -698,14 +631,6 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
         generateImplementation(table, proc, outData);
     }
   }
-  static String useNull(Field field)
-  {
-    if (isNull(field) 
-    || (field.type == Field.CHAR && field.isNull == true) 
-|| (field.type == Field.ANSICHAR && field.isNull == true))
-      return ", " + field.useName() + "IsNull);";
-    return ");";
-  }
   static void generateMultipleImplementation(Table table, Proc proc, PrintWriter outData)
   {
     placeHolder = new PlaceHolder(proc, PlaceHolder.QUESTION, "");
@@ -723,8 +648,8 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     for (int i = 0, n = 0; i < proc.inputs.size(); i++)
     {
       Field field = (Field)proc.inputs.elementAt(i);
-      outData.println("  " + cppArrayPointer(field));
-      if (isNull(field))
+      outData.println("  " + CommonCCode.cppArrayPointer(field));
+      if (CommonCCode.isNull(field))
         outData.println("  SQLINTEGER* " + field.useName() + "IsNull = &q_.indicators[noOf*" + n++ + "];");
       else if (field.type == Field.CHAR && field.isNull == true)
         outData.println("  SQLINTEGER* " + field.useName() + "IsNull = &q_.indicators[noOf*" + n++ + "];");
@@ -737,8 +662,8 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     for (int i = 0; i < proc.inputs.size(); i++)
     {
       Field field = (Field)proc.inputs.elementAt(i);
-      outData.println("    " + cppArrayCopy(field));
-      if (isNull(field))
+      outData.println("    " + CommonCCode.cppArrayCopy(field));
+      if (CommonCCode.isNull(field))
         outData.println("    " + field.useName() + "IsNull[i] = Recs[i]." + field.useName() + "IsNull;");
       else if (field.type == Field.CHAR && field.isNull == true)
         outData.println("    " + field.useName() + "IsNull[i] = strlen(Recs[i]." + field.useName() + ") == 0 ? JP_NULL : SQL_NTS;");
@@ -754,53 +679,53 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       switch (field.type)
       {
         case Field.ANSICHAR:
-          outData.println("  q_.BindAnsiCharArray(" + i + ", " + field.useName() + ", " + size + useNull(field));
+          outData.println("  q_.BindAnsiCharArray(" + i + ", " + field.useName() + ", " + size + CommonCCode.useNull(field));
           break;
         case Field.CHAR:
         case Field.TLOB:
         case Field.XML:
         case Field.USERSTAMP:
-          outData.println("  q_.BindCharArray(" + i + ", " + field.useName() + ", " + size + useNull(field));
+          outData.println("  q_.BindCharArray(" + i + ", " + field.useName() + ", " + size + CommonCCode.useNull(field));
           break;
         //case Field.BIGXML:
         //  break;
         case Field.LONG:
         case Field.BIGSEQUENCE:
         case Field.BIGIDENTITY:
-          outData.println("  q_.BindInt64Array(" + i + ", " + field.useName() + useNull(field));
+          outData.println("  q_.BindInt64Array(" + i + ", " + field.useName() + CommonCCode.useNull(field));
           break;
         case Field.INT:
         case Field.SEQUENCE:
         case Field.IDENTITY:
-          outData.println("  q_.BindInt32Array(" + i + ", " + field.useName() + useNull(field));
+          outData.println("  q_.BindInt32Array(" + i + ", " + field.useName() + CommonCCode.useNull(field));
           break;
         case Field.BOOLEAN:
         case Field.BYTE:
         case Field.SHORT:
-          outData.println("  q_.BindInt16Array(" + i + ", " + field.useName() + useNull(field));
+          outData.println("  q_.BindInt16Array(" + i + ", " + field.useName() + CommonCCode.useNull(field));
           break;
         case Field.FLOAT:
         case Field.DOUBLE:
           if (field.precision <= 15)
-            outData.println("  q_.BindDoubleArray(" + i + ", " + field.useName() + ", " + (field.precision) + ", " + (field.scale) + useNull(field));
+            outData.println("  q_.BindDoubleArray(" + i + ", " + field.useName() + ", " + (field.precision) + ", " + (field.scale) + CommonCCode.useNull(field));
           else
-            outData.println("  q_.BindMoneyArray(" + i + ", " + field.useName() + ", " + (field.precision) + ", " + (field.scale) + useNull(field));
+            outData.println("  q_.BindMoneyArray(" + i + ", " + field.useName() + ", " + (field.precision) + ", " + (field.scale) + CommonCCode.useNull(field));
           break;
         case Field.MONEY:
-          outData.println("  q_.BindMoneyArray(" + i + ", " + field.useName() + ", 18, 2" + useNull(field));
+          outData.println("  q_.BindMoneyArray(" + i + ", " + field.useName() + ", 18, 2" + CommonCCode.useNull(field));
           break;
         case Field.DATE:
-          outData.println("  q_.BindDateArray(" + i + ", " + field.useName() + useNull(field));
+          outData.println("  q_.BindDateArray(" + i + ", " + field.useName() + CommonCCode.useNull(field));
           break;
         case Field.TIME:
-          outData.println("  q_.BindTimeArray(" + i + ", " + field.useName() + useNull(field));
+          outData.println("  q_.BindTimeArray(" + i + ", " + field.useName() + CommonCCode.useNull(field));
           break;
         case Field.DATETIME:
         case Field.TIMESTAMP:
-          outData.println("  q_.BindDateTimeArray(" + i + ", " + field.useName() + useNull(field));
+          outData.println("  q_.BindDateTimeArray(" + i + ", " + field.useName() + CommonCCode.useNull(field));
           break;
         case Field.AUTOTIMESTAMP:
-          outData.println("  //q_.BindDateTimeArray(" + i + ", " + field.useName() + useNull(field));
+          outData.println("  //q_.BindDateTimeArray(" + i + ", " + field.useName() + CommonCCode.useNull(field));
           break;
       }
     }
@@ -811,14 +736,6 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
   /**
    * Emits class method for processing the database activity
    */
-  static boolean isIdentity(Field field)
-  {
-    return field.type == Field.BIGIDENTITY || field.type == Field.IDENTITY;
-  }
-  static boolean isSequence(Field field)
-  {
-    return field.type == Field.BIGSEQUENCE || field.type == Field.SEQUENCE;
-  }
   static void generateImplementation(Table table, Proc proc, PrintWriter outData)
   {
     placeHolder = new PlaceHolder(proc, PlaceHolder.QUESTION, "");
@@ -826,18 +743,66 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     outData.println("void T" + fullName + "::Exec()");
     outData.println("{");
     generateCommand(proc, outData);
-    if (proc.outputs.size() > 0)
-      outData.println("  q_.Open(q_.command, NOBINDS, NODEFINES, NOROWS, ROWSIZE);");
-    else if (proc.inputs.size() > 0)
-      outData.println("  q_.Open(q_.command, " + proc.inputs.size() + ");");
-    else
-      outData.println("  q_.Open(q_.command);");
+
+    Map<String, Integer> duplicateFields = new HashMap<String, Integer>();
+    Map<String, Integer> usedFields = new HashMap<String, Integer>();
+    Vector<Field> inputs = proc.inputs;
+    for (int j = 0; j < inputs.size(); j++)
+    {
+      Field field = (Field)inputs.elementAt(j);
+      duplicateFields.putIfAbsent(field.name, 0);
+      usedFields.putIfAbsent(field.name, 0);
+    }
+    for (int j = 0; j < proc.placeHolders.size(); j++)
+    {
+      String fieldName = proc.placeHolders.elementAt(j);
+      duplicateFields.putIfAbsent(fieldName, 0);
+      usedFields.putIfAbsent(fieldName, 0);
+    }
+    for (int j = 0; j < proc.placeHolders.size(); j++)
+    {
+      String fieldName = proc.placeHolders.elementAt(j);
+      int val = duplicateFields.get(fieldName);
+      duplicateFields.put(fieldName, val + 1);
+    }
+
+    int inputProcSize = proc.inputs.size();
     for (int j = 0; j < proc.inputs.size(); j++)
     {
       Field field = (Field)proc.inputs.elementAt(j);
-      generateCppBind(field, outData);
+      int val = duplicateFields.get(field.name);
+      if (val > 1)
+      {
+        inputProcSize = inputProcSize + val - 1;
+      }
     }
-    Vector blobs = new Vector();
+
+    if (proc.outputs.size() > 0)
+      outData.println("  q_.Open(q_.command, NOBINDS, NODEFINES, NOROWS, ROWSIZE);");
+    else if (proc.inputs.size() > 0)
+      outData.println("  q_.Open(q_.command, " + inputProcSize + ");");
+    else
+      outData.println("  q_.Open(q_.command);");
+
+    for (int j = 0; j < proc.inputs.size(); j++)
+    {
+      Field field = (Field)proc.inputs.elementAt(j);
+      CommonCCode.generateCppBind(field, outData);
+      if (duplicateFields.containsKey(field.name))
+      {
+        int val = duplicateFields.get(field.name);
+        if (val > 1)
+        {
+          for (int k = 0; k < val - 1; k++)
+          {
+            CommonCCode.generateCppBind(field.useName() + (k + 1), field.type, outData);
+          }
+        }
+      }
+    }
+    
+    int currentBindNo = 0;
+    Vector<Field> blobs = new Vector<Field>();
     for (int j = 0; j < placeHolder.pairs.size(); j++)
     {
       PlaceHolderPairs pair = (PlaceHolderPairs)placeHolder.pairs.elementAt(j);
@@ -845,8 +810,29 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       String tablename = table.tableName();
       String bind = "Bind";
       if (field.type == Field.BLOB) bind += "Blob";
-      //else if (field.type == Field.BIGXML) bind += "BigXML";
-      outData.println("  q_." + bind + "(" + padder("" + j + ",", 4) + cppBind(field, tablename, proc.isInsert) + padder(", " + cppDirection(field), 4) + ((isNull(field)) ? ", &" + field.useName() + "IsNull" : "") + charFieldFlag(field) + ");");
+
+      int val = duplicateFields.get(field.name);
+      if (val > 1)
+      {
+        int usedNo = usedFields.get(field.name);
+        if (usedNo == 0)
+        {
+          outData.println("  q_." + bind + "(" + CommonCCode.padder("" + currentBindNo + ",", 4) + CommonCCode.cppBind(field, tablename, proc.isInsert) + CommonCCode.padder(", " + CommonCCode.cppDirection(field), 4) + ((CommonCCode.isNull(field)) ? ", &" + field.useName() + "IsNull" : "") + CommonCCode.charFieldFlag(field) + ");");
+        }
+        else
+        {
+          outData.println("  " + CommonCCode.cppCopy(field.useName() + (usedNo), field));
+          outData.println("  q_." + bind + "(" + CommonCCode.padder("" + currentBindNo + ",", 4) + CommonCCode.cppBind(field.useName() + (usedNo), field.type, field.length, field.scale, field.precision, tablename, proc.isInsert) + CommonCCode.padder(", " + CommonCCode.cppDirection(field), 4) + ((CommonCCode.isNull(field)) ? ", &" + field.useName() + "IsNull" : "") + CommonCCode.charFieldFlag(field) + ");");
+        }
+        usedFields.put(field.name, usedNo + 1);
+      }
+      else
+      {
+        outData.println("  q_." + bind + "(" + CommonCCode.padder("" + currentBindNo + ",", 4) + CommonCCode.cppBind(field, tablename, proc.isInsert) + CommonCCode.padder(", " + CommonCCode.cppDirection(field), 4) + ((CommonCCode.isNull(field)) ? ", &" + field.useName() + "IsNull" : "") + CommonCCode.charFieldFlag(field) + ");");
+      }
+
+      currentBindNo += 1;
+
       if (field.type == Field.BLOB)
         blobs.addElement(field);
     }
@@ -856,7 +842,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       String define = "Define";
       if (field.type == Field.BLOB) define += "Blob";
       //else if (field.type == Field.BIGXML) define += "BigXML";
-      outData.println("  q_." + define +"(" + padder("" + j + ",", 4) + cppDefine(field) + ");");
+      outData.println("  q_." + define +"(" + CommonCCode.padder("" + j + ",", 4) + CommonCCode.cppDefine(field) + ");");
     }
     outData.println("  q_.Exec();");
     for (int j = 0; j < blobs.size(); j++)
@@ -886,13 +872,13 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
         for (int j = 0; j < proc.inputs.size(); j++)
         {
           Field field = (Field)proc.inputs.elementAt(j);
-          if ((isSequence(field) && proc.isInsert)
-          || (isIdentity(field) && proc.isInsert)
+          if ((CommonCCode.isSequence(field) && proc.isInsert)
+          || (CommonCCode.isIdentity(field) && proc.isInsert)
           || field.type == Field.TIMESTAMP
           || field.type == Field.AUTOTIMESTAMP
           || field.type == Field.USERSTAMP)
             continue;
-          outData.println("  " + cppCopy(field));
+          outData.println("  " + CommonCCode.cppCopy(field));
         }
         for (int j = 0; j < proc.dynamics.size(); j++)
         {
@@ -914,8 +900,8 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       for (int j = 0; j < proc.outputs.size(); j++)
       {
         Field field = (Field)proc.outputs.elementAt(j);
-        outData.println("  q_.Get(" + cppGet(field) + ");");
-        if (isNull(field))
+        outData.println("  q_.Get(" + CommonCCode.cppGet(field) + ");");
+        if (CommonCCode.isNull(field))
           outData.println("  q_.GetNull(" + field.useName() + "IsNull, " + j + ");");
       }
       outData.println("  return true;");
@@ -923,16 +909,12 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       outData.println();
     }
   }
-  static String check(String value)
-  {
-    return value;
-  }
   static void generateCommand(Proc proc, PrintWriter outData)
   {
     boolean isReturning = false;
     boolean isBulkSequence = false;
     String front = "", back = "", sequencer = "", output = "";
-    Vector lines = placeHolder.getLines();
+    Vector<String> lines = placeHolder.getLines();
     int size = 1;
     if (proc.isInsert == true && proc.hasReturning == true && proc.outputs.size() == 1)
     {
@@ -940,10 +922,8 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       if (field.isSequence == true)
       {
         isReturning = true;
-        //front = "select " + field.useName() + " from new table(";
+
         output = field.useName();
-        // back = ")";
-        //sequencer = "nextval for " + proc.table.tableName() + "seq";
         size += front.length();
         size += back.length();
         size += sequencer.length();
@@ -952,7 +932,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     if (proc.isMultipleInput == true && proc.isInsert == true)
     {
       isBulkSequence = true;
-      sequencer = "nextval for " + proc.table.tableName() + "seq";
+      sequencer = "next value for " + proc.table.tableName() + "seq";
       size += sequencer.length();
     }
     for (int i = 0; i < lines.size(); i++)
@@ -979,14 +959,15 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     outData.println("  memset(q_.command, 0, " + (size + 15) + ");");
     if (isReturning == true)
     {
-      outData.println("  struct cpp_ret {char* head; char *output; char *sequence; char* tail; cpp_ret(){head = output = sequence = tail = \"\";}} _ret;");
+      outData.println("  struct cpp_ret {const char* head; const char *output; const char *sequence; const char* tail; cpp_ret(){head = output = sequence = tail = \"\";}} _ret;");
       if (!sequencer.isEmpty())
         outData.println("  _ret.sequence = \"" + sequencer + ",\";");
       if (!front.isEmpty())
         outData.println("  _ret.head = \"" + front + "\";");
       if (!back.isEmpty())
         outData.println("  _ret.tail = \"" + back + "\";");
-      outData.println("  _ret.output = \"OUTPUT Inserted." + output + "\";\n");
+      if (!output.isEmpty())
+        outData.println("  _ret.output = \"OUTPUT Inserted." + output + "\";\n");
     }
     if (isBulkSequence == true)
     {
@@ -997,9 +978,13 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     String terminate = "";
     if (lines.size() > 0)
     {
+      if (!front.isEmpty())
+        outData.println(strcat + "_ret.head);");
+
       for (int i = 0; i < lines.size(); i++)
       {
         String l = (String)lines.elementAt(i);
+
         if (l.charAt(0) != '"')
         {
           terminate = ");";
@@ -1010,10 +995,10 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
         else if (i != 0)
           outData.println(terminate);
         if (l.charAt(0) != '"')
-            outData.print(strcat + check(l));
+          outData.print(strcat + CommonCCode.check(l));
         else
         {
-            outData.print(strcat + l);
+          outData.print(strcat + l);
         }
         if (l.charAt(0) == '"')
         {
@@ -1026,39 +1011,15 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     //if (isReturning == true)
     //  outData.println("  strcat(q_.command, \"" + back + "\");");
   }
-  /**
-   * generate Holding variables
-   */
-  static void generateCppBind(Field field, PrintWriter outData)
-  {
-    switch (field.type)
-    {
-      case Field.DATE:
-        outData.println("  DATE_STRUCT " + field.useName() + "_CLIDate;");
-        break;
-      case Field.TIME:
-        outData.println("  TIME_STRUCT " + field.useName() + "_CLITime;");
-        break;
-      case Field.DATETIME:
-        outData.println("  TIMESTAMP_STRUCT " + field.useName() + "_CLIDateTime;");
-        break;
-      case Field.TIMESTAMP:
-        outData.println("  TIMESTAMP_STRUCT " + field.useName() + "_CLITimeStamp;");
-        break;
-      case Field.AUTOTIMESTAMP:
-        outData.println("  //TIMESTAMP_STRUCT " + field.useName() + "_CLITimeStamp;");
-        break;
-    }
-  }
   static void generateWithParms(Proc proc, PrintWriter outData, String pad)
   {
     String comma = "  ";
     for (int j = 0; j < proc.inputs.size(); j++)
     {
       Field field = (Field)proc.inputs.elementAt(j);
-      if ((isSequence(field) && proc.isInsert) || (isIdentity(field) && proc.isInsert) || field.type == Field.TIMESTAMP || field.type == Field.AUTOTIMESTAMP || field.type == Field.USERSTAMP)
+      if ((CommonCCode.isSequence(field) && proc.isInsert) || (CommonCCode.isIdentity(field) && proc.isInsert) || field.type == Field.TIMESTAMP || field.type == Field.AUTOTIMESTAMP || field.type == Field.USERSTAMP)
         continue;
-      outData.println(pad + comma + "const " + cppParm(field));
+      outData.println(pad + comma + "const " + CommonCCode.cppParm(field));
       comma = ", ";
     }
     for (int j = 0; j < proc.dynamics.size(); j++)
@@ -1080,34 +1041,34 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       Field field = (Field)proc.outputs.elementAt(0);
       String thisOne = field.useName().toUpperCase() + "_OFFSET";
       String lastOne = thisOne;
-      String lastSize = cppLength(field);
-      outData.println(front + padder(thisOne, 24) + "= 0");
+      String lastSize = CommonCCode.cppLength(field);
+      outData.println(front + CommonCCode.padder(thisOne, 24) + "= 0");
       front = "  , ";
       for (int j = 1; j < proc.outputs.size(); j++)
       {
         field = (Field)proc.outputs.elementAt(j);
         thisOne = field.useName().toUpperCase() + "_OFFSET";
-        outData.println("  , " + padder(thisOne, 24) + "= (" + lastOne + "+" + lastSize + ")");
+        outData.println("  , " + CommonCCode.padder(thisOne, 24) + "= (" + lastOne + "+" + lastSize + ")");
         lastOne = thisOne;
-        lastSize = cppLength(field);
+        lastSize = CommonCCode.cppLength(field);
       }
-      outData.println("  , " + padder("ROWSIZE", 24) + "= (" + lastOne + "+" + lastSize + ")");
+      outData.println("  , " + CommonCCode.padder("ROWSIZE", 24) + "= (" + lastOne + "+" + lastSize + ")");
       if (proc.isSingle)
-        outData.println("  , " + padder("NOROWS", 24) + "= 1");
+        outData.println("  , " + CommonCCode.padder("NOROWS", 24) + "= 1");
       else if (proc.noRows > 0)
-        outData.println("  , " + padder("NOROWS", 24) + "= " + proc.noRows);
+        outData.println("  , " + CommonCCode.padder("NOROWS", 24) + "= " + proc.noRows);
       else
-        outData.println("  , " + padder("NOROWS", 24) + "= (24*1024 / ROWSIZE) + 1");
-      outData.println("  , " + padder("NOBINDS", 24) + "= " + placeHolder.pairs.size());
-      outData.println("  , " + padder("NODEFINES", 24) + "= " + proc.outputs.size());
+        outData.println("  , " + CommonCCode.padder("NOROWS", 24) + "= (24*1024 / ROWSIZE) + 1");
+      outData.println("  , " + CommonCCode.padder("NOBINDS", 24) + "= " + placeHolder.pairs.size());
+      outData.println("  , " + CommonCCode.padder("NODEFINES", 24) + "= " + proc.outputs.size());
       field = (Field)proc.outputs.elementAt(0);
       thisOne = field.useName().toUpperCase();
-      outData.println("  , " + padder(thisOne + "_POS", 24) + "= 0");
+      outData.println("  , " + CommonCCode.padder(thisOne + "_POS", 24) + "= 0");
       for (int j = 1; j < proc.outputs.size(); j++)
       {
         field = (Field)proc.outputs.elementAt(j);
         thisOne = field.useName().toUpperCase();
-        outData.println("  , " + padder(thisOne + "_POS", 24) + "= " + padder(thisOne + "_OFFSET", 24) + "* NOROWS");
+        outData.println("  , " + CommonCCode.padder(thisOne + "_POS", 24) + "= " + CommonCCode.padder(thisOne + "_OFFSET", 24) + "* NOROWS");
       }
       outData.println("  };");
     }
@@ -1117,30 +1078,30 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       standardExec = false;
       outData.println("  enum");
       Field field = (Field)proc.inputs.elementAt(0);
-      if (isNull(field) || (field.type == Field.CHAR && field.isNull == true) || (field.type == Field.ANSICHAR && field.isNull == true))
+      if (CommonCCode.isNull(field) || (field.type == Field.CHAR && field.isNull == true) || (field.type == Field.ANSICHAR && field.isNull == true))
         noNulls++;
       String thisOne = field.useName().toUpperCase() + "_OFFSET";
       String lastOne = thisOne;
       String thisSize = field.useName().toUpperCase() + "_SIZE";
       String lastSize = thisSize;
-      outData.println(front + padder(thisOne, 24) + "= 0");
+      outData.println(front + CommonCCode.padder(thisOne, 24) + "= 0");
       front = "  , ";
-      outData.println(front + padder(thisSize, 24) + "= " + cppLength(field));
+      outData.println(front + CommonCCode.padder(thisSize, 24) + "= " + CommonCCode.cppLength(field));
       for (int j = 1; j < proc.inputs.size(); j++)
       {
         field = (Field)proc.inputs.elementAt(j);
-        if (isNull(field) || (field.type == Field.CHAR && field.isNull == true) || (field.type == Field.ANSICHAR && field.isNull == true))
+        if (CommonCCode.isNull(field) || (field.type == Field.CHAR && field.isNull == true) || (field.type == Field.ANSICHAR && field.isNull == true))
           noNulls++;
         thisOne = field.useName().toUpperCase() + "_OFFSET";
         thisSize = field.useName().toUpperCase() + "_SIZE";
-        outData.println("  , " + padder(thisOne, 24) + "= (" + lastOne + "+" + lastSize + ")");
-        outData.println("  , " + padder(thisSize, 24) + "= " + cppLength(field));
+        outData.println("  , " + CommonCCode.padder(thisOne, 24) + "= (" + lastOne + "+" + lastSize + ")");
+        outData.println("  , " + CommonCCode.padder(thisSize, 24) + "= " + CommonCCode.cppLength(field));
         lastOne = thisOne;
         lastSize = thisSize;
       }
-      outData.println("  , " + padder("ROWSIZE", 24) + "= (" + lastOne + "+" + lastSize + ")");
-      outData.println("  , " + padder("NOBINDS", 24) + "= " + placeHolder.pairs.size());
-      outData.println("  , " + padder("NONULLS", 24) + "= " + noNulls);
+      outData.println("  , " + CommonCCode.padder("ROWSIZE", 24) + "= (" + lastOne + "+" + lastSize + ")");
+      outData.println("  , " + CommonCCode.padder("NOBINDS", 24) + "= " + placeHolder.pairs.size());
+      outData.println("  , " + CommonCCode.padder("NONULLS", 24) + "= " + noNulls);
       outData.println("  };");
       outData.println("  void Exec(int32 noOf, " + dataStruct + "* Recs);");
     }
@@ -1152,9 +1113,9 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
 
       outData.println("  void Exec();");
       if (proc.outputs.size() > 0 && proc.isInsert)
-        outData.println("  void Exec(" + dataStruct + "& Rec) {*DRec() = Rec;Exec(); Fetch();}");
+        outData.println("  void Exec(" + dataStruct + "& Rec) {*DRec() = Rec;Exec();Fetch();}");
       else
-        outData.println("  void Exec(" + dataStruct + "& Rec) {*DRec() = Rec;Exec(); }");
+        outData.println("  void Exec(" + dataStruct + "& Rec) {*DRec() = Rec;Exec();}");
 
       boolean skipExecWithParms = false;
       for (int j = 0; j < proc.inputs.size(); j++)
@@ -1174,12 +1135,11 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
             for (int j = 0; j < proc.inputs.size(); j++)
             {
                 Field field = (Field)proc.inputs.elementAt(j);
-                if ((isSequence(field) && proc.isInsert) || (isIdentity(field) && proc.isInsert) || field.type == Field.TIMESTAMP || field.type == Field.AUTOTIMESTAMP || field.type == Field.USERSTAMP)
+                if ((CommonCCode.isSequence(field) && proc.isInsert) || (CommonCCode.isIdentity(field) && proc.isInsert) || field.type == Field.TIMESTAMP || field.type == Field.AUTOTIMESTAMP || field.type == Field.USERSTAMP)
                     continue;
                 val = true;
             }
             for (int j = 0; j < proc.dynamics.size(); j++) {
-                String s = (String) proc.dynamics.elementAt(j);
                 val=true;
             }
             if (val)
@@ -1202,12 +1162,6 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       if (proc.outputs.size() > 0)
         outData.println("  O" + table.useName() + "* OStd() {return (O" + table.useName() + "*)this;}");
     }
-  }
-  static String padder(String s, int length)
-  {
-    for (int i = s.length(); i < length - 1; i++)
-      s = s + " ";
-    return s + " ";
   }
   public static void generateEnumOrdinals(Table table, PrintWriter outData)
   {
@@ -1278,628 +1232,10 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
   {
     return output + node + ext;
   }
-  private static String charPadding(int no, int fillerNo)
-  {
-    int n = 8 - (no % 8);
-    if (n != 8)
-      return "IDL2_CHAR_PAD(" + fillerNo + "," + n + ");";
-    return "";
-  }
-  private static String generatePadding(Field field, int fillerNo)
-  {
-    switch (field.type)
-    {
-      case Field.BOOLEAN:
-      case Field.BYTE:
-      case Field.SHORT:
-        return "IDL2_INT16_PAD(" + fillerNo + ");";
-      case Field.INT:
-      case Field.SEQUENCE:
-      case Field.IDENTITY:
-        return "IDL2_INT32_PAD(" + fillerNo + ");";
-      case Field.CHAR:
-      case Field.ANSICHAR:
-      case Field.USERSTAMP:
-      case Field.XML:
-      case Field.TLOB:
-      case Field.DATE:
-      case Field.TIME:
-      case Field.DATETIME:
-      case Field.TIMESTAMP:
-      case Field.AUTOTIMESTAMP:
-        return charPadding(field.length + 1, fillerNo);
-      case Field.DOUBLE:
-      case Field.FLOAT:
-        if (field.precision > 15)
-          return charPadding(field.precision + 3, fillerNo);
-        break;
-      case Field.MONEY:
-        return charPadding(21, fillerNo);
-      //case Field.BIGXML:
-      //  break;
-    }
-    return "";
-  }
-  public static String generatePadding(int fillerNo)
-  {
-    return "IDL2_INT16_PAD(" + fillerNo + ");";
-  }
-  static int getLength(Field field)
-  {
-    switch (field.type)
-    {
-      case Field.BOOLEAN:
-      case Field.BYTE:
-      case Field.SHORT:
-        return 2;
-      case Field.INT:
-      case Field.SEQUENCE:
-      case Field.IDENTITY:
-        return 4;
-      case Field.LONG:
-      case Field.BIGSEQUENCE:
-      case Field.BIGIDENTITY:
-        return 8;
-      case Field.CHAR:
-      case Field.ANSICHAR:
-      case Field.USERSTAMP:
-      case Field.TLOB:
-      case Field.XML:
-        return field.length + 1;
-      //case Field.BIGXML:
-      case Field.BLOB:
-        return 8;
-      case Field.DATE:
-        return 9;
-      case Field.TIME:
-        return 7;
-      case Field.DATETIME:
-      case Field.TIMESTAMP:
-      case Field.AUTOTIMESTAMP:
-        return 15;
-      case Field.FLOAT:
-      case Field.DOUBLE:
-        if (field.precision > 15)
-          return field.precision + 3; // allow for - . and null terminator
-        return 8;
-      case Field.MONEY:
-        return 21;
-    }
-    return 4;
-  }
-  static String charFieldFlag(Field field)
-  {
-    if (field.type != Field.CHAR && field.type != Field.ANSICHAR && field.type != Field.TLOB && field.type != Field.XML)
-      return "";
-    if ((field.type == Field.CHAR || field.type == Field.TLOB || field.type == Field.XML) && field.isNull == true)
-      return ", 0, 1";
-    if (field.type == Field.ANSICHAR)
-      if (field.isNull == true)
-        return ", 1, 1";
-      else
-        return ", 0, 0";
-    return ", 0, 0";
-  }
-  static boolean isNull(Field field)
-  {
-    if (field.isNull == false)
-      return false;
-    switch (field.type)
-    {
-      case Field.BOOLEAN:
-      case Field.FLOAT:
-      case Field.DOUBLE:
-      case Field.MONEY:
-      case Field.BYTE:
-      case Field.SHORT:
-      case Field.INT:
-      case Field.LONG:
-      case Field.IDENTITY:
-      case Field.SEQUENCE:
-      case Field.BIGIDENTITY:
-      case Field.BIGSEQUENCE:
-      case Field.BLOB:
-      case Field.DATE:
-      case Field.DATETIME:
-      case Field.TIMESTAMP:
-      case Field.AUTOTIMESTAMP:
-      case Field.TIME:
-      //case Field.XML:
-        return true;
-    }
-    return false;
-  }
-  static boolean notString(Field field)
-  {
-    switch (field.type)
-    {
-      case Field.BOOLEAN:
-      case Field.BYTE:
-      case Field.SHORT:
-      case Field.INT:
-      case Field.LONG:
-      case Field.IDENTITY:
-      case Field.SEQUENCE:
-      case Field.BIGIDENTITY:
-      case Field.BIGSEQUENCE:
-      case Field.BLOB:
-        return true;
-      case Field.FLOAT:
-      case Field.DOUBLE:
-        return field.precision <= 15;
-    }
-    return false;
-  }
-  static boolean isStruct(Field field)
-  {
-    return field.type == Field.BLOB;
-  }
-  static boolean isLob(Field field)
-  {
-    return field.type == Field.BLOB;
-  }
-  static String cppInit(Field field)
-  {
-    switch (field.type)
-    {
-      case Field.BOOLEAN:
-      case Field.BYTE:
-      case Field.SHORT:
-      case Field.INT:
-      case Field.SEQUENCE:
-      case Field.IDENTITY:
-      case Field.BIGSEQUENCE:
-      case Field.BIGIDENTITY:
-      case Field.LONG:
-        return field.useName() + " = 0;";
-      case Field.CHAR:
-      case Field.ANSICHAR:
-      case Field.TLOB:
-      case Field.XML:
-      case Field.USERSTAMP:
-      case Field.DATE:
-      case Field.TIME:
-      case Field.DATETIME:
-      case Field.TIMESTAMP:
-      case Field.AUTOTIMESTAMP:
-        return "memset(" + field.useName() + ", 0, sizeof(" + field.useName() + "));";
-      case Field.BLOB:
-        return "memset(&" + field.useName() + ", 0, sizeof(" + field.useName() + "));";
-      case Field.FLOAT:
-      case Field.DOUBLE:
-        if (field.precision <= 15)
-          return field.useName() + " = 0.0;";
-        return "memset(" + field.useName() + ", 0, sizeof(" + field.useName() + "));";
-      case Field.MONEY:
-        return "memset(" + field.useName() + ", 0, sizeof(" + field.useName() + "));";
-    }
-    return field.useName() + " <unsupported>";
-  }
-  /**
-   * Translates field type to cpp data member type
-   */
-  static String cppVar(Field field)
-  {
-    switch (field.type)
-    {
-      case Field.BOOLEAN:
-      case Field.BYTE:
-      case Field.SHORT:
-        return "int16  " + field.useName();
-      case Field.INT:
-      case Field.IDENTITY:
-      case Field.SEQUENCE:
-        return "int32  " + field.useName();
-      case Field.LONG:
-      case Field.BIGIDENTITY:
-      case Field.BIGSEQUENCE:
-        return "int64  " + field.useName();
-      case Field.CHAR:
-      case Field.ANSICHAR:
-      case Field.TLOB:
-      case Field.XML:
-        return "char   " + field.useName() + "[" + (field.length + 1) + "]";
-      case Field.USERSTAMP:
-        return "char   " + field.useName() + "[9]";
-      case Field.BLOB:
-        return "TJBlob<" + field.length + "> " + field.useName();
-      case Field.DATE:
-        return "char   " + field.useName() + "[9]";
-      case Field.TIME:
-        return "char   " + field.useName() + "[7]";
-      case Field.DATETIME:
-      case Field.TIMESTAMP:
-      case Field.AUTOTIMESTAMP:
-        return "char   " + field.useName() + "[15]";
-      case Field.FLOAT:
-      case Field.DOUBLE:
-        if (field.precision > 15)
-          return "char   " + field.useName() + "[" + (field.precision + 3) + "]";
-        return "double " + field.useName();
-      case Field.MONEY:
-        return "char   " + field.useName() + "[21]";
-    }
-    return field.useName() + " <unsupported>";
-  }
-  static String cppLength(Field field)
-  {
-    switch (field.type)
-    {
-      case Field.BOOLEAN:
-      case Field.BYTE:
-      case Field.SHORT:
-        return "sizeof(int16)";
-      case Field.INT:
-      case Field.SEQUENCE:
-      case Field.IDENTITY:
-        return "sizeof(int32)";
-      case Field.LONG:
-      case Field.BIGSEQUENCE:
-      case Field.BIGIDENTITY:
-        return "sizeof(int64)";
-      case Field.CHAR:
-      case Field.ANSICHAR:
-      case Field.TLOB:
-      case Field.XML:
-        return "" + (field.length + 1);
-      case Field.BLOB:
-        return "sizeof(TJBlob<" + field.length + ">)";
-      //case Field.BIGXML:
-      //  return "sizeof(TJBigXML)";
-      case Field.USERSTAMP:
-        return "9";
-      case Field.DATE:
-        return "sizeof(DATE_STRUCT)";
-      case Field.TIME:
-        return "sizeof(TIME_STRUCT)";
-      case Field.DATETIME:
-      case Field.TIMESTAMP:
-      case Field.AUTOTIMESTAMP:
-        return "sizeof(TIMESTAMP_STRUCT)";
-      case Field.FLOAT:
-      case Field.DOUBLE:
-        if (field.precision > 15)
-          return "" + (field.precision + 3);
-        return "sizeof(double)";
-      case Field.MONEY:
-        return "21";
-    }
-    return "0";
-  }
-  static String cppDirection(Field field)
-  {
-    if (field.isIn && field.isOut)
-      return "SQL_PARAM_INPUT_OUTPUT";
-    if (field.isOut)
-      return "SQL_PARAM_OUTPUT";
-    return "SQL_PARAM_INPUT";
-  }
-  static String cppArrayPointer(Field field)
-  {
-    String offset = field.useName().toUpperCase() + "_OFFSET";
-    switch (field.type)
-    {
-      case Field.BOOLEAN:
-      case Field.BYTE:
-      case Field.SHORT:
-        return "int16 *" + field.useName() + " = (int16 *)(q_.data + " + offset + " * noOf);";
-      case Field.INT:
-        return "int32 *" + field.useName() + " = (int32 *)(q_.data + " + offset + " * noOf);";
-      case Field.LONG:
-      case Field.BIGSEQUENCE:
-      case Field.BIGIDENTITY:
-        return "int64 *" + field.useName() + " = (int64 *)(q_.data + " + offset + " * noOf);";
-      case Field.FLOAT:
-      case Field.DOUBLE:
-        if (field.precision > 15)
-          return "char *" + field.useName() + " = (char *)(q_.data + " + offset + " * noOf);";
-        return "double *" + field.useName() + " = (double *)(q_.data + " + offset + " * noOf);";
-      case Field.MONEY:
-        return "char *" + field.useName() + " = (char *)(q_.data + " + offset + " * noOf);";
-      case Field.SEQUENCE:
-        return "int32 *" + field.useName() + " = (int32 *)(q_.data + " + offset + " * noOf);";
-      case Field.TLOB:
-      case Field.XML:
-      case Field.CHAR:
-      case Field.ANSICHAR:
-        return "char *" + field.useName() + " = (char *)(q_.data + " + offset + " * noOf);";
-      case Field.USERSTAMP:
-        return "char *" + field.useName() + " = (char *)(q_.data + " + offset + " * noOf);";
-      case Field.DATE:
-        return "DATE_STRUCT* " + field.useName() + " = (DATE_STRUCT *)(q_.data + " + offset + " * noOf);";
-      case Field.TIME:
-        return "TIME_STRUCT* " + field.useName() + " = (TIME_STRUCT *)(q_.data + " + offset + " * noOf);";
-      case Field.DATETIME:
-      case Field.TIMESTAMP:
-      case Field.AUTOTIMESTAMP:
-        return "TIMESTAMP_STRUCT* " + field.useName() + " = (TIMESTAMP_STRUCT *)(q_.data + " + offset + " * noOf);";
-      case Field.BLOB:
-        return "// Blobs are not handled here";
-      //case Field.BIGXML:
-      //  return "// BigXMLs are not handled here";
-    }
-    return "// not handled here";
-  }
-  static String cppBind(Field field, String tableName, boolean isInsert)
-  {
-    switch (field.type)
-    {
-      case Field.BOOLEAN:
-      case Field.BYTE:
-      case Field.SHORT:
-      case Field.INT:
-      case Field.LONG:
-      case Field.BIGIDENTITY:
-      case Field.IDENTITY:
-        return field.useName();
-      case Field.FLOAT:
-      case Field.DOUBLE:
-        return field.useName() + ", " + (field.precision) + ", " + (field.scale);
-      case Field.MONEY:
-        return field.useName() + ", 18, 2";
-      case Field.SEQUENCE:
-      case Field.BIGSEQUENCE:
-        if (isInsert)
-          return "q_.Sequence(" + field.useName() + ", \"" + tableName + "Seq\")";
-        else
-          return field.useName();
-      case Field.TLOB:
-      case Field.XML:
-        return field.useName() + ", " + (field.length);
-      case Field.CHAR:
-        return field.useName() + ", " + (field.length);
-      case Field.ANSICHAR:
-        return field.useName() + ", " + (field.length);
-      case Field.USERSTAMP:
-        return "q_.UserStamp(" + field.useName() + "), 8";
-      case Field.DATE:
-        return "q_.Date(" + field.useName() + "_CLIDate, " + field.useName() + ")";
-      case Field.TIME:
-        return "q_.Time(" + field.useName() + "_CLITime, " + field.useName() + ")";
-      case Field.DATETIME:
-        return "q_.DateTime(" + field.useName() + "_CLIDateTime, " + field.useName() + ")";
-      case Field.TIMESTAMP:
-        return "q_.TimeStamp(" + field.useName() + "_CLITimeStamp, " + field.useName() + ")";
-      case Field.AUTOTIMESTAMP:
-        return "q_.TimeStamp(" + field.useName() + "_CLITimeStamp, " + field.useName() + ")";
-      case Field.BLOB:
-        return "(char*)&" + field.useName() + ", sizeof(" + field.useName() + ".data)";
-      //case Field.BIGXML:
-      //  return field.useName()+".data, " + field.useName( )+ ".length";
-    }
-    return field.useName() + ", <unsupported>";
-  }
-  /**
-   * Translates field type to cpp data member type
-   */
-  static String cppDefine(Field field)
-  {
-    switch (field.type)
-    {
-      case Field.BOOLEAN:
-      case Field.BYTE:
-      case Field.SHORT:
-        return "(int16*) (q_.data+" + field.useName().toUpperCase() + "_POS)";
-      case Field.INT:
-      case Field.IDENTITY:
-      case Field.SEQUENCE:
-        return "(int32*) (q_.data+" + field.useName().toUpperCase() + "_POS)";
-      case Field.LONG:
-      case Field.BIGIDENTITY:
-      case Field.BIGSEQUENCE:
-        return "(int64*) (q_.data+" + field.useName().toUpperCase() + "_POS)";
-      case Field.CHAR:
-      case Field.TLOB:
-      case Field.XML:
-        return "(char*)  (q_.data+" + field.useName().toUpperCase() + "_POS), " + (field.length + 1);
-      case Field.ANSICHAR:
-        return "(char*)  (q_.data+" + field.useName().toUpperCase() + "_POS), " + (field.length + 1) + ", 1";
-      case Field.USERSTAMP:
-        return "(char*)  (q_.data+" + field.useName().toUpperCase() + "_POS), 9";
-      case Field.BLOB:
-        return "(char*)  (q_.data+" + field.useName().toUpperCase() + "_POS), " + (field.length);
-      //case Field.BIGXML:
-      //  return "(char*)  (q_.data+" + field.useName().toUpperCase() + "_POS), sizeof(" + field.useName() + ")";
-      case Field.DATE:
-        return "(DATE_STRUCT*)(q_.data+" + field.useName().toUpperCase() + "_POS)";
-      case Field.TIME:
-        return "(TIME_STRUCT*)(q_.data+" + field.useName().toUpperCase() + "_POS)";
-      case Field.DATETIME:
-      case Field.TIMESTAMP:
-      case Field.AUTOTIMESTAMP:
-        return "(TIMESTAMP_STRUCT*)(q_.data+" + field.useName().toUpperCase() + "_POS)";
-      case Field.FLOAT:
-      case Field.DOUBLE:
-        if (field.precision > 15)
-          return "(char*)  (q_.data+" + field.useName().toUpperCase() + "_POS), " + (field.precision + 3);
-        return "(double*)(q_.data+" + field.useName().toUpperCase() + "_POS)";
-      case Field.MONEY:
-        return "(char*)  (q_.data+" + field.useName().toUpperCase() + "_POS), 21";
-    }
-    return field.useName() + " <unsupported>";
-  }
-  /**
-   * Translates field type to cpp data member type
-   */
-  static String cppGet(Field field)
-  {
-    switch (field.type)
-    {
-      case Field.BOOLEAN:
-      case Field.BYTE:
-      case Field.SHORT:
-      case Field.INT:
-      case Field.SEQUENCE:
-      case Field.IDENTITY:
-      case Field.BIGSEQUENCE:
-      case Field.BIGIDENTITY:
-      case Field.LONG:
-        return padder(field.useName() + ",", 32) + " q_.data+" + field.useName().toUpperCase() + "_POS";
-      case Field.FLOAT:
-      case Field.DOUBLE:
-        if (field.precision > 15)
-          return padder(field.useName() + ",", 32) + " q_.data+" + field.useName().toUpperCase() + "_POS, " + (field.precision + 3);
-        return padder(field.useName() + ",", 32) + " q_.data+" + field.useName().toUpperCase() + "_POS";
-      case Field.MONEY:
-        return padder(field.useName() + ",", 32) + " q_.data+" + field.useName().toUpperCase() + "_POS, 21";
-      case Field.CHAR:
-      case Field.ANSICHAR:
-      case Field.TLOB:
-      case Field.XML:
-        return padder(field.useName() + ",", 32) + " q_.data+" + field.useName().toUpperCase() + "_POS, " + (field.length + 1);
-      case Field.USERSTAMP:
-        return padder(field.useName() + ",", 32) + " q_.data+" + field.useName().toUpperCase() + "_POS, 9";
-      case Field.BLOB:
-        return padder(field.useName() + ".len, " + field.useName() + ".data,", 32) +
-            " q_.data+" + field.useName().toUpperCase() + "_POS, sizeof(" + field.useName() + ")";
-      //case Field.BIGXML:
-      //  return field.useName() + ".setBigXML(" + field.useName().toUpperCase() + "_POS, " + field.length + ")";
-      case Field.DATE:
-        return padder("TJDate(" + field.useName() + "),", 32) + " q_.data+" + field.useName().toUpperCase() + "_POS";
-      case Field.TIME:
-        return padder("TJTime(" + field.useName() + "),", 32) + " q_.data+" + field.useName().toUpperCase() + "_POS";
-      case Field.DATETIME:
-      case Field.TIMESTAMP:
-      case Field.AUTOTIMESTAMP:
-        return padder("TJDateTime(" + field.useName() + "),", 32) + " q_.data+" + field.useName().toUpperCase() + "_POS";
-    }
-    return field.useName() + " <unsupported>";
-  }
-  static String cppCopy(Field field)
-  {
-    switch (field.type)
-    {
-      case Field.BOOLEAN:
-      case Field.BYTE:
-      case Field.SHORT:
-      case Field.INT:
-      case Field.LONG:
-      case Field.SEQUENCE:
-      case Field.IDENTITY:
-      case Field.BIGIDENTITY:
-      case Field.BIGSEQUENCE:
-        return field.useName() + " = a" + field.useName() + ";";
-      case Field.FLOAT:
-      case Field.DOUBLE:
-        if (field.precision > 15)
-          return "strncpy(" + field.useName() + ", a" + field.useName() + ", sizeof(" + field.useName() + ")-1);";
-        return field.useName() + " = a" + field.useName() + ";";
-      case Field.MONEY:
-        return "strncpy(" + field.useName() + ", a" + field.useName() + ", sizeof(" + field.useName() + ")-1);";
-      case Field.CHAR:
-      case Field.TLOB:
-      case Field.XML:
-      case Field.DATE:
-      case Field.TIME:
-      case Field.DATETIME:
-        return "strncpy(" + field.useName() + ", a" + field.useName() + ", sizeof(" + field.useName() + ")-1);";
-      case Field.ANSICHAR:
-        return "memcpy(" + field.useName() + ", a" + field.useName() + ", sizeof(" + field.useName() + "));";
-      case Field.BLOB:
-        return field.useName() + " = a" + field.useName() + ";";
-      case Field.USERSTAMP:
-      case Field.TIMESTAMP:
-        return "// " + field.useName() + " -- generated";
-      case Field.AUTOTIMESTAMP:
-        return "// " + field.useName() + " -- generated";
-    }
-    return field.useName() + " <unsupported>";
-  }
-  static String cppArrayCopy(Field field)
-  {
-    String size = field.useName().toUpperCase() + "_SIZE";
-    switch (field.type)
-    {
-      case Field.BOOLEAN:
-      case Field.BYTE:
-      case Field.SHORT:
-      case Field.INT:
-      case Field.LONG:
-      case Field.SEQUENCE:
-      //case Field.IDENTITY:
-      case Field.BIGSEQUENCE:
-        //case Field.BIGIDENTITY:
-        return field.useName() + "[i] = Recs[i]." + field.useName() + ";";
-      case Field.FLOAT:
-      case Field.DOUBLE:
-        if (field.precision > 15)
-          return "strncpy(&" + field.useName() + "[i*" + size + "], Recs[i]." + field.useName() + ", " + size + "-1);";
-        return field.useName() + "[i] = Recs[i]." + field.useName() + ";";
-      case Field.MONEY:
-        return "strncpy(&" + field.useName() + "[i*" + size + "], Recs[i]." + field.useName() + ", " + size + "-1);";
-      case Field.CHAR:
-      case Field.TLOB:
-      case Field.XML:
-        return "strncpy(&" + field.useName() + "[i*" + size + "], Recs[i]." + field.useName() + ", " + size + "-1);";
-      case Field.DATE:
-        return "q_.Date(" + field.useName() + "[i], Recs[i]." + field.useName() + ");";
-      case Field.TIME:
-        return "q_.Time(" + field.useName() + "[i], Recs[i]." + field.useName() + ");";
-      case Field.DATETIME:
-        return "q_.DateTime(" + field.useName() + "[i], Recs[i]." + field.useName() + ");";
-      case Field.ANSICHAR:
-        return "memcpy(&" + field.useName() + "[i*" + size + "], a" + field.useName() + ", " + size + ");";
-      case Field.BLOB:
-        return field.useName() + "[i] = Recs[i]." + field.useName() + ";";
-      case Field.USERSTAMP:
-        return field.useName() + " -- generated";
-      case Field.IDENTITY:
-        return field.useName() + " -- generated";
-      case Field.TIMESTAMP:
-        return "q_.TimeStamp(" + field.useName() + "[i], Recs[i]." + field.useName() + ");";
-      case Field.AUTOTIMESTAMP:
-        return "// " + field.useName() + " -- generated";
-    }
-    return field.useName() + " <unsupported>";
-  }
-  /**
-   * Translates field type to cpp data member type
-   */
-  static String cppParm(Field field)
-  {
-    switch (field.type)
-    {
-      case Field.BOOLEAN:
-      case Field.BYTE:
-      case Field.SHORT:
-        return "int16  a" + field.useName();
-      case Field.INT:
-      case Field.SEQUENCE:
-      case Field.IDENTITY:
-        return "int32   a" + field.useName();
-      case Field.LONG:
-      case Field.BIGSEQUENCE:
-      case Field.BIGIDENTITY:
-        return "int64  a" + field.useName();
-      case Field.CHAR:
-      case Field.TLOB:
-      case Field.XML:
-      case Field.ANSICHAR:
-        return "char*  a" + field.useName();
-      case Field.USERSTAMP:
-        return "char*  a" + field.useName();
-      case Field.DATE:
-        return "char*  a" + field.useName();
-      case Field.TIME:
-        return "char*  a" + field.useName();
-      case Field.DATETIME:
-      case Field.TIMESTAMP:
-      case Field.AUTOTIMESTAMP:
-        return "char*  a" + field.useName();
-      case Field.FLOAT:
-      case Field.DOUBLE:
-        if (field.precision > 15)
-          return "char*  a" + field.useName();
-        return "double a" + field.useName();
-      case Field.MONEY:
-        return "char*  a" + field.useName();
-    }
-    return field.useName() + " <unsupported>";
-  }
   static String fromXMLFormat(Field field)
   {
     String front = "";
-    if (isNull(field))
+    if (CommonCCode.isNull(field))
       front = "if (strlen(work.data) == 0) " + field.useName() + "IsNull = true; else ";
     switch (field.type)
     {
@@ -1941,7 +1277,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
   {
     String front = "XRec.append(\"  <" + field.useName() + ">\");";
     String back = "XRec.append(\"</" + field.useName() + ">\");";
-    if (isNull(field))
+    if (CommonCCode.isNull(field))
       front += "if (" + field.useName() + "IsNull == false) ";
     switch (field.type)
     {

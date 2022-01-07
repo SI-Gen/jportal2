@@ -6,9 +6,6 @@ import bbd.jportal2.ITemplateBasedPostProcessor;
 import bbd.jportal2.ProjectCompiler;
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -21,8 +18,6 @@ import java.util.Vector;
  * Unittest to test the FreeMarker template based generator
  */
 public class AllTemplateBasedPostProcessorsBasicTest extends TestTemplateBasedProcessorsBaseClass<ITemplateBasedPostProcessor> {
-    private static final Logger logger = LoggerFactory.getLogger(AllTemplateBasedPostProcessorsBasicTest.class);
-
     //private final String INPUT_DIRS = "src/test/resources/freemarker_input_dirs/";
 
     private final String OUTPUT_DIR = "target/test-all-generators-basic-test-out/";

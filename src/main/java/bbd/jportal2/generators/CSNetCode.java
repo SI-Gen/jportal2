@@ -83,16 +83,16 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
         if (flagsVector == null) {
             flagsVector = new Vector<Flag>();
             flagDefaults();
-            flagsVector.addElement(new Flag("mssql storedprocs", new Boolean(mSSqlStoredProcs), "Generate MSSql Stored Procedures"));
-            flagsVector.addElement(new Flag("use generics", new Boolean(useGenerics), "Generate C# 2.0 Generics"));
-            flagsVector.addElement(new Flag("use partials", new Boolean(usePartials), "Generate C# 2.0 Partials"));
-            flagsVector.addElement(new Flag("use yields", new Boolean(useYields), "Generate C# 2.0 Yields"));
-            flagsVector.addElement(new Flag("use separate", new Boolean(useSeparate), "Generate Separate Files"));
-            flagsVector.addElement(new Flag("no datatables", new Boolean(noDatatables), "Do not Generate Datatables"));
-            flagsVector.addElement(new Flag("use C#2.0", new Boolean(useCSharp2), "Generate for C#2.0"));
-            flagsVector.addElement(new Flag("use C#1.0", new Boolean(useCSharp1), "Generate for C#1.0"));
-            flagsVector.addElement(new Flag("use notify", new Boolean(useNotify), "Generate for INotifyPropertyChanged"));
-            flagsVector.addElement(new Flag("use func", new Boolean(useFunc), "Generate Functions"));
+            flagsVector.addElement(new Flag("mssql storedprocs", Boolean.valueOf(mSSqlStoredProcs), "Generate MSSql Stored Procedures"));
+            flagsVector.addElement(new Flag("use generics", Boolean.valueOf(useGenerics), "Generate C# 2.0 Generics"));
+            flagsVector.addElement(new Flag("use partials", Boolean.valueOf(usePartials), "Generate C# 2.0 Partials"));
+            flagsVector.addElement(new Flag("use yields", Boolean.valueOf(useYields), "Generate C# 2.0 Yields"));
+            flagsVector.addElement(new Flag("use separate", Boolean.valueOf(useSeparate), "Generate Separate Files"));
+            flagsVector.addElement(new Flag("no datatables", Boolean.valueOf(noDatatables), "Do not Generate Datatables"));
+            flagsVector.addElement(new Flag("use C#2.0", Boolean.valueOf(useCSharp2), "Generate for C#2.0"));
+            flagsVector.addElement(new Flag("use C#1.0", Boolean.valueOf(useCSharp1), "Generate for C#1.0"));
+            flagsVector.addElement(new Flag("use notify", Boolean.valueOf(useNotify), "Generate for INotifyPropertyChanged"));
+            flagsVector.addElement(new Flag("use func", Boolean.valueOf(useFunc), "Generate Functions"));
         }
         return flagsVector;
     }

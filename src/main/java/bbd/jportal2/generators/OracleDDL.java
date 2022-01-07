@@ -335,8 +335,8 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
         String comma = "  ( ";
         outData.println(mComma + "CONSTRAINT " + link.linkName + " FOREIGN KEY");
 
-        for (int i = 0; i < link.fields.size(); comma = "  , ", ++i) {
-            String name = link.fields.elementAt(i);
+        for (int i = 0; i < link.getFields().size(); comma = "  , ", ++i) {
+            String name = link.getFields().elementAt(i);
             outData.println(comma + name);
         }
 

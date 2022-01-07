@@ -3,8 +3,6 @@ package bbd.jportal2.test;
 import bbd.jportal2.*;
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -12,8 +10,6 @@ import org.slf4j.LoggerFactory;
  * Unittest to test the FreeMarker template based generator
  */
 public class AllTemplateBasedSIProcessorsBasicTest extends TestTemplateBasedProcessorsBaseClass<ITemplateBasedSIProcessor> {
-    private static final Logger logger = LoggerFactory.getLogger(AllTemplateBasedSIProcessorsBasicTest.class);
-
     private final String OUTPUT_DIR = "target/test-all-generators-basic-test-out/";
     private final String SI_PROCESSOR_TEMPLATE_DIR = ITemplateBasedSIProcessor.SI_PROCESSOR_TEMPLATE_LOCATION;
 

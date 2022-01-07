@@ -16,13 +16,14 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.security.PublicKey;
 
 /** Lines of SQL Code */
 public class Line implements Serializable
 {
   private static final long serialVersionUID = 1L;
   public String line;
+  public String placeHolder = "";
+  public Integer placeHolderInputPos = -1;
 
   public boolean isVar() {
     return isVar;
@@ -55,6 +56,13 @@ public class Line implements Serializable
   {
     line = line.replaceAll("\\:{1}\\w*", "?");
     line = line.replace("\"", "\\\"");
+    return line;
+  }
+  public Integer getPlaceHolderInputPos() {
+    return placeHolderInputPos;
+  }
+  public String getUnformattedLine()
+  {
     return line;
   }
 

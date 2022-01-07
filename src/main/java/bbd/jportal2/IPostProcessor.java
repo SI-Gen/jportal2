@@ -12,8 +12,5 @@
 
 package bbd.jportal2;
 
-import java.nio.file.Path;
-import java.util.Vector;
-
 public interface IPostProcessor extends IGenerator {
 }

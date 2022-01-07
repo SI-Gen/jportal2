@@ -13,9 +13,6 @@ package bbd.jportal2.generators;
 
 import bbd.jportal2.*;
 import bbd.jportal2.Enum;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.PrintWriter;
 import java.util.Vector;
 
@@ -23,9 +20,6 @@ import java.util.Vector;
  * @author vince
  */
 public class PythonTreeCode extends BaseGenerator implements IBuiltInSIProcessor {
-
-    private static final Logger logger = LoggerFactory.getLogger(PythonTreeCode.class);
-
     public PythonTreeCode() {
         super(PythonTreeCode.class);
     }
@@ -405,9 +399,9 @@ public class PythonTreeCode extends BaseGenerator implements IBuiltInSIProcessor
         outData.println("_ln = _class()");
         out(outData, string("_ln.name", link.name));
         out(outData, string("_ln.linkName", link.linkName));
-        if (link.fields.size() > 0) {
+        if (link.getFields().size() > 0) {
             outData.print("_ln.fields = ");
-            generateString(link.fields, outData);
+            generateString(link.getFields(), outData);
         } else
             outData.println("_ln.fields = ");
     }

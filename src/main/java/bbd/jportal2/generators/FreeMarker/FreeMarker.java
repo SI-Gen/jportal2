@@ -18,13 +18,11 @@ import freemarker.cache.FileTemplateLoader;
 import freemarker.cache.MultiTemplateLoader;
 import freemarker.cache.TemplateLoader;
 import freemarker.ext.beans.BeansWrapper;
-import freemarker.ext.beans.BeansWrapperBuilder;
 import freemarker.template.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.URI;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
@@ -55,7 +53,7 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
      * Generates code using a given FreeMarker template
      */
     //public static void generateTemplate(Database database, Map<String,String> parameters, File outputDirectory) throws IOException, TemplateException
-    public void generateTemplate(Database database, String templateBaseDir, String generatorName, File outputDirectory) throws Exception {
+    public void generateTemplate(Database database, Table table, String templateBaseDir, String generatorName, File outputDirectory) throws Exception {
 
         //Set the generator name correctly in the generatedOutputFiles member
         this.getGeneratedOutputFiles().setGeneratorName(generatorName);
@@ -68,10 +66,9 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 if (matcher.matches(file)) {
                     //Subtract source directory from found path
-                    Path pathToTemplateBaseDir = Paths.get(templateBaseDir);
                     Path relativePathToFTL = fullGeneratorPath.relativize(file);
                     try {
-                        GenerateSingleFTLFile(fullGeneratorPath.toString(), generatorName, relativePathToFTL.toString(), outputDirectory, database);
+                        GenerateSingleFTLFile(fullGeneratorPath.toString(), generatorName, relativePathToFTL.toString(), outputDirectory, database, table);
                     } catch (Exception te) {
                         throw new RuntimeException(te);
                     }
@@ -119,15 +116,12 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
         return cfg;
     }
 
-    private void GenerateSingleFTLFile(String templateBaseDir, String generatorName, String templateName, File outputDir, Database database) throws TemplateException, IOException, ClassNotFoundException {
-
+    private void GenerateSingleFTLFile(String templateBaseDir, String generatorName, String templateName, File outputDir, Database database, Table table) throws TemplateException, IOException, ClassNotFoundException {
         Configuration cfg = configure(new File(templateBaseDir));
-
-
         //Set up FreeMarker object maps
-        java.util.Map<String, Object> root = new HashMap<>();
+        Map<String, Object> root = new HashMap<>();
         root.put("database", database);
-        root.put("table", database.tables.get(0));
+        root.put("table", table);
 
         // Create the builder:
         //BeansWrapperBuilder builder = new BeansWrapperBuilder(Configuration.VERSION_2_3_23);
@@ -151,7 +145,6 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
         ((HashMap<String, TemplateModel>) root.get("STATICS")).put("Field", staticModels.get("bbd.jportal2.Field"));
         ((HashMap<String, TemplateModel>) root.get("STATICS")).put("PlaceHolder", staticModels.get("bbd.jportal2.PlaceHolder"));
 
-
         //Expose enums
         root.put("ENUMS", new HashMap<String, TemplateModel>());
         TemplateHashModel enumModels = wrapper.getEnumModels();
@@ -160,19 +153,12 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
         ((HashMap<String, TemplateModel>) root.get("ENUMS")).put("Field", enumModels.get("bbd.jportal2.Field"));
         ((HashMap<String, Object>) root.get("ENUMS")).put("PlaceHolder", enumModels.get("bbd.jportal2.PlaceHolder"));
 
-
         String destFileName;
         Path templateRelativePath = Paths.get(templateName);
         String strRelativePath = templateRelativePath.toString();
 
         HashSet<String> doneFiles = new HashSet<>();
-
-        if (database.tables.get(0).procs.isEmpty()) {
-            logger.warn("\t [{}]: Table: [{}] Has no procs defined. Skipping...", generatorName, database.tables.get(0).name);
-            return;
-        }
-
-        for (Proc proc : database.tables.get(0).procs)
+        for (Proc proc : table.procs)
         {
             root.put("proc", proc);
             if (strRelativePath.endsWith(".ftl"))
@@ -194,6 +180,9 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
             fullDestinationFile.getParent().toFile().mkdirs();
 
             Template temp = cfg.getTemplate(templateName);
+//            if (temp.lines.get(0).startsWith("<#--DATABASE-->")) {
+//                continue;
+//            }
             logger.info("\t [{}]: Generating [{}]", generatorName, fullDestinationFile.toString());
             doneFiles.add(destFileName);
             try (PrintWriter outData = openOutputFileForGeneration(generatorName, fullDestinationFile.toString())) {
@@ -202,25 +191,5 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
 
         }
 
-    }
-
-
-    //Find directories in a JAR on on the disk
-    private Path findTemplateDirectory(String templateBaseDir, String generatorName) throws Exception {
-
-        Path templateFilesLocation = Paths.get(templateBaseDir, generatorName);
-        if (Files.exists(templateFilesLocation))
-            return templateFilesLocation;
-
-        //On windows, we need to convert the windows path to URL format
-        URI uri = getClass().getResource(templateFilesLocation.toString().replace(File.separator, "/")).toURI();
-        Path template_generatorsPath;
-        if (uri.getScheme().equals("jar")) {
-            FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.<String, Object>emptyMap());
-            template_generatorsPath = fileSystem.getPath(templateFilesLocation.toString());
-        } else {
-            template_generatorsPath = Paths.get(uri);
-        }
-        return template_generatorsPath;
     }
 }

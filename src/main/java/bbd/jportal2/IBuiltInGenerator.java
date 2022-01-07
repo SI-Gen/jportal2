@@ -12,10 +12,6 @@
 
 package bbd.jportal2;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.util.Vector;
-
 public interface IBuiltInGenerator extends IGenerator {
     void generate(Database database, String output) throws Exception;
 }

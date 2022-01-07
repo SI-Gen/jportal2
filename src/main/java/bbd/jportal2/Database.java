@@ -14,8 +14,6 @@ package bbd.jportal2;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 import org.slf4j.Logger;
@@ -96,7 +94,7 @@ public class Database implements Serializable
   public Vector<String> imports;
 
 
-  public ArrayList<GeneratedFiles> generatedOutputFiles;
+    public ArrayList<GeneratedFiles> generatedOutputFiles;
 
   public Database()
   {

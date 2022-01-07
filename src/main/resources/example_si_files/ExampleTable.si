@@ -7,7 +7,7 @@ OUTPUT   ExampleTable
 SERVER   PostgeSQL95
 
 Table ExampleTable
-   ID                            BIGSEQUENCE
+   ID                            BIGIDENTITY
    IntField                      INT
    UniqueInt                     INT     // See below in KEY section for Unique constraint
    StandardString                CHAR(64)

@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
-import java.lang.*;
 import java.util.Vector;
 
 public class IdlCode extends BaseGenerator implements IBuiltInSIProcessor {

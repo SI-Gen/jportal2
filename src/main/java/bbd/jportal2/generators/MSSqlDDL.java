@@ -68,10 +68,10 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
       flagsVector = new Vector<>();
         flagsVector.addElement(new Flag("add timestamp", addTimestamp, "Add Timestamp - legacy getFlags"));
         flagsVector.addElement(new Flag("use insert trigger", useInsertTrigger, "Use Insert Trigger - legacy getFlags"));
-        flagsVector.addElement(new Flag("use update trigger", new Boolean(useUpdateTrigger), "Use Update Trigger - legacy getFlags"));
-        flagsVector.addElement(new Flag("internal stamps", new Boolean(internalStamps), "Use Internal Stamps - legacy getFlags"));
-        flagsVector.addElement(new Flag("generate 4.2", new Boolean(generate42), "Generate for SqlServer 4.2 - legacy getFlags"));
-      flagsVector.addElement(new Flag("auditTrigger", new Boolean(auditTrigger), "Generate Auditing Table and Triggers"));
+        flagsVector.addElement(new Flag("use update trigger", Boolean.valueOf(useUpdateTrigger), "Use Update Trigger - legacy getFlags"));
+        flagsVector.addElement(new Flag("internal stamps", Boolean.valueOf(internalStamps), "Use Internal Stamps - legacy getFlags"));
+        flagsVector.addElement(new Flag("generate 4.2", Boolean.valueOf(generate42), "Generate for SqlServer 4.2 - legacy getFlags"));
+      flagsVector.addElement(new Flag("auditTrigger", Boolean.valueOf(auditTrigger), "Generate Auditing Table and Triggers"));
     }
     return flagsVector;
   }
@@ -175,7 +175,7 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
     for (int i = 0; i < table.fields.size(); i++)
     {
       Field field = (Field) table.fields.elementAt(i);
-      outData.println(", " + varType(field, true, false) + " NULL");
+      outData.println(", " + varType(field, true) + " NULL");
     }
     outData.println(")");
     outData.println("GO");
@@ -238,7 +238,7 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
     for (int i = 0; i < table.fields.size(); i++, comma = ", ")
     {
       Field field = (Field) table.fields.elementAt(i);
-      outData.print(comma + varType(field, false, table.hasSequenceReturning));
+      outData.print(comma + varType(field, false));
       if (field.defaultValue.length() > 0)
       {
         int [] b = new int[] {4, 5, 6, 17, 18, 21, 23};
@@ -482,25 +482,25 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
   {
     String comma = "    ";
     String temp = "";
-    for (int i = 0; i < link.fields.size(); i++)
+    for (int i = 0; i < link.getFields().size(); i++)
     {
-      String name = (String) link.fields.elementAt(i);
+      String name = (String) link.getFields().elementAt(i);
       temp += "_" + name;
     }
     outData.println(", CONSTRAINT FK_" + table + "_" + link.useName() + temp + " FOREIGN KEY (");
-    for (int i = 0; i < link.fields.size(); i++, comma = "   ,")
+    for (int i = 0; i < link.getFields().size(); i++, comma = "   ,")
     {
-      String name = (String) link.fields.elementAt(i);
+      String name = (String) link.getFields().elementAt(i);
       outData.println(comma + name);
     }
     outData.println("  )");
-    if (link.linkFields.size() > 0)
+    if (link.getLinkFields().size() > 0)
     {
       outData.println("  REFERENCES " + link.name + "(");
       comma = "";
-      for (int i = 0; i < link.linkFields.size(); i++, comma = "   ,")
+      for (int i = 0; i < link.getLinkFields().size(); i++, comma = "   ,")
       {
-        String name = (String) link.linkFields.elementAt(i);
+        String name = (String) link.getLinkFields().elementAt(i);
         outData.println(comma + name);
       }
       outData.println("  )");
@@ -517,9 +517,9 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
     {
       outData.println("    ON UPDATE CASCADE");
     }
-    for (int i = 0; i < link.options.size(); i++)
+    for (int i = 0; i < link.getOptions().size(); i++)
     {
-      String option = (String) link.options.elementAt(i);
+      String option = (String) link.getOptions().elementAt(i);
       outData.println("    " + option);
     }
   }
@@ -529,9 +529,9 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
   void generateSpLink(Link link, PrintWriter outData, String table)
   {
     outData.println("sp_foreignkey " + table + ", " + link.name);
-    for (int i = 0; i < link.fields.size(); i++)
+    for (int i = 0; i < link.getFields().size(); i++)
     {
-      String name = (String) link.fields.elementAt(i);
+      String name = (String) link.getFields().elementAt(i);
       outData.println(", " + name);
     }
     outData.println("GO");
@@ -609,7 +609,7 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
   /**
    * Translates field type to SQLServer SQL column types
    */
-  String varType(Field field, boolean typeOnly, boolean hasSequenceReturning)
+  String varType(Field field, boolean typeOnly)
   {
     switch (field.type)
     {
@@ -624,23 +624,13 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
     case Field.LONG:
       return field.name + " BIGINT";
     case Field.SEQUENCE:
-      if (hasSequenceReturning)
-        return field.name + " INTEGER IDENTITY(1,1)";
-      return field.name + " INTEGER";
+      return field.name + " INTEGER IDENTITY(1,1)";
     case Field.BIGSEQUENCE:
-      if (hasSequenceReturning)
-        return field.name + " BIGINT IDENTITY(1,1)";
-      return field.name + " BIGINT";
+      return field.name + " BIGINT IDENTITY(1,1)";
     case Field.IDENTITY:
-      if (typeOnly == true)
-        return field.name + " INTEGER";
-      else
-        return field.name + " INTEGER IDENTITY(1,1)";
+      return field.name + " INTEGER IDENTITY(1,1)";
     case Field.BIGIDENTITY:
-      if (typeOnly == true)
-        return field.name + " BIGINT";
-      else
-        return field.name + " BIGINT IDENTITY(1,1)";
+      return field.name + " BIGINT IDENTITY(1,1)";
     case Field.CHAR:
       if (field.length > 8000)
       {
@@ -676,6 +666,6 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
     case Field.UID:
       return field.name + " UNIQUEIDENTIFIER";
     }
-    throw new Error(String.format("Undefined SI type for field: \"%s\"", field.name));
+    return "unknown";
   }
 }
