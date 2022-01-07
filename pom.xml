@@ -145,9 +145,9 @@
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.reflections/reflections -->
         <dependency>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections</artifactId>
-            <version>0.9.12</version>
+            <groupId>net.sf.extcos</groupId>
+            <artifactId>extcos</artifactId>
+            <version>0.4b</version>
         </dependency>
 
         <dependency>
