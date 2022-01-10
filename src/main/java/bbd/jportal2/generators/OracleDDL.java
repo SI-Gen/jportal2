@@ -477,11 +477,11 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
                 return "VARCHAR2(8)";
             case 21:
                 return "CHAR(" + field.length + ")";
+            case 24:
+                return "NUMBER(19)";
             case 2:
             case 8:
             case 16:
-            case 24:
-                return "NUMBER(19)";
             default:
                 return "unknown";
         }
