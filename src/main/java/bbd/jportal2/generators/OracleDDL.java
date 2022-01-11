@@ -480,6 +480,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
             case 24:
                 return "NUMBER(19)";
             case 2:
+                return "NUMBER(1)";
             case 8:
             case 16:
             default:
