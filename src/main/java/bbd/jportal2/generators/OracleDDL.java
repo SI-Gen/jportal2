@@ -440,7 +440,11 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
             case 3:
                 return "NUMBER(3)";
             case 4:
-                return "VARCHAR2(" + field.length + ")";
+                if (field.length > 2000) {
+                    return "NCLOB";
+                } else {
+                    return "VARCHAR2(" + field.length + ")";
+                }
             case 5:
                 return "DATE";
             case 6:
