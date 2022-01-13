@@ -152,10 +152,18 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
       try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + fileName + ".sql")) {
           outputFile.println("USE " + database.name);
           outputFile.println();
-          for (int i = 0; i < database.tables.size(); i++)
-              generateTable((Table) database.tables.elementAt(i), outputFile);
-          for (int i = 0; i < database.views.size(); i++)
-              generateView((View) database.views.elementAt(i), outputFile, "");
+          for (int i = 0; i < database.tables.size(); i++) {
+            Table table = database.tables.elementAt(i);
+            if (table.name.equals(database.output)) {
+              generateTable(table, outputFile);
+            }
+          }
+          for (int i = 0; i < database.views.size(); i++) {
+            View view = database.views.elementAt(i);
+            if (view.name.equals(database.output)) {
+              generateView(view, outputFile, "");
+            }
+          }
           outputFile.flush();
       }
     }

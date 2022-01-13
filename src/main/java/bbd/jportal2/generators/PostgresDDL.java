@@ -39,8 +39,12 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
         logger.info("DDL: {}", fileName);
 
         try (PrintWriter outData = openOutputFileForGeneration("sql", fileName)) {
-            for (int i = 0; i < database.tables.size(); i++)
-                generateTable(database, database.tables.elementAt(i), outData);
+            for (int i = 0; i < database.tables.size(); i++) {
+                Table table = database.tables.elementAt(i);
+                if (table.name.equals(database.output)) {
+                    generateTable(database, table, outData);
+                }
+            }
             outData.flush();
         } catch (IOException e1) {
             logger.error("Generate PosgreSQL IO Error", e1);

@@ -51,16 +51,24 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
             hasData = false;
 
             try (PrintWriter outData = this.openOutputFileForGeneration("sql", output + fileName + ".sql")) {
-                for (int i = 0; i < database.tables.size(); i++)
-                    generate((Table) database.tables.elementAt(i), outData);
+                for (int i = 0; i < database.tables.size(); i++) {
+                    Table table = database.tables.elementAt(i);
+                    if (table.name.equals(database.output)) {
+                        generate(table, outData);
+                    }
+                }
                 outData.flush();
             }
             if (hasData == true) {
 
 
                 try (PrintWriter outData = this.openOutputFileForGeneration("_data.sql", output + fileName + "_data_.sql")) {
-                    for (int i = 0; i < database.tables.size(); i++)
-                        generateData((Table) database.tables.elementAt(i), outData);
+                    for (int i = 0; i < database.tables.size(); i++) {
+                        Table table = database.tables.elementAt(i);
+                        if (table.name.equals(database.output)) {
+                            generateData(table, outData);
+                        }
+                    }
                     outData.flush();
                 }
             }
