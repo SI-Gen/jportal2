@@ -55,15 +55,24 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
                 int i;
                 for (i = 0; i < database.tables.size(); ++i) {
-                    generate(database.tables.elementAt(i), outData);
+                    Table table = database.tables.elementAt(i);
+                    if (table.name.equals(database.output)) {
+                        generate(database.tables.elementAt(i), outData);
+                    }
                 }
 
                 for (i = 0; i < database.views.size(); ++i) {
-                    generate(database.views.elementAt(i), outData, "", tableOwner);
+                    View view = database.views.elementAt(i);
+                    if (view.name.equals(database.output)) {
+                        generate(database.views.elementAt(i), outData, "", tableOwner);
+                    }
                 }
 
                 for (i = 0; i < database.sequences.size(); ++i) {
-                    generate(database.sequences.elementAt(i), outData, tableOwner);
+                    Sequence sequence = database.sequences.elementAt(i);
+                    if (sequence.name.equals(database.output)) {
+                        generate(database.sequences.elementAt(i), outData, tableOwner);
+                    }
                 }
 
                 outData.flush();

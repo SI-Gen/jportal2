@@ -119,7 +119,7 @@ public class JPortal
       }
       else
         JPortal.ReInit(reader);
-      database = null;
+      // database = null;
       table = null;
       entry = null;
       field = null;
@@ -600,7 +600,7 @@ void jInput() :
 {
   <DATABASE> s = jIdent()
   {
-    database = new Database();
+    // database = new Database();
     database.name = s;
     database.userid = "";
     database.password = "";
