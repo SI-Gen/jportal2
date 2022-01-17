@@ -31,12 +31,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Get Previous tag
-      - name: 'Get Previous tag'
-        id: previoustag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+      - name: Bump version and push tag
+        id: newtag
+        uses: anothrNick/github-tag-action@1.36.0
         env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DEFAULT_BUMP: patch
 
       - name: Build Changelog
         id: github_release
@@ -47,7 +48,7 @@ jobs:
       # Changes Maven Version
       - name: 'Change Maven Version'
         run: |
-          mvn versions:set -DnewVersion=${{ steps.previoustag.outputs.tag }}
+          mvn versions:set -DnewVersion=${{ steps.newtag.outputs.new_tag }}
 
       # Generate Jar File
       - name: 'Generate Jar'
@@ -58,9 +59,9 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/jportal2-alpha-${{ steps.previoustag.outputs.tag }}.jar
-          asset_name: jportal2-alpha-${{ steps.previoustag.outputs.tag }}.jar
-          tag: alpha-${{ steps.previoustag.outputs.tag }}
+          file: target/jportal2-alpha-${{ steps.newtag.outputs.new_tag }}.jar
+          asset_name: jportal2-alpha-${{ steps.newtag.outputs.new_tag }}.jar
+          tag: alpha-${{ steps.newtag.outputs.new_tag }}
           overwrite: true
           body: '${{github.event.inputs.release_description}}<br/><br/><b>Change Log<b><br/>${{steps.github_release.outputs.changelog}}'
 
