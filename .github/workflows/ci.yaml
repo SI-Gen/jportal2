@@ -54,7 +54,7 @@ jobs:
       # Changes Maven Version
       - name: 'Change Maven Version'
         run: |
-          mvn versions:set -DnewVersion=${{ steps.newtag.outputs.new_tag }}
+          mvn versions:set -DnewVersion=${{ steps.bump-semver.outputs.new_version }}
 
       # Generate Jar File
       - name: 'Generate Jar'
@@ -65,9 +65,9 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/jportal2-${{ steps.newtag.outputs.new_tag }}.jar
-          asset_name: jportal2-${{ steps.newtag.outputs.new_tag }}.jar
-          tag: ${{ steps.newtag.outputs.new_tag }}
+          file: target/jportal2-${{ steps.bump-semver.outputs.new_version }}.jar
+          asset_name: jportal2-${{ steps.bump-semver.outputs.new_version }}.jar
+          tag: ${{ steps.bump-semver.outputs.new_version }}
           overwrite: true
           body: '${{github.event.inputs.release_description}}<br/><br/><b>Change Log<b><br/>${{steps.github_release.outputs.changelog}}'
 
