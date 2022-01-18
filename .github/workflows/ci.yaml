@@ -32,13 +32,19 @@ jobs:
           fetch-depth: 0
 
       - name: Bump and Tag Version
+        id: version_bump
         uses: jefflinse/pr-semver-bump@v1
         with:
           mode: bump
-          patch-label: 'JPortal2-'
-          require-release-notes: false
-          with-v: false
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          major-label: major release
+          minor-label: minor release
+          patch-label: patch release
+          require-release-notes: false
+          release-notes-prefix: ''
+          release-notes-suffix: ''
+          with-v: false
+
 
       - name: Build Changelog
         id: github_release
@@ -49,7 +55,7 @@ jobs:
       # Changes Maven Version
       - name: 'Change Maven Version'
         run: |
-          mvn versions:set -DnewVersion=${{ steps.bump-semver.outputs.new_version }}
+          mvn versions:set -DnewVersion=${{ steps.version_bump.outputs.version }}
 
       # Generate Jar File
       - name: 'Generate Jar'
@@ -60,9 +66,9 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/jportal2-${{ steps.bump-semver.outputs.new_version }}.jar
-          asset_name: jportal2-${{ steps.bump-semver.outputs.new_version }}.jar
-          tag: ${{ steps.bump-semver.outputs.new_version }}
+          file: target/jportal2-${{ steps.version_bump.outputs.version }}.jar
+          asset_name: jportal2-${{ steps.version_bump.outputs.version }}.jar
+          tag: ${{ steps.version_bump.outputs.version }}
           overwrite: true
           body: 'JPortal2 - Pre-Release<br/><br/><b>Change Log<b><br/>${{steps.github_release.outputs.changelog}}'
 
