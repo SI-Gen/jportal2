@@ -45,8 +45,8 @@ jobs:
           git-release-bot-name: 'bbdsoftware'
           git-release-bot-email: 'mavencentral@bbd.co.za'
 
-#          maven-args: '-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Dmaven.deploy.skip=true -Prelease-oss-maven-central,gpg'
-          maven-args: '-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central,gpg'
+          maven-args: '-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Dmaven.deploy.skip=true -Prelease-oss-maven-central,gpg'
+#          maven-args: '-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central,gpg'
           version-major: false
           version-minor: false
 
