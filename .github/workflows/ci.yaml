@@ -38,7 +38,7 @@ jobs:
           JAVA_HOME: /usr/lib/jvm/java-11-openjdk/
         with:
           access-token: ${{ secrets.GITHUB_TOKEN }}
-          release-branch-name: 'feaeture/pre_release_workflow' #TODO: will change to develop on merge to master
+          release-branch-name: 'pre_release_workflow'
           git-release-bot-name: 'bbdsoftware'
           git-release-bot-email: 'mavencentral@bbd.co.za'
 
