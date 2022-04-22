@@ -16,14 +16,12 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.security.PublicKey;
 
 /** Lines of SQL Code */
 public class Line implements Serializable
 {
   private static final long serialVersionUID = 1L;
   public String line;
-
   public boolean isVar() {
     return isVar;
   }
@@ -58,8 +56,14 @@ public class Line implements Serializable
     return line;
   }
 
-    public String toString() {
+  public String getUnformattedLine()
+  {
+    return line;
+  }
+
+  public String toString() {
     return getlineval();
   }
+
 }
 

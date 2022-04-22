@@ -476,6 +476,7 @@ TOKEN[IGNORE_CASE] :          // Keywords
 | <SELECTONE:    "selectone">
 | <SEQUENCE:     "sequence">
 | <SERVER:       "server">
+| <SET:          "set">
 | <SHORT:        "short">
 | <SINGLE:       "single">
 | <SQL:          "sql">
@@ -1784,6 +1785,25 @@ void jStdProc() :
           table.hasStdProcs = true;
         }
       }
+  | <UPDATEFOR> (jProcColumn())+
+      {
+        proc.isUpdate = true;
+        table.buildUpdateFor(proc);
+        table.hasStdProcs = true;
+      }
+  | <UPDATEBY> ( (jProcUpdateByColumn())+ (<SET> (jProcColumn())+)? ) (<AS> s = jIdent()
+        {
+          //DGR: I think long term it would be better to follow the convention that when a user overrides (aliases)
+          //     a PROC, we store the original name in proc.name and the alias in proc.username. But the original SelectBy
+          //     just overrides the proc.name, so I am sticking to the convention.
+          //proc.username = s;
+          proc.name = s;
+        })?
+      {
+        proc.isUpdate = true;
+        table.buildUpdateBy(proc);
+        table.hasStdProcs = true;
+      }
   | <BULKINSERT> (jRowCount())?
     {
       table.hasSequenceReturning = table.hasSequence;
@@ -1844,7 +1864,11 @@ void jStdProc() :
       table.buildDeleteAll(proc);
       table.hasStdProcs = true;
     }
-
+ | <DELETEBY> ( jProcColumn())+
+      {
+        table.buildDeleteBy(proc);
+        table.hasStdProcs = true;
+      }
   | <SELECTONE>
     ((<FOR>)? (<UPDATE> {forUpdate = true;} | <READONLY> {forReadOnly = true;}))?
     {
@@ -1865,7 +1889,8 @@ void jStdProc() :
       (<AS> s = jIdent()
       {
         //DGR: I think long term it would be better to follow the convention that when a user overrides (aliases)
-        //     a PROC, we store the original name in proc.name and the alias in proc.username. But the original SelectBy
+        //     a PROC, we store the original name in proc.name and the alias in proc.username. But the original
+
         //     just overrides the proc.name, so I am sticking to the convention.
         //proc.username = s;
         proc.name = s;
@@ -2131,23 +2156,6 @@ void jNewProc() :
       )?
       {
         table.buildSelectBy(proc, forUpdate, forReadOnly, inOrder, descending);
-        table.hasStdProcs = true;
-      }
-  | <DELETEBY> ( jProcColumn())+
-      {
-        table.buildDeleteBy(proc);
-        table.hasStdProcs = true;
-      }
-  | <UPDATEFOR> (jProcColumn())+
-      {
-        proc.isUpdate = true;
-        table.buildUpdateFor(proc);
-        table.hasStdProcs = true;
-      }
-  | <UPDATEBY> ( (jProcUpdateByColumn())+ (<FOR> (jProcColumn())+)? )
-      {
-        proc.isUpdate = true;
-        table.buildUpdateBy(proc);
         table.hasStdProcs = true;
       }
   )
