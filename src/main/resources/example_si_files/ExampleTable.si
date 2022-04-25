@@ -66,8 +66,10 @@ SQLCODE
     WHERE UniqueInt = :UniqueInt
 ENDCODE
 
-
-PROC SelectBy UniqueInt For Update AS SelectByUniqueInt2
+//Doesn't work. Why?
+PROC SelectBy UniqueInt FOR UPDATE AS XXSelectByUniqueInt
+OUTPUT
+ID      =
 
 
 

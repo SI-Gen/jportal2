@@ -1762,6 +1762,7 @@ void jStdProc() :
     {
       table.hasSequenceReturning = table.hasSequence;
       proc.name = "Insert";
+      proc.isBuiltIn = true;
       table.buildInsert(proc);
       table.hasStdProcs = true;
       if (table.hasIdentity)
@@ -1780,6 +1781,7 @@ void jStdProc() :
         else
         {
           proc.name = "Update";
+          proc.isBuiltIn = true;
           proc.isUpdate = true;
           table.buildUpdate(proc);
           table.hasStdProcs = true;
@@ -1798,6 +1800,7 @@ void jStdProc() :
           //     just overrides the proc.name, so I am sticking to the convention.
           //proc.username = s;
           proc.name = s;
+          proc.isBuiltIn = true;
         })?
       {
         proc.isUpdate = true;
@@ -1808,6 +1811,7 @@ void jStdProc() :
     {
       table.hasSequenceReturning = table.hasSequence;
       proc.name = "BulkInsert";
+      proc.isBuiltIn = true;
       table.buildBulkInsert(proc);
       table.hasStdProcs = true;
       if (table.hasIdentity)
@@ -1832,6 +1836,7 @@ void jStdProc() :
       else
       {
         proc.name = "BulkUpdate";
+        proc.isBuiltIn = true;
         proc.isUpdate = true;
         table.buildBulkUpdate(proc);
         table.hasStdProcs = true;
@@ -1854,6 +1859,7 @@ void jStdProc() :
       else
       {
         proc.name = "DeleteOne";
+        proc.isBuiltIn = true;
         table.buildDeleteOne(proc);
         table.hasStdProcs = true;
       }
@@ -1861,11 +1867,13 @@ void jStdProc() :
   | <DELETEALL>
     {
       proc.name = "DeleteAll";
+      proc.isBuiltIn = true;
       table.buildDeleteAll(proc);
       table.hasStdProcs = true;
     }
  | <DELETEBY> ( jProcColumn())+
       {
+        proc.isBuiltIn = true;
         table.buildDeleteBy(proc);
         table.hasStdProcs = true;
       }
@@ -1877,6 +1885,7 @@ void jStdProc() :
       else
       {
         proc.name = "SelectOne";
+        proc.isBuiltIn = true;
         if (forUpdate) proc.name = proc.name+"Upd";
         else if (forReadOnly) proc.name = proc.name+"ReadOnly";
         table.buildSelectOne(proc, forUpdate, forReadOnly);
@@ -1907,6 +1916,7 @@ void jStdProc() :
             proc.name += fname;
           }
         }
+        proc.isBuiltIn = true;
         proc.isSingle = true;
         table.buildSelectBy(proc, forUpdate, forReadOnly, inOrder, descending);
         table.hasStdProcs = true;
@@ -1921,6 +1931,7 @@ void jStdProc() :
         //     just overrides the proc.name, so I am sticking to the convention.
         //proc.username = s;
         proc.name = s;
+        proc.isBuiltIn = true;
       })?
       ( <OUTPUT> (jOutputType())?
         ( jField()
@@ -1977,6 +1988,7 @@ void jStdProc() :
       else
       {
         proc.name = "SelectAll";
+        proc.isBuiltIn = true;
         if (inOrder) proc.name = proc.name+"Sorted";
         if (forUpdate) proc.name = proc.name+"Upd";
         else if (forReadOnly) proc.name = proc.name+"ReadOnly";
@@ -1987,6 +1999,7 @@ void jStdProc() :
   | <COUNT>
     {
       proc.name = "Count";
+      proc.isBuiltIn = true;
       table.buildCount(proc);
     }
   | <EXISTS>
@@ -1996,6 +2009,7 @@ void jStdProc() :
       else
       {
         proc.name = "Exists";
+        proc.isBuiltIn = true;
         table.buildExists(proc);
       }
     }
@@ -2008,6 +2022,7 @@ void jStdProc() :
       else
       {
         proc.name = "Merge";
+        proc.isBuiltIn = true;
         table.buildMerge(proc);
       }
     }
@@ -2254,6 +2269,7 @@ void jUserProc() :
   s = jIdent()
   {
     proc.name = s;
+    proc.isBuiltIn = false;
     Line l1 = new Line(Misc.generateProcNameComment(proc));
     proc.lines.addElement(l1);
   }

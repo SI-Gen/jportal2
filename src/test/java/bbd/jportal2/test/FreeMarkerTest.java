@@ -124,8 +124,22 @@ public class FreeMarkerTest {
         //Test output - dir1/file1.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "ExampleTable/file1.txt"));
         assertEquals("Database Name: jportal_example_db" ,lines.get(0));
-        assertEquals("Field Name: ID"           ,lines.get(1));
-        assertEquals("Static: 1"                ,lines.get(2));
+        assertEquals("Inputs:",lines.get(1));
+        assertEquals("ID: int = field(default=None)",lines.get(2));
+        assertEquals("",lines.get(3));
+        assertEquals("Outputs:",lines.get(4));
+        assertEquals("IntField: int = field(default=None)",lines.get(5));
+        assertEquals("UniqueInt: int = field(default=None)",lines.get(6));
+        assertEquals("StandardString: str = field(default=None)",lines.get(7));
+        assertEquals("ByteField: int = field(default=None)",lines.get(8));
+        assertEquals("IntEnum: int = field(default=None)",lines.get(9));
+        assertEquals("DateTimeColumn: datetime = field(default=None)",lines.get(10));
+        assertEquals("DateTimeNullable: Optional[datetime] = field(default=None)",lines.get(11));
+        assertEquals("DateColumn: datetime = field(default=None)",lines.get(12));
+        assertEquals("DateNullable: Optional[datetime] = field(default=None)",lines.get(13));
+        assertEquals("Blobby: Any = field(default=None)",lines.get(14));
+        assertEquals("TMStamp: datetime = field(default=None)",lines.get(15));
+
     }
 
     @Test
@@ -143,13 +157,13 @@ public class FreeMarkerTest {
         //Test output - SelectForUpdateByUniqueInt.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "SelectForUpdateByUniqueInt.txt"));
         assertEquals("Database Name: jportal_example_db" ,lines.get(0));
-        assertEquals("Field Name: SelectForUpdateByUniqueInt"           ,lines.get(1));
+        assertEquals("Proc Name: SelectForUpdateByUniqueInt"           ,lines.get(1));
         assertEquals("Static: 1"                ,lines.get(2));
 
         //Test output - GetByUniqueInt.txt
         List<String> lines1 = Files.readAllLines(Paths.get(outputDirectory.toString(), "GetByUniqueInt.txt"));
         assertEquals("Database Name: jportal_example_db" ,lines1.get(0));
-        assertEquals("Field Name: GetByUniqueInt"           ,lines1.get(1));
+        assertEquals("Proc Name: GetByUniqueInt"           ,lines1.get(1));
         assertEquals("Static: 1"                ,lines1.get(2));
 
     }
@@ -177,6 +191,23 @@ public class FreeMarkerTest {
     @Test
     public void testFreeMarkerDumpDB() throws Exception {
         String nameOfTest = "testFreeMarkerDumpDB";
+        Path templateDir = Paths.get(INPUT_DIRS);
+        Path siFile = Paths.get(SI_DIR, "ExampleTable.si");
+        Path outputDir = Paths.get(OUTPUT_DIR, nameOfTest);
+
+        String nubDir = "";
+        Database db = JPortal.run(siFile.toString(), nubDir);
+        File outputDirectory = new File(outputDir.toString());
+        (new FreeMarker()).generateTemplate(db, TEMPLATE_DIR, nameOfTest, outputDirectory);
+
+        //Test output
+        //List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "single_file"));
+        //assertEquals("Hello World jportal_example_db",lines.get(0));
+    }
+
+    @Test
+    public void testFreeMarkerDumpProcs() throws Exception {
+        String nameOfTest = "testFreeMarkerDumpProcs";
         Path templateDir = Paths.get(INPUT_DIRS);
         Path siFile = Paths.get(SI_DIR, "ExampleTable.si");
         Path outputDir = Paths.get(OUTPUT_DIR, nameOfTest);

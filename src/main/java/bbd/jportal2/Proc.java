@@ -167,6 +167,11 @@ public class Proc implements Serializable
         return hasUpdates;
     }
 
+    public boolean isBuiltIn() {return isBuiltIn;}
+
+
+  /** Is this one of the built-in Procs i.e Insert, SelectOne, Delete, SelectAll etc */
+  public boolean isBuiltIn;
   /** name of procedure */
   public String  name;
   /** name of procedure */
@@ -275,6 +280,7 @@ public class Proc implements Serializable
     hasReturning    = false;
     hasUpdates      = false;
     start           = 0;
+    isBuiltIn       = false;
   }
   public void reader(DataInputStream ids) throws IOException
   {
