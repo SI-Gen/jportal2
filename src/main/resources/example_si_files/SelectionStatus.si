@@ -18,7 +18,7 @@ PROC Insert
 PROC SelectOne
 
 Proc SelectOneBy Description AS AAA
-Proc SelectBy Description UsrID AFieldNotInTable
+Proc SelectBy Description UsrID
 OUTPUT
 	ID 			=
 	Description =

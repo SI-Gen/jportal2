@@ -103,6 +103,11 @@ public class JPortal
   {
     inDir = inNub;
   }
+
+  public static void clearDatabase() {
+      database = null;
+  }
+
   public static Database run(String inFile, Reader reader)
   {
     return run(inFile, "", reader);
@@ -119,7 +124,6 @@ public class JPortal
       }
       else
         JPortal.ReInit(reader);
-      database = null;
       table = null;
       entry = null;
       field = null;
@@ -136,6 +140,9 @@ public class JPortal
       line = null;
       isLiteral = false;
       literal = "";
+      if (database == null) {
+        database = new Database();
+      }
       JPortal.jInput();
       return database;
     }
@@ -601,7 +608,6 @@ void jInput() :
 {
   <DATABASE> s = jIdent()
   {
-    database = new Database();
     database.name = s;
     database.userid = "";
     database.password = "";
