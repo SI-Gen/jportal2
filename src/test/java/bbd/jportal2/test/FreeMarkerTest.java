@@ -159,13 +159,13 @@ public class FreeMarkerTest {
         //Test output - SelectForUpdateByUniqueInt.txt
         List<String> lines = Files.readAllLines(Paths.get(outputDirectory.toString(), "SelectForUpdateByUniqueInt.txt"));
         assertEquals("Database Name: jportal_example_db"     ,lines.get(0));
-        assertEquals("Field Name: SelectForUpdateByUniqueInt",lines.get(1));
+        assertEquals("Proc Name: SelectForUpdateByUniqueInt",lines.get(1));
         assertEquals("Static: 1"                             ,lines.get(2));
 
         //Test output - GetByUniqueInt.txt
         List<String> lines1 = Files.readAllLines(Paths.get(outputDirectory.toString(), "GetByUniqueInt.txt"));
         assertEquals("Database Name: jportal_example_db" ,lines1.get(0));
-        assertEquals("Field Name: GetByUniqueInt"        ,lines1.get(1));
+        assertEquals("Proc Name: GetByUniqueInt"        ,lines1.get(1));
         assertEquals("Static: 1"                         ,lines1.get(2));
         JPortal.clearDatabase();
 
