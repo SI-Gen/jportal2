@@ -637,7 +637,7 @@ public class Table implements Serializable {
         proc.lines.addElement(new Line("        ("));
         for (i = 0; i < fields.size(); i++) {
             Field field = fields.elementAt(i);
-            proc.lines.addElement(new Line("        " + comma + "cast(? as " + varType(field) + ")"));
+            proc.lines.addElement(new Line("        " + comma + "cast("+field.useLiteral()+" as " + varType(field) + ")"));
             proc.inputs.addElement(field);
             comma = ", ";
         }
@@ -756,7 +756,7 @@ public class Table implements Serializable {
                     proc.lines.addElement(new Line("_ret.sequence", true));
                 }
             } else {
-                proc.lines.addElement(new Line(line + "?" + comma));
+                proc.lines.addElement(new Line(line + ":" + field.useLiteral() + comma));
             }
         }
         proc.lines.addElement(new Line(" )"));
@@ -812,7 +812,7 @@ public class Table implements Serializable {
             else
                 line = ", ";
             j++;
-            proc.lines.addElement(new Line(line + field.useLiteral() + " = ?"));
+            proc.lines.addElement(new Line(line + field.useLiteral() + " = :" + field.useLiteral()));
 
         }
         for (i = 0, j = 0; i < fields.size(); i++) {
@@ -824,7 +824,7 @@ public class Table implements Serializable {
                 else
                     line = "   and ";
                 j++;
-                line = line + field.useLiteral() + " = ?";
+                line = line + field.useLiteral() + " = :" + field.useLiteral();
                 proc.lines.addElement(new Line(line));
             }
         }
@@ -857,7 +857,7 @@ public class Table implements Serializable {
                     else
                         line = ", ";
                     j++;
-                    proc.lines.addElement(new Line(line + field.useLiteral() + " = ?"));
+                    proc.lines.addElement(new Line(line + field.useLiteral() + " = :" + field.useLiteral()));
                 }
             }
         }
@@ -871,7 +871,7 @@ public class Table implements Serializable {
                 else
                     line = "   and ";
                 j++;
-                line = line + field.useLiteral() + " = ?";
+                line = line + field.useLiteral() + " = :" + field.useLiteral();
                 proc.lines.addElement(new Line(line));
             }
         }
@@ -905,7 +905,7 @@ public class Table implements Serializable {
                     else
                         line = ", ";
                     j++;
-                    proc.lines.addElement(new Line(line + field.useLiteral() + " = ?"));
+                    proc.lines.addElement(new Line(line + field.useLiteral() + " = :" + field.useLiteral()));
 
                 }
             }
@@ -921,7 +921,7 @@ public class Table implements Serializable {
                         else
                             line = ", ";
                         j++;
-                        proc.lines.addElement(new Line(line + field.useLiteral() + " = ?"));
+                        proc.lines.addElement(new Line(line + field.useLiteral() + " = :" + field.useLiteral()));
                     }
                 }
             }
@@ -938,7 +938,7 @@ public class Table implements Serializable {
                     else
                         line = "   and ";
                     j++;
-                    line = line + field.useLiteral() + " = ?";
+                    line = line + field.useLiteral() + " = :" + field.useLiteral();
                     proc.lines.addElement(new Line(line));
                 }
             }
@@ -960,14 +960,14 @@ public class Table implements Serializable {
                     proc.inputs.addElement(field);
                     line = ", ";
 
-                    proc.lines.addElement(new Line(line + field.useLiteral() + " = ?"));
+                    proc.lines.addElement(new Line(line + field.useLiteral() + " = :" + field.useLiteral()));
                 }
             } else if (field.type == Field.TIMESTAMP && !tmAdded) {
                 tmAdded = true;
                 if (!proc.inputs.contains(field)) {
                     proc.inputs.addElement(field);
                     line = ", ";
-                    proc.lines.addElement(new Line(line + field.useLiteral() + " = ?"));
+                    proc.lines.addElement(new Line(line + field.useLiteral() + " = :" + field.useLiteral()));
                 }
             }
         }
@@ -1000,7 +1000,7 @@ public class Table implements Serializable {
                 else
                     line = "   and ";
                 j++;
-                line = line + field.useLiteral() + " = ?";
+                line = line + field.useLiteral() + " = :" + field.useLiteral();
                 proc.lines.addElement(new Line(line));
             }
         }
@@ -1061,7 +1061,7 @@ public class Table implements Serializable {
                 else
                     line = "   and ";
                 j++;
-                line = line + field.useLiteral() + " = ?";
+                line = line + field.useLiteral() + " = :" + field.useLiteral();
                 proc.lines.addElement(new Line(line));
             }
         }
@@ -1101,7 +1101,7 @@ public class Table implements Serializable {
                 else
                     line = "   and ";
                 j++;
-                line = line + field.useLiteral() + " = ?";
+                line = line + field.useLiteral() + " = :" + field.useLiteral();
                 proc.lines.addElement(new Line(line));
             }
         }
@@ -1209,7 +1209,7 @@ public class Table implements Serializable {
                     else
                         line = "   and ";
                     j++;
-                    line = line + field.useLiteral() + " = ?";
+                    line = line + field.useLiteral() + " = :" + field.useLiteral();
                     proc.lines.addElement(new Line(line));
                 }
             }
@@ -1267,7 +1267,7 @@ public class Table implements Serializable {
                     else
                         line = "   and ";
                     j++;
-                    line = line + field.useLiteral() + " = ?";
+                    line = line + field.useLiteral() + " = :" + field.useLiteral();
                     proc.lines.addElement(new Line(line));
                 }
             }
