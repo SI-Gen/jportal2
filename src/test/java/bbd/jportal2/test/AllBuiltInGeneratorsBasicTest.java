@@ -28,7 +28,7 @@ public class AllBuiltInGeneratorsBasicTest {
     }
 
     public <TYPE_TO_TEST> void testBuiltInProcessorsOfType(Class<TYPE_TO_TEST> classType) throws Exception {
-        ProjectCompiler pj = new ProjectCompiler();
+        ProjectCompiler pj = new ProjectCompiler(false);
         pj.addTemplateLocation(SI_PROCESSOR_TEMPLATE_DIR);
         BuiltInGeneratorHelpers helper = new BuiltInGeneratorHelpers();
 

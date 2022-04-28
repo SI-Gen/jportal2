@@ -36,14 +36,14 @@ public class ProjectCompilerTest {
 
     @Test
     public void testProjectCompilerTestSimple() throws Exception {
-        ProjectCompiler pj = new ProjectCompiler();
+        ProjectCompiler pj = new ProjectCompiler(false);
         setupSimpleListsParameters(pj);
         pj.compileAll();
     }
 
     @Test(expected = SingleFileCompilerException.class)
     public void testProjectCompilerThrowsExceptionIfGeneratorNotFound() throws Exception {
-        ProjectCompiler pj = new ProjectCompiler();
+        ProjectCompiler pj = new ProjectCompiler(false);
         setupSimpleListsParameters(pj);
         pj.addTemplateBasedSIProcessor("NON_EXISTENT_GENERATOR:NON_EXISTENT_PATH");
         assertEquals(0, pj.compileAll());

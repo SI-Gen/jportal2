@@ -55,7 +55,7 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
      * Generates code using a given FreeMarker template
      */
     //public static void generateTemplate(Database database, Map<String,String> parameters, File outputDirectory) throws IOException, TemplateException
-    public void generateTemplate(Database database, String templateBaseDir, String generatorName, File outputDirectory) throws Exception {
+    public void generateTemplate(Database database, Table table, String templateBaseDir, String generatorName, File outputDirectory) throws Exception {
 
         //Set the generator name correctly in the generatedOutputFiles member
         this.getGeneratedOutputFiles().setGeneratorName(generatorName);
@@ -71,7 +71,7 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
                     Path pathToTemplateBaseDir = Paths.get(templateBaseDir);
                     Path relativePathToFTL = fullGeneratorPath.relativize(file);
                     try {
-                        GenerateSingleFTLFile(fullGeneratorPath.toString(), generatorName, relativePathToFTL.toString(), outputDirectory, database);
+                        GenerateSingleFTLFile(fullGeneratorPath.toString(), generatorName, relativePathToFTL.toString(), outputDirectory, database, table);
                     } catch (Exception te) {
                         throw new RuntimeException(te);
                     }
@@ -119,15 +119,12 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
         return cfg;
     }
 
-    private void GenerateSingleFTLFile(String templateBaseDir, String generatorName, String templateName, File outputDir, Database database) throws TemplateException, IOException, ClassNotFoundException {
-
+    private void GenerateSingleFTLFile(String templateBaseDir, String generatorName, String templateName, File outputDir, Database database, Table table) throws TemplateException, IOException, ClassNotFoundException {
         Configuration cfg = configure(new File(templateBaseDir));
-
-
         //Set up FreeMarker object maps
-        java.util.Map<String, Object> root = new HashMap<>();
+        Map<String, Object> root = new HashMap<>();
         root.put("database", database);
-        root.put("table", database.tables.get(0));
+        root.put("table", table);
 
         // Create the builder:
         //BeansWrapperBuilder builder = new BeansWrapperBuilder(Configuration.VERSION_2_3_23);
@@ -151,7 +148,6 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
         ((HashMap<String, TemplateModel>) root.get("STATICS")).put("Field", staticModels.get("bbd.jportal2.Field"));
         ((HashMap<String, TemplateModel>) root.get("STATICS")).put("PlaceHolder", staticModels.get("bbd.jportal2.PlaceHolder"));
 
-
         //Expose enums
         root.put("ENUMS", new HashMap<String, TemplateModel>());
         TemplateHashModel enumModels = wrapper.getEnumModels();
@@ -160,19 +156,17 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
         ((HashMap<String, TemplateModel>) root.get("ENUMS")).put("Field", enumModels.get("bbd.jportal2.Field"));
         ((HashMap<String, Object>) root.get("ENUMS")).put("PlaceHolder", enumModels.get("bbd.jportal2.PlaceHolder"));
 
-
         String destFileName;
         Path templateRelativePath = Paths.get(templateName);
         String strRelativePath = templateRelativePath.toString();
 
         HashSet<String> doneFiles = new HashSet<>();
-
-        if (database.tables.get(0).procs.isEmpty()) {
-            logger.warn("\t [{}]: Table: [{}] Has no procs defined. Skipping...", generatorName, database.tables.get(0).name);
+        if (table.procs.isEmpty()) {
+            logger.warn("\t [{}]: Table: [{}] Has no procs defined. Skipping...", generatorName, table.name);
             return;
         }
 
-        for (Proc proc : database.tables.get(0).procs)
+        for (Proc proc : table.procs)
         {
             root.put("proc", proc);
             if (strRelativePath.endsWith(".ftl"))

@@ -15,12 +15,20 @@ public class SingleFileCompiler {
     private static final Logger logger = LoggerFactory.getLogger(SingleFileCompiler.class);
     private List<String> templateLocations;
 
-    public int compile(String source, List<String> compilerFlags, List<String> builtinSIProcessors, List<String> templateBasedSIProcessors, List<String> builtinPostProcessors, List<String> templateBasedPostProcessors, List<String> templateLocations)
+    public int compile(String source,
+                       List<String> compilerFlags,
+                       List<String> builtinSIProcessors,
+                       List<String> templateBasedSIProcessors,
+                       List<String> builtinPostProcessors,
+                       List<String> templateBasedPostProcessors,
+                       List<String> templateLocations,
+                       Boolean preCompile
+    )
             throws Exception {
         this.templateLocations = templateLocations;
 
         String[] pieces = source.split("\\+");
-        Database database = null;
+        Database database = JPortal.database;
         boolean hasErrors = false;
         for (String piece : pieces) {
             String nubDir = "";
@@ -38,31 +46,38 @@ public class SingleFileCompiler {
         }
 
         for (String flag : compilerFlags) {
-            database.flags.addElement(flag);
+            if (!database.flags.contains(flag))
+                database.flags.addElement(flag);
+        }
+
+        if (preCompile)
+        {
+            //Precompile does not generate.
+            return 0;
         }
 
         for (String generator : builtinSIProcessors) {
-            if (!ExecuteBuiltinGenerator(database, generator)) return 1;
+            if (!ExecuteBuiltinGenerator(database, JPortal.table, generator)) return 1;
         }
 
 
         for (String templateGenerator : templateBasedSIProcessors) {
-            if (!ExecuteTemplateGenerator(database, templateGenerator)) return 1;
+            if (!ExecuteTemplateGenerator(database, JPortal.table, templateGenerator)) return 1;
         }
 
         for (String generator : builtinPostProcessors) {
-            if (!ExecuteBuiltinGenerator(database, generator)) return 1;
+            if (!ExecuteBuiltinGenerator(database, JPortal.table, generator)) return 1;
         }
 
 
         for (String templateGenerator : templateBasedPostProcessors) {
-            if (!ExecuteTemplateGenerator(database, templateGenerator)) return 1;
+            if (!ExecuteTemplateGenerator(database, JPortal.table, templateGenerator)) return 1;
         }
 
         return 0;
     }
 
-    private boolean ExecuteTemplateGenerator(Database database, String templateGenerator) throws Exception {
+    private boolean ExecuteTemplateGenerator(Database database, Table table, String templateGenerator) throws Exception {
         if (!templateGenerator.contains(":") || templateGenerator.split(":").length < 2) {
             logger.error("Error in template-generator parameter. The correct format is --template-generator=<name>:<output_directory>, but --template-generator='{}' was specified instead.", templateGenerator);
             return false;
@@ -104,7 +119,7 @@ public class SingleFileCompiler {
         File templateLocationFile = Paths.get(templateBaseDir).toFile();
         try {
             FreeMarker fm = new FreeMarker();
-            fm.generateTemplate(database, templateLocationFile.getAbsolutePath(), generatorName, new File(generatorDirectory));
+            fm.generateTemplate(database, table, templateLocationFile.getAbsolutePath(), generatorName, new File(generatorDirectory));
             database.addGeneratedOutputFiles(fm.getGeneratedOutputFiles());
         } catch (Exception e) {
             logger.error("Error executing {}", generatorName, e);
@@ -113,7 +128,7 @@ public class SingleFileCompiler {
         return true;
     }
 
-    private boolean ExecuteBuiltinGenerator(Database database, String generator) throws Exception {
+    private boolean ExecuteBuiltinGenerator(Database database, Table table, String generator) throws Exception {
         GeneratorParameters generatorParameters = new GeneratorParameters(generator).extractParametersFromOption();
         String generatorName = generatorParameters.getGeneratorName();
         String generatorDirectory = generatorParameters.getGeneratorDirectory();
@@ -185,8 +200,7 @@ public class SingleFileCompiler {
             //get the index of the first : in the generator. split by that. the first index is the generator name
             // everything else after that we treat as a path
             int strchr = generator.indexOf(':');
-            if (strchr != -1)
-            {
+            if (strchr != -1) {
                 generatorName = generator.substring(0, strchr);
                 generatorDirectory = generator.substring(strchr + 1, generator.length());
                 return this;
