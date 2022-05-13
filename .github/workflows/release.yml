@@ -29,7 +29,7 @@ jobs:
         with:
           access-token: ${{ secrets.GITHUB_TOKEN }}
           release-branch-name: 'master'
-          git-release-bot-name: 'bbdsoftware'
+          git-release-bot-name: 'bbd-github-bot'
           git-release-bot-email: 'mavencentral@bbd.co.za'
           maven-args: '-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central,gpg'
           version-major: ${{github.event.inputs.release_type == 'major'}}
@@ -75,7 +75,3 @@ jobs:
           asset_name: ${{ steps.previoustag.outputs.tag }}.jar
           file: target/jportal2-${{ steps.previoustag.outputs.tag }}.jar
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-
-
-
-
