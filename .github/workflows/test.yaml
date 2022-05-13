@@ -1,0 +1,42 @@
+name: TEST
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_description:
+        description: 'Description'
+        required: false
+        default: 'JPortal2 - Release'
+      release_type:
+        description: 'Next Maven Release Version (patch, minor, major)'
+        required: true
+        default: 'patch'
+
+jobs:
+  changing_tag:
+    name: 'Changing github tag'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2.2.0
+        with:
+          fetch-depth: 0
+
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: 'Remove Jportal2 from Tag'
+        uses: mad9000/actions-find-and-replace-string@2
+        id: replaced_tag
+        with:
+          source: ${{ steps.previoustag.outputs.tag }}
+          find: 'jportal2-'        # we want to remove ref/heads/ from source
+          replace: ''
+
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.replaced_tag.outputs.value }}"
+          name: Joprtal2 Release - ${{ steps.replaced_tag.outputs.value }}"
