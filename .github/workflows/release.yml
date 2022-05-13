@@ -68,12 +68,13 @@ jobs:
       - name: 'Upload Jar Files to Release'
         uses: svenstaro/upload-release-action@v2
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/jportal2-${{ steps.previoustag.outputs.tag }}.jar
-          asset_name: ${{ steps.previoustag.outputs.tag }}.jar
+          release_name: ${{ steps.previoustag.outputs.tag }}
+          body: '${{github.event.inputs.release_description}}<br/><br/><b>Change Log<b><br/>${{steps.github_release.outputs.changelog}}'
           tag: ${{ steps.previoustag.outputs.tag }}
           overwrite: true
-          body: '${{github.event.inputs.release_description}}<br/><br/><b>Change Log<b><br/>${{steps.github_release.outputs.changelog}}'
+          asset_name: ${{ steps.previoustag.outputs.tag }}.jar
+          file: target/jportal2-${{ steps.previoustag.outputs.tag }}.jar
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
 
 
 
