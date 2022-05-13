@@ -14,8 +14,7 @@
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.jacoco.reportPath>${project.basedir}/target/jacoco.exec</sonar.jacoco.reportPath>
     </properties>
-    <description>Database, Module and Application code generators for varying platforms, vendors and languages.
-    </description>
+    <description>Database, Module and Application code generators for varying platforms, vendors and languages. </description>
     <scm>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
@@ -456,7 +455,7 @@
                      <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-release-plugin</artifactId>
-                        <version>3.0.0-M4</version>
+                        <version>2.5.3</version>
                          <configuration>
                              <scmCommentPrefix>[ci skip]</scmCommentPrefix>
                              <tagNameFormat>@{project.version}</tagNameFormat>
