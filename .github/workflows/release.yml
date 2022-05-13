@@ -16,7 +16,7 @@ jobs:
   maven_release:
     name: 'Maven Release'
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[Github-Bot]')"
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
     steps:
       - uses: actions/checkout@v2
         with:
