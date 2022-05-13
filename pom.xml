@@ -3,7 +3,7 @@
 
     <groupId>za.co.bbd</groupId>
     <artifactId>jportal2</artifactId>
-    <version>1.6.4-SNAPSHOT</version>
+    <version>1.6.10-SNAPSHOT</version>
     <packaging>jar</packaging>
     <properties>
         <slf4j.version>1.7.25</slf4j.version>
@@ -19,7 +19,7 @@
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
         <url>https://github.com/SI-Gen/jportal2</url>
-        <tag>@{project.version}</tag>
+        <tag>HEAD</tag>
     </scm>
     <licenses>
         <license>
@@ -173,7 +173,7 @@
                         <destFile>${sonar.jacoco.reportPath}</destFile>
                     </configuration>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>versions-maven-plugin</artifactId>
@@ -272,7 +272,7 @@
                 <configuration>
                     <source>${compiler.source}</source>
                     <target>${compiler.target}</target>
-<!--                    <release>${compiler.release}</release>-->
+                    <!--                    <release>${compiler.release}</release>-->
                     <encoding>UTF-8</encoding>
                     <useIncrementalCompilation>false</useIncrementalCompilation>
                     <showWarnings>true</showWarnings>
@@ -356,16 +356,16 @@
             </distributionManagement>
             <build>
                 <plugins>
-                 <plugin>
+                    <plugin>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <version>1.7</version>
                         <executions>
                             <execution>
                                 <phase>install</phase>
                                 <configuration>
-                                        <target>
-                                            <echoproperties />
-                                        </target>
+                                    <target>
+                                        <echoproperties />
+                                    </target>
                                 </configuration>
                                 <goals>
                                     <goal>run</goal>
@@ -397,40 +397,39 @@
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
                         </configuration>
                     </plugin>
-                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-antrun-plugin</artifactId>
-                    <version>1.7</version>
-                    <executions>
-                        <execution>
-                            <phase>validate</phase>
-                            <goals>
-                                <goal>run</goal>
-                            </goals>
-                            <configuration>
-                                <tasks>
-                                    <echoproperties />
-                                </tasks>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>3.0.1</version>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <goals>
-                                <goal>jar-no-fork</goal>
-                            </goals>
-                            <phase>package</phase>
-                        </execution>
-                    </executions>
-                </plugin>
-
-                     <plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.7</version>
+                        <executions>
+                            <execution>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <echoproperties />
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.0.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
                         <version>3.0.1</version>
@@ -441,26 +440,34 @@
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
-                                  <configuration>
-                                        <gpgArguments>
-                                            <arg>--batch</arg>
-                                        </gpgArguments>
-                                        <keyname>${gpg.keyname}</keyname>
-                                        <passphrase><![CDATA[${gpg.passphrase}]]></passphrase>
-                                  </configuration>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--batch</arg>
+                                    </gpgArguments>
+                                    <keyname>${gpg.keyname}</keyname>
+                                    <passphrase><![CDATA[${gpg.passphrase}]]></passphrase>
+                                </configuration>
                             </execution>
                         </executions>
-                     </plugin>
-
-                     <plugin>
+                    </plugin>
+                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-release-plugin</artifactId>
                         <version>2.5.3</version>
                         <configuration>
-                            <scmCommentPrefix>[ci skip]</scmCommentPrefix>
+                            <tag>${releaseVersion}</tag>
                             <tagNameFormat>@{project.version}</tagNameFormat>
+                            <autoVersionSubmodules>true</autoVersionSubmodules>
+                            <releaseProfiles>releases</releaseProfiles>
                         </configuration>
-                     </plugin>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-scm-plugin</artifactId>
+                                <version>1.12.2</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
