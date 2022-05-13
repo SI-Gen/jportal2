@@ -67,6 +67,7 @@ jobs:
         run: mvn package -Dmaven.javadoc.skip=true -DskipTests -DskipITs  -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
       - name: 'Upload Jar Files to Release'
         uses: svenstaro/upload-release-action@v2
+        id: upload_jar
         with:
           release_name: ${{ steps.previoustag.outputs.tag }}
           body: '${{github.event.inputs.release_description}}<br/><br/><b>Change Log<b><br/>${{steps.github_release.outputs.changelog}}'
@@ -75,3 +76,6 @@ jobs:
           asset_name: ${{ steps.previoustag.outputs.tag }}.jar
           file: target/jportal2-${{ steps.previoustag.outputs.tag }}.jar
           repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: DOWNLOAD URL
+        run: echo "**** DOWNLOAD URL ****\n${{steps.upload_jar.browser_download_urls}}"
