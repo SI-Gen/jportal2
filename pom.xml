@@ -20,7 +20,7 @@
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
         <url>https://github.com/SI-Gen/jportal2</url>
-        <tag>${project.version}</tag>
+        <tag>HEAD</tag>
     </scm>
     <licenses>
         <license>
@@ -458,6 +458,7 @@
                         <artifactId>maven-release-plugin</artifactId>
                         <version>3.0.0-M4</version>
                          <configuration>
+                             <scmCommentPrefix>[ci skip]</scmCommentPrefix>
                              <tagNameFormat>@{project.version}</tagNameFormat>
                          </configuration>
                      </plugin>
