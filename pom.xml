@@ -19,7 +19,7 @@
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
         <url>https://github.com/SI-Gen/jportal2</url>
-        <tag>HEAD</tag>
+        <tag>@{project.version}</tag>
     </scm>
     <licenses>
         <license>
@@ -458,7 +458,7 @@
                         <version>2.5.3</version>
                          <configuration>
                              <scmCommentPrefix>[ci skip]</scmCommentPrefix>
-                             <tagNameFormat>${project.version}</tagNameFormat>
+                             <tagNameFormat>@{project.version}</tagNameFormat>
                          </configuration>
                      </plugin>
                     <plugin>
