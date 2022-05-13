@@ -75,7 +75,3 @@ jobs:
           asset_name: ${{ steps.previoustag.outputs.tag }}.jar
           file: target/jportal2-${{ steps.previoustag.outputs.tag }}.jar
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-
-
-
-

@@ -212,7 +212,7 @@ the directory ${basedir}/target/generated-sources/java/com/example/db.
 To use a Freemarker Template. Create a folder anywhere: \$HOME/templates/Example
 Inside that folder create the freemarker template file: ExampleDB.py.ftl
 
-JPortal2 supports freemarker file name substitution. For example ExampleDB${database.tables[0].name}.py.ftl will generate a ExampleDB{tablename}.py file for all the SI files you gen for. 
+JPortal2 supports freemarker file name substitution. For example ExampleDB${table.name}.py.ftl will generate a ExampleDB{tablename}.py file for all the SI files you gen for. 
 
 Inside your template file:
 ```
@@ -233,13 +233,23 @@ Run jportal with the argument:
 ```
 
 When JPortal2 is done. You will have the generated files in the output directory and it will look like this:
-```python
+```
 table name: ExampleTable
     table fields:
     id
     name
     surname
 ```
+
+### Freemarker Variables
+There are a few variables available to you in the freemarker template language for generation:
+- __Database__
+- __Table__
+- __Proc__
+
+The above variables match the hierarchy that is built into the SI structure. A database is a collection of SI files, and each SI file represents a table. Furthermore, each SI table has a collection of procs attached to it.
+
+The above variables are also available in the name component of the free-marker template file. That way one can create a generated file down to the level of each individual proc.
 
 
 ## Using Literals
