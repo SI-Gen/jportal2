@@ -30,7 +30,7 @@ jobs:
           access-token: ${{ secrets.GITHUB_TOKEN }}
           release-branch-name: 'master'
           git-release-bot-name: 'bbd-github-bot'
-          git-release-bot-email: 'mavencentral@bbd.co.za'
+          git-release-bot-email: 'bbdgithubbot@gmail.com'
           maven-args: '-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central,gpg'
           version-major: ${{github.event.inputs.release_type == 'major'}}
           version-minor: ${{github.event.inputs.release_type == 'minor'}}
