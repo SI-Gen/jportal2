@@ -3,7 +3,7 @@
 
     <groupId>za.co.bbd</groupId>
     <artifactId>jportal2</artifactId>
-    <version>1.6.1-SNAPSHOT</version>
+    <version>1.6.3-SNAPSHOT</version>
     <packaging>jar</packaging>
     <properties>
         <slf4j.version>1.7.25</slf4j.version>
@@ -20,7 +20,7 @@
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
         <url>https://github.com/SI-Gen/jportal2</url>
-        <tag>HEAD</tag>
+        <tag>${project.version}</tag>
     </scm>
     <licenses>
         <license>
@@ -457,7 +457,10 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-release-plugin</artifactId>
                         <version>3.0.0-M4</version>
-                    </plugin>    
+                         <configuration>
+                             <tag>${project.version}</tag>
+                         </configuration>
+                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
