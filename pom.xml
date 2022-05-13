@@ -458,7 +458,10 @@
                         <artifactId>maven-release-plugin</artifactId>
                         <version>3.0.0-M4</version>
                          <configuration>
-                             <tag>${project.version}</tag>
+                             <tags>
+                                 <tag>${project.version}</tag>
+                                 <tag>latest</tag>
+                             </tags>
                          </configuration>
                      </plugin>
                     <plugin>
