@@ -19,7 +19,7 @@
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
         <url>https://github.com/SI-Gen/jportal2</url>
-        <tag>@{project.version}</tag>
+        <tag>HEAD</tag>
     </scm>
     <licenses>
         <license>
@@ -429,7 +429,6 @@
                         </execution>
                     </executions>
                 </plugin>
-
                      <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
@@ -451,15 +450,24 @@
                             </execution>
                         </executions>
                      </plugin>
-
-                     <plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-release-plugin</artifactId>
                         <version>2.5.3</version>
                         <configuration>
-                            <scmCommentPrefix>[ci skip]</scmCommentPrefix>
-                            <tagNameFormat>@{version}</tagNameFormat>
+                            <tag>${releaseVersion}</tag>
+                            <tagNameFormat>@{project.version}</tagNameFormat>
+                            <autoVersionSubmodules>true</autoVersionSubmodules>
+                            <releaseProfiles>releases</releaseProfiles>
                         </configuration>
-                     </plugin>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-scm-plugin</artifactId>
+                                <version>1.12.2</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
