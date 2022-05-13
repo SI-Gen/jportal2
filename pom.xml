@@ -452,22 +452,13 @@
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-release-plugin</artifactId>
+                        <artifactId>3.0.0-M5</artifactId>
                         <version>2.5.3</version>
                         <configuration>
                             <scmCommentPrefix>[ci skip]</scmCommentPrefix>
                             <tag>${releaseVersion}</tag>
                             <tagNameFormat>@{project.version}</tagNameFormat>
-                            <autoVersionSubmodules>true</autoVersionSubmodules>
-                            <releaseProfiles>releases</releaseProfiles>
                         </configuration>
-                        <dependencies>
-                            <dependency>
-                                <groupId>org.apache.maven.plugins</groupId>
-                                <artifactId>maven-scm-plugin</artifactId>
-                                <version>1.12.2</version>
-                            </dependency>
-                        </dependencies>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
