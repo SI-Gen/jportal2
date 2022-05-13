@@ -113,6 +113,7 @@ jobs:
 #      # Upload Jar File
 #      - name: 'Upload Jar Files to Release'
 #        uses: svenstaro/upload-release-action@v2
+#        id: upload_jar
 #        with:
 #          repo_token: ${{ secrets.GITHUB_TOKEN }}
 #          file: target/jportal2-${{ steps.previoustag.outputs.tag }}.jar
@@ -120,6 +121,9 @@ jobs:
 #          tag: ${{ steps.previoustag.outputs.tag }}
 #          overwrite: true
 #          body: '${{github.event.inputs.release_description}}<br/><br/><b>Change Log<b><br/>${{steps.github_release.outputs.changelog}}'
+#
+#      - name: Get the final output
+#        run: echo "Download URL: ${{steps.upload_jar.browser_download_url}}"
 
 
 
