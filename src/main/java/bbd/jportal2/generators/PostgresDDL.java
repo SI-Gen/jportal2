@@ -62,7 +62,7 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
         String comma = "( ";
         boolean hasNotNull = false;
         if (!table.getFields().isEmpty()) {
-            outData.println("DROP TABLE IF EXISTS" + tableOwner + table.name + " CASCADE;");
+            outData.println("DROP TABLE IF EXISTS " + tableOwner + table.name + " CASCADE;");
             outData.println();
             outData.println("CREATE TABLE " + tableOwner + table.name);
             for (int i = 0; i < table.fields.size(); i++, comma = ", ") {
