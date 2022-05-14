@@ -91,6 +91,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
         int i;
         Field field;
         int j;
+        boolean tableHasBigSequence = false;
 
         if (!table.fields.isEmpty()) {
             outData.println("DROP TABLE " + tableOwner + table.name + " CASCADE CONSTRAINTS;");
@@ -108,6 +109,10 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
                     hasNotNull = true;
                 } else if (!field.isNull) {
                     hasNotNull = true;
+                }
+
+                if (field.type == Field.BIGSEQUENCE) {
+                    tableHasBigSequence = true;
                 }
 
             }
@@ -138,7 +143,12 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
                 outData.println();
                 outData.println("CREATE SEQUENCE " + tableOwner + table.name + "Seq");
                 outData.println("  MINVALUE 1");
-                outData.println("  MAXVALUE 999999999");
+                if (tableHasBigSequence) {
+                    //18 nines for a big sequence following the example of 9 nines for a regular sequence
+                    outData.println("  MAXVALUE 999999999999999999");
+                } else {
+                    outData.println("  MAXVALUE 999999999");
+                }
                 outData.println("  CYCLE");
                 outData.println("  ORDER;");
                 outData.println();
@@ -430,7 +440,11 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
             case 3:
                 return "NUMBER(3)";
             case 4:
-                return "VARCHAR2(" + field.length + ")";
+                if (field.length > 2000) {
+                    return "NCLOB";
+                } else {
+                    return "VARCHAR2(" + field.length + ")";
+                }
             case 5:
                 return "DATE";
             case 6:
@@ -467,7 +481,10 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
                 return "VARCHAR2(8)";
             case 21:
                 return "CHAR(" + field.length + ")";
+            case 24:
+                return "NUMBER(19)";
             case 2:
+                return "NUMBER(1)";
             case 8:
             case 16:
             default:

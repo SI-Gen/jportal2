@@ -13,18 +13,14 @@ on:
         default: 'patch'
 
 jobs:
-
   maven_release:
     name: 'Maven Release'
     runs-on: ubuntu-latest
-
-    if: "!contains(github.event.head_commit.message, '[Github-Bot]')"
-
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
       # Prepares Maven Release
       - name: 'Maven Release'
         uses: SI-Gen/github-actions-maven-release@master
@@ -33,17 +29,14 @@ jobs:
         with:
           access-token: ${{ secrets.GITHUB_TOKEN }}
           release-branch-name: 'master'
-          git-release-bot-name: 'bbdsoftware'
-          git-release-bot-email: 'mavencentral@bbd.co.za'
-
+          git-release-bot-name: 'bbd-github-bot'
+          git-release-bot-email: 'bbdgithubbot@gmail.com'
           maven-args: '-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central,gpg'
           version-major: ${{github.event.inputs.release_type == 'major'}}
           version-minor: ${{github.event.inputs.release_type == 'minor'}}
-
           maven-repo-server-id: ossrh
           maven-repo-server-username: ${{ secrets.OSSRH_USERNAME }}
           maven-repo-server-password: ${{ secrets.OSSRH_TOKEN }}
-
           gpg-enabled: true
           gpg-key-id: ${{ secrets.GPG_KEY_ID }}
           gpg-key: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -57,40 +50,32 @@ jobs:
       - uses: actions/checkout@v2.2.0
         with:
           fetch-depth: 0
-
-      # Get Previous tag
       - name: 'Get Previous tag'
         id: previoustag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-
       - name: Build Changelog
         id: github_release
         uses: mikepenz/release-changelog-builder-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Changes Maven Version
       - name: 'Change Maven Version'
         run: |
           mvn versions:set -DnewVersion=${{ steps.previoustag.outputs.tag }}
-
-      # Generate Jar File
       - name: 'Generate Jar'
         run: mvn package -Dmaven.javadoc.skip=true -DskipTests -DskipITs  -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
-
-      # Upload Jar File
       - name: 'Upload Jar Files to Release'
         uses: svenstaro/upload-release-action@v2
+        id: upload_jar
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/jportal2-${{ steps.previoustag.outputs.tag }}.jar
-          asset_name: jportal2-${{ steps.previoustag.outputs.tag }}.jar
+          release_name: ${{ steps.previoustag.outputs.tag }}
+          body: '${{github.event.inputs.release_description}}<br/><br/><b>Change Log<b><br/>${{steps.github_release.outputs.changelog}}'
           tag: ${{ steps.previoustag.outputs.tag }}
           overwrite: true
-          body: '${{github.event.inputs.release_description}}<br/><br/><b>Change Log<b><br/>${{steps.github_release.outputs.changelog}}'
+          asset_name: ${{ steps.previoustag.outputs.tag }}.jar
+          file: target/jportal2-${{ steps.previoustag.outputs.tag }}.jar
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
 
-
-
-
+      - name: DOWNLOAD URL
+        run: echo "**** DOWNLOAD URL ****\n${{steps.upload_jar.browser_download_urls}}"
