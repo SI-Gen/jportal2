@@ -62,7 +62,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Change Maven Version'
         run: |
-          mvn versions:set -DnewVersion=1.6.10
+          mvn versions:set -DnewVersion=${{ steps.previoustag.outputs.tag }}
       # Generate Jar File
       - name: 'Generate Jar'
         run: mvn package -Dmaven.javadoc.skip=true -DskipTests -DskipITs  -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
