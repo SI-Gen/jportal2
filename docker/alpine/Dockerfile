@@ -7,7 +7,7 @@ WORKDIR /jportal2
 
 USER jportal2
 
-ENV JPORTAL2_VERSION 1.6.1-SNAPSHOT
+ENV JPORTAL2_VERSION 1.8.6-SNAPSHOT
 
 COPY target/jportal2-$JPORTAL2_VERSION.jar /jportal2
 COPY --chown=jportal2:jportal2 docker/jportal2.sh /jportal2
