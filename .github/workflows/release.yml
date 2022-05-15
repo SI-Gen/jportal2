@@ -84,7 +84,7 @@ jobs:
       - name: DOWNLOAD URL
         run: echo "**** DOWNLOAD URL ****\n${{steps.upload_jar.browser_download_urls}}"
 
-  build-and-push-image:
+  build-and_push_image:
       runs-on: ubuntu-latest
       permissions:
         contents: read
