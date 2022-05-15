@@ -10,8 +10,8 @@ USER jportal2
 
 ENV JPORTAL2_VERSION ${jportal2_version}
 
-COPY target/jportal2-$JPORTAL2_VERSION.jar /jportal2
-COPY --chown=jportal2:jportal2 docker/jportal2.sh /jportal2
+COPY ./target/jportal2-$JPORTAL2_VERSION.jar /jportal2
+COPY --chown=jportal2:jportal2 ./docker/jportal2.sh /jportal2
 
 ENV PATH="/jportal2:${PATH}"
 
