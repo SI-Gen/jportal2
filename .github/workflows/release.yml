@@ -14,7 +14,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: jportal2
+  IMAGE_NAME: si-gen/jportal2
 
 jobs:
   maven_release:
