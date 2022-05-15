@@ -46,7 +46,7 @@ jobs:
           gpg-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
-  upload_jar:
+  build_and_publish:
     name: 'Upload Jar To GitHub'
     runs-on: ubuntu-latest
     needs: maven_release
@@ -83,33 +83,27 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
       - name: DOWNLOAD URL
         run: echo "**** DOWNLOAD URL ****\n${{steps.upload_jar.browser_download_urls}}"
-
-  build-and_push_image:
-      runs-on: ubuntu-latest
-      permissions:
-        contents: read
-        packages: write
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v2
-        - name: Docker meta
-          id: meta
-          uses: docker/metadata-action@v4
-          with:
-            images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        - name: Log in to the docker container registry
-          uses: docker/login-action@v2
-          with:
-            registry: ${{ env.REGISTRY }}
-            username: ${{ github.actor }}
-            password: ${{ secrets.GITHUB_TOKEN }}
-        - name: Build and push Docker image
-          uses: docker/build-push-action@v3
-          with:
-            context: .
-            file: ./docker/alpine/Dockerfile
-            build-args:
-              jportal2_version=${{ steps.meta.outputs.tags }}
-            push: true
-            tags: ${{ steps.meta.outputs.tags }}
-            labels: ${{ steps.meta.outputs.labels }}
+      # Build and push Docker Image
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Log in to the docker container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./docker/alpine/Dockerfile
+          build-args:
+            jportal2_version=${{ steps.previoustag.outputs.tag }}
+          push: true
+          tags: ${{ steps.previoustag.outputs.tag }}
+          labels: ${{ steps.meta.outputs.labels }}
