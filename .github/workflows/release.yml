@@ -84,8 +84,6 @@ jobs:
       - name: DOWNLOAD URL
         run: echo "**** DOWNLOAD URL ****\n${{steps.upload_jar.browser_download_urls}}"
       # Build and push Docker Image
-      - name: Checkout repository
-        uses: actions/checkout@v2
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
