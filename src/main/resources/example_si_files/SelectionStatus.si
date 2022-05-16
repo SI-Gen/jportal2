@@ -24,8 +24,9 @@ OUTPUT
 	Description =
 	Blah		INT
 
-Proc CCCC SelectBy UsrID
+Proc SelectBy UsrID
 Proc SelectBy UsrID AS DDD
+PROC SelectOneBy Description
 
 SQLDATA
 -- Takeons come here
