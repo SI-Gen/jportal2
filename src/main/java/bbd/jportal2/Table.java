@@ -739,7 +739,13 @@ public class Table implements Serializable {
         proc.lines.addElement(new Line(" ) "));
 
         if (hasIdentity == true) {
-            proc.lines.addElement(new Line(" OUTPUT INSERTED." + identityName));
+            //The original use for IDENTITY was for SQL Server.
+            //But since other databases (other than SQL Server) also support IDENTITY
+            //now, we will stop generating the SQL Server specific version, and
+            //handle using the normal _ret style.
+            //SQL Server Generators can be updated to support _ret going forward
+            //proc.lines.addElement(new Line(" OUTPUT INSERTED." + identityName));
+            proc.lines.addElement(new Line("_ret.output", true));
         } else if (proc.hasReturning) {
             proc.lines.addElement(new Line("_ret.output", true));
         }
