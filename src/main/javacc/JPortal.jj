@@ -1928,7 +1928,7 @@ void jStdProc() :
         table.hasStdProcs = true;
       }
   | <SELECTBY> ( jProcColumn())+
-      ((<IN>)? <ORDER> {inOrder = true;})?
+      ((<IN>)? <ORDER> {inOrder = true;} (jOrderColumn())* (<DESC> {descending = true;})?)?
       ((<FOR>)? (<UPDATE> {forUpdate = true;} | <READONLY> {forReadOnly = true;}))?
       (<AS> s = jIdent()
       {
@@ -2132,53 +2132,53 @@ void jNewProc() :
         isStdProc = true;
       }
 
-  | <SELECTONEBY> ( jProcColumn())+
-      ((<FOR>)? (<UPDATE> {forUpdate = true;} | <READONLY> {forReadOnly = true;}))?
-      {
-        proc.isSingle = true;
-        table.buildSelectBy(proc, forUpdate, forReadOnly, inOrder, descending);
-        table.hasStdProcs = true;
-      }
-  | <SELECTBY> ( jProcColumn())+
-      ((<IN>)? <ORDER> {inOrder = true;} (jOrderColumn())* (<DESC> {descending = true;})?)?
-      ((<FOR>)? (<UPDATE> {forUpdate = true;} | <READONLY> {forReadOnly = true;}))?
-      ( <OUTPUT> (jOutputType())?
-        ( jField()
-          {
-            if (proc.isSProc == true)
-            {
-              if (proc.hasInput(field.name))
-                field = proc.getInput(field.name);
-              else
-                proc.inputs.addElement(field);
-              field.isOut = true;
-            }
-            else
-            {
-              if (proc.hasOutput(field.name))
-              {
-                if (proc.extendsStd == false)
-                  logger.warn(proc.name+" field "+field.name+" already present as output");
-              }
-              else
-              {
-                if (proc.extendsStd == true)
-                {
-                  proc.useStd = false;
-                  isStdProc = false;
-                }
-                if (!field.isNull)
-                  field.isNull = (table.hasFieldAsNull(field.name));
-                proc.outputs.addElement(field);
-              }
-            }
-          }
-        )*
-      )?
-      {
-        table.buildSelectBy(proc, forUpdate, forReadOnly, inOrder, descending);
-        table.hasStdProcs = true;
-      }
+//  | <SELECTONEBY> ( jProcColumn())+
+//      ((<FOR>)? (<UPDATE> {forUpdate = true;} | <READONLY> {forReadOnly = true;}))?
+//      {
+//        proc.isSingle = true;
+//        table.buildSelectBy(proc, forUpdate, forReadOnly, inOrder, descending);
+//        table.hasStdProcs = true;
+//      }
+//  | <SELECTBY> ( jProcColumn())+
+//      ((<IN>)? <ORDER> {inOrder = true;} (jOrderColumn())* (<DESC> {descending = true;})?)?
+//      ((<FOR>)? (<UPDATE> {forUpdate = true;} | <READONLY> {forReadOnly = true;}))?
+//      ( <OUTPUT> (jOutputType())?
+//        ( jField()
+//          {
+//            if (proc.isSProc == true)
+//            {
+//              if (proc.hasInput(field.name))
+//                field = proc.getInput(field.name);
+//              else
+//                proc.inputs.addElement(field);
+//              field.isOut = true;
+//            }
+//            else
+//            {
+//              if (proc.hasOutput(field.name))
+//              {
+//                if (proc.extendsStd == false)
+//                  logger.warn(proc.name+" field "+field.name+" already present as output");
+//              }
+//              else
+//              {
+//                if (proc.extendsStd == true)
+//                {
+//                  proc.useStd = false;
+//                  isStdProc = false;
+//                }
+//                if (!field.isNull)
+//                  field.isNull = (table.hasFieldAsNull(field.name));
+//                proc.outputs.addElement(field);
+//              }
+//            }
+//          }
+//        )*
+//      )?
+//      {
+//        table.buildSelectBy(proc, forUpdate, forReadOnly, inOrder, descending);
+//        table.hasStdProcs = true;
+//      }
   )
 }
 
