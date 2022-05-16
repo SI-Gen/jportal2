@@ -714,9 +714,12 @@ public class Table implements Serializable {
             if (isIdentity(field)) {
                 hasIdentity = true;
                 identityName = field.name;
-                proc.outputs.addElement(field);
-                proc.isSingle = true;
-                proc.hasUpdates = true;
+
+                if (proc.hasReturning) {
+                    proc.hasUpdates = true;
+                    proc.isSingle = true;
+                    proc.outputs.addElement(field);
+                }
             } else if (isSequence(field)) {
 
                 if (proc.hasReturning) {

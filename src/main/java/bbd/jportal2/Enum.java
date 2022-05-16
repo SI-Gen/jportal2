@@ -42,6 +42,14 @@ public class Enum implements Serializable
     ods.writeUTF(name);
     ods.writeInt(value);
   }
+
+  public String getName() {
+    return name;
+  }
+
+  public int getValue() {
+    return value;
+  }
 }
 
 
