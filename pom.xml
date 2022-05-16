@@ -3,7 +3,7 @@
 
     <groupId>za.co.bbd</groupId>
     <artifactId>jportal2</artifactId>
-    <version>1.6.10-SNAPSHOT</version>
+    <version>1.8.7-SNAPSHOT</version>
     <packaging>jar</packaging>
     <properties>
         <slf4j.version>1.7.25</slf4j.version>
@@ -183,6 +183,12 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <version>3.0.0-M2</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <configuration>
+                        <tagNameFormat>@{project.version}</tagNameFormat>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
