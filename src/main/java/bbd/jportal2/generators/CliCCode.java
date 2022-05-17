@@ -635,6 +635,7 @@ public class CliCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 case Field.TLOB:
                 case Field.XML:
                 case Field.USERSTAMP:
+                case Field.JSON:
                     outData.println("  q_.BindCharArray(" + i + ", " + field.useName() + ", " + size + useNull(field));
                     break;
                 //case Field.BIGXML:

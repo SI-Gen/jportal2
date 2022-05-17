@@ -453,6 +453,8 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
                 return "VARCHAR(50)";
             case Field.XML:
                 return "XML";
+            case Field.JSON:
+                return "JSON";
             case Field.IDENTITY:
                 return "<not supported>";
         }
