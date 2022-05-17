@@ -15,7 +15,6 @@ package bbd.jportal2.generators;
 import bbd.jportal2.*;
 import bbd.jportal2.Enum;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Vector;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -766,12 +765,12 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
         //  break;
         case Field.LONG:
         case Field.BIGSEQUENCE:
-        case Field.BIGIDENTITY:
+        case Field.MSSQLBIGIDENTITY:
           outData.println("  q_.BindInt64Array(" + i + ", " + field.useName() + useNull(field));
           break;
         case Field.INT:
         case Field.SEQUENCE:
-        case Field.IDENTITY:
+        case Field.MSSQLIDENTITY:
           outData.println("  q_.BindInt32Array(" + i + ", " + field.useName() + useNull(field));
           break;
         case Field.BOOLEAN:
@@ -813,7 +812,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
    */
   static boolean isIdentity(Field field)
   {
-    return field.type == Field.BIGIDENTITY || field.type == Field.IDENTITY;
+    return field.type == Field.MSSQLBIGIDENTITY || field.type == Field.MSSQLIDENTITY;
   }
   static boolean isSequence(Field field)
   {
@@ -1295,7 +1294,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
         return "IDL2_INT16_PAD(" + fillerNo + ");";
       case Field.INT:
       case Field.SEQUENCE:
-      case Field.IDENTITY:
+      case Field.MSSQLIDENTITY:
         return "IDL2_INT32_PAD(" + fillerNo + ");";
       case Field.CHAR:
       case Field.ANSICHAR:
@@ -1334,11 +1333,11 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
         return 2;
       case Field.INT:
       case Field.SEQUENCE:
-      case Field.IDENTITY:
+      case Field.MSSQLIDENTITY:
         return 4;
       case Field.LONG:
       case Field.BIGSEQUENCE:
-      case Field.BIGIDENTITY:
+      case Field.MSSQLBIGIDENTITY:
         return 8;
       case Field.CHAR:
       case Field.ANSICHAR:
@@ -1394,9 +1393,9 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       case Field.SHORT:
       case Field.INT:
       case Field.LONG:
-      case Field.IDENTITY:
+      case Field.MSSQLIDENTITY:
       case Field.SEQUENCE:
-      case Field.BIGIDENTITY:
+      case Field.MSSQLBIGIDENTITY:
       case Field.BIGSEQUENCE:
       case Field.BLOB:
       case Field.DATE:
@@ -1418,9 +1417,9 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       case Field.SHORT:
       case Field.INT:
       case Field.LONG:
-      case Field.IDENTITY:
+      case Field.MSSQLIDENTITY:
       case Field.SEQUENCE:
-      case Field.BIGIDENTITY:
+      case Field.MSSQLBIGIDENTITY:
       case Field.BIGSEQUENCE:
       case Field.BLOB:
         return true;
@@ -1447,9 +1446,9 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       case Field.SHORT:
       case Field.INT:
       case Field.SEQUENCE:
-      case Field.IDENTITY:
+      case Field.MSSQLIDENTITY:
       case Field.BIGSEQUENCE:
-      case Field.BIGIDENTITY:
+      case Field.MSSQLBIGIDENTITY:
       case Field.LONG:
         return field.useName() + " = 0;";
       case Field.CHAR:
@@ -1487,11 +1486,11 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       case Field.SHORT:
         return "int16  " + field.useName();
       case Field.INT:
-      case Field.IDENTITY:
+      case Field.MSSQLIDENTITY:
       case Field.SEQUENCE:
         return "int32  " + field.useName();
       case Field.LONG:
-      case Field.BIGIDENTITY:
+      case Field.MSSQLBIGIDENTITY:
       case Field.BIGSEQUENCE:
         return "int64  " + field.useName();
       case Field.CHAR:
@@ -1531,11 +1530,11 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
         return "sizeof(int16)";
       case Field.INT:
       case Field.SEQUENCE:
-      case Field.IDENTITY:
+      case Field.MSSQLIDENTITY:
         return "sizeof(int32)";
       case Field.LONG:
       case Field.BIGSEQUENCE:
-      case Field.BIGIDENTITY:
+      case Field.MSSQLBIGIDENTITY:
         return "sizeof(int64)";
       case Field.CHAR:
       case Field.ANSICHAR:
@@ -1587,7 +1586,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
         return "int32 *" + field.useName() + " = (int32 *)(q_.data + " + offset + " * noOf);";
       case Field.LONG:
       case Field.BIGSEQUENCE:
-      case Field.BIGIDENTITY:
+      case Field.MSSQLBIGIDENTITY:
         return "int64 *" + field.useName() + " = (int64 *)(q_.data + " + offset + " * noOf);";
       case Field.FLOAT:
       case Field.DOUBLE:
@@ -1629,8 +1628,8 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       case Field.SHORT:
       case Field.INT:
       case Field.LONG:
-      case Field.BIGIDENTITY:
-      case Field.IDENTITY:
+      case Field.MSSQLBIGIDENTITY:
+      case Field.MSSQLIDENTITY:
         return field.useName();
       case Field.FLOAT:
       case Field.DOUBLE:
@@ -1681,11 +1680,11 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       case Field.SHORT:
         return "(int16*) (q_.data+" + field.useName().toUpperCase() + "_POS)";
       case Field.INT:
-      case Field.IDENTITY:
+      case Field.MSSQLIDENTITY:
       case Field.SEQUENCE:
         return "(int32*) (q_.data+" + field.useName().toUpperCase() + "_POS)";
       case Field.LONG:
-      case Field.BIGIDENTITY:
+      case Field.MSSQLBIGIDENTITY:
       case Field.BIGSEQUENCE:
         return "(int64*) (q_.data+" + field.useName().toUpperCase() + "_POS)";
       case Field.CHAR:
@@ -1730,9 +1729,9 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       case Field.SHORT:
       case Field.INT:
       case Field.SEQUENCE:
-      case Field.IDENTITY:
+      case Field.MSSQLIDENTITY:
       case Field.BIGSEQUENCE:
-      case Field.BIGIDENTITY:
+      case Field.MSSQLBIGIDENTITY:
       case Field.LONG:
         return padder(field.useName() + ",", 32) + " q_.data+" + field.useName().toUpperCase() + "_POS";
       case Field.FLOAT:
@@ -1775,8 +1774,8 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       case Field.INT:
       case Field.LONG:
       case Field.SEQUENCE:
-      case Field.IDENTITY:
-      case Field.BIGIDENTITY:
+      case Field.MSSQLIDENTITY:
+      case Field.MSSQLBIGIDENTITY:
       case Field.BIGSEQUENCE:
         return field.useName() + " = a" + field.useName() + ";";
       case Field.FLOAT:
@@ -1843,7 +1842,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
         return field.useName() + "[i] = Recs[i]." + field.useName() + ";";
       case Field.USERSTAMP:
         return field.useName() + " -- generated";
-      case Field.IDENTITY:
+      case Field.MSSQLIDENTITY:
         return field.useName() + " -- generated";
       case Field.TIMESTAMP:
         return "q_.TimeStamp(" + field.useName() + "[i], Recs[i]." + field.useName() + ");";
@@ -1865,11 +1864,11 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
         return "int16  a" + field.useName();
       case Field.INT:
       case Field.SEQUENCE:
-      case Field.IDENTITY:
+      case Field.MSSQLIDENTITY:
         return "int32   a" + field.useName();
       case Field.LONG:
       case Field.BIGSEQUENCE:
-      case Field.BIGIDENTITY:
+      case Field.MSSQLBIGIDENTITY:
         return "int64  a" + field.useName();
       case Field.CHAR:
       case Field.TLOB:
@@ -1921,11 +1920,11 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
         return front + field.useName() + " = (int16)atol(work.data);";
       case Field.INT:
       case Field.SEQUENCE:
-      case Field.IDENTITY:
+      case Field.MSSQLIDENTITY:
         return front + field.useName() + " = (int32)atol(work.data);";
       case Field.LONG:
       case Field.BIGSEQUENCE:
-      case Field.BIGIDENTITY:
+      case Field.MSSQLBIGIDENTITY:
         return front + field.useName() + " = (int64)atoint64(work.data);";
       case Field.FLOAT:
       case Field.DOUBLE:
@@ -1961,11 +1960,11 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       case Field.SHORT:
       case Field.INT:
       case Field.SEQUENCE:
-      case Field.IDENTITY:
+      case Field.MSSQLIDENTITY:
         return front + "XRec.ampappend(JP_XML_FORMAT((int32)" + field.useName() + ").result);" + back;
       case Field.LONG:
       case Field.BIGSEQUENCE:
-      case Field.BIGIDENTITY:
+      case Field.MSSQLBIGIDENTITY:
         return front + "XRec.ampappend(JP_XML_FORMAT((int64)" + field.useName() + ").result);" + back;
       case Field.FLOAT:
       case Field.DOUBLE:

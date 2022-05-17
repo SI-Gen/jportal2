@@ -185,7 +185,7 @@ public class Field implements Serializable
   , DOUBLE     = 7
   , DYNAMIC    = 8
   , FLOAT      = 9
-  , IDENTITY   = 10
+  , MSSQLIDENTITY = 10
   , INT        = 11
   , LONG       = 12
   , MONEY      = 13
@@ -200,7 +200,7 @@ public class Field implements Serializable
   , UID        = 22
   , XML        = 23
   , BIGSEQUENCE = 24
-  , BIGIDENTITY = 25
+  , MSSQLBIGIDENTITY = 25
   , AUTOTIMESTAMP = 26
   , WCHAR      = 27
   , WANSICHAR  = 28

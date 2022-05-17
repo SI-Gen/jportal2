@@ -233,7 +233,7 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
         }
         for (int i = 0; i < fields.size(); i++) {
             Field field = (Field) fields.elementAt(i);
-            if (field.type == Field.LONG || field.type == Field.BIGSEQUENCE || field.type == Field.BIGIDENTITY) {
+            if (field.type == Field.LONG || field.type == Field.BIGSEQUENCE || field.type == Field.MSSQLBIGIDENTITY) {
                 if (isNull(field) == true)
                     outData.println("        self." + field.useName() + " = None if result[" + no + i + "] == None else int(result[" + no + i + "])");
                 else
@@ -597,11 +597,11 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
             case Field.SHORT:
             case Field.INT:
             case Field.SEQUENCE:
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
                 return "int";
             case Field.LONG:
             case Field.BIGSEQUENCE:
-            case Field.BIGIDENTITY:
+            case Field.MSSQLBIGIDENTITY:
                 return "long";
             case Field.CHAR:
             case Field.ANSICHAR:
@@ -633,11 +633,11 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
             case Field.SHORT:
             case Field.INT:
             case Field.SEQUENCE:
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
                 return "'0'";
             case Field.LONG:
             case Field.BIGSEQUENCE:
-            case Field.BIGIDENTITY:
+            case Field.MSSQLBIGIDENTITY:
                 return "'0'";
             case Field.CHAR:
             case Field.ANSICHAR:
@@ -672,9 +672,9 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
             case Field.SHORT:
             case Field.INT:
             case Field.LONG:
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
             case Field.SEQUENCE:
-            case Field.BIGIDENTITY:
+            case Field.MSSQLBIGIDENTITY:
             case Field.BIGSEQUENCE:
             case Field.BLOB:
             case Field.DATE:

@@ -631,12 +631,12 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
       if (hasSequenceReturning)
         return field.name + " BIGINT IDENTITY(1,1)";
       return field.name + " BIGINT";
-    case Field.IDENTITY:
+    case Field.MSSQLIDENTITY:
       if (typeOnly == true)
         return field.name + " INTEGER";
       else
         return field.name + " INTEGER IDENTITY(1,1)";
-    case Field.BIGIDENTITY:
+    case Field.MSSQLBIGIDENTITY:
       if (typeOnly == true)
         return field.name + " BIGINT";
       else

@@ -265,7 +265,7 @@ public class PythonTreeCode extends BaseGenerator implements IBuiltInSIProcessor
 
     String fieldType(byte type) {
         switch (type) {
-            case Field.BIGIDENTITY:
+            case Field.MSSQLBIGIDENTITY:
                 return "BIGIDENTITY";
             case Field.BIGSEQUENCE:
                 return "BIGSEQUENCE";
@@ -287,7 +287,7 @@ public class PythonTreeCode extends BaseGenerator implements IBuiltInSIProcessor
                 return "DYNAMIC";
             case Field.FLOAT:
                 return "FLOAT";
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
                 return "IDENTITY";
             case Field.INT:
                 return "INT";

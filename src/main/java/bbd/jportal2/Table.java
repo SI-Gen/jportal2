@@ -99,7 +99,7 @@ public class Table implements Serializable {
     }
 
     static boolean isIdentity(Field field) {
-        return field.type == Field.BIGIDENTITY || field.type == Field.IDENTITY;
+        return field.type == Field.MSSQLBIGIDENTITY || field.type == Field.MSSQLIDENTITY;
     }
 
     static boolean isSequence(Field field) {
@@ -117,11 +117,11 @@ public class Table implements Serializable {
                 return "SMALLINT";
             case Field.INT:
             case Field.SEQUENCE:
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
                 return "INT";
             case Field.LONG:
             case Field.BIGSEQUENCE:
-            case Field.BIGIDENTITY:
+            case Field.MSSQLBIGIDENTITY:
                 return "BIGINT";
             case Field.CHAR:
                 if (field.length > 32762)
@@ -792,7 +792,7 @@ public class Table implements Serializable {
         proc.isSingle = true;
         for (i = 0; i < fields.size(); i++) {
             Field field = fields.elementAt(i);
-            if (field.type != Field.IDENTITY)
+            if (field.type != Field.MSSQLIDENTITY)
                 continue;
             proc.outputs.addElement(field);
             line = "select max(" + field.useLiteral() + ") " + field.useLiteral() + " from " + name;

@@ -1078,18 +1078,18 @@ void jDatatype() :
   }
 |  <IDENTITY>
   {
-    field.type = Field.IDENTITY;
-    field.isSequence = true;
-    table.hasSequence = true;
-    field.length = 4;
-  }
+  field.type = Field.MSSQLIDENTITY;
+  field.isSequence = true;
+  table.hasSequence = true;
+  field.length = 4;
+}
 |  <BIGIDENTITY>
   {
-    field.type = Field.BIGIDENTITY;
-    field.isSequence = true;
-    table.hasSequence = true;
-    field.length = 8;
-  }
+  field.type = Field.MSSQLBIGIDENTITY;
+  field.isSequence = true;
+  table.hasSequence = true;
+  field.length = 8;
+}
 | (<DOUBLE>|<FLOAT>)
   {
     field.type = Field.DOUBLE;

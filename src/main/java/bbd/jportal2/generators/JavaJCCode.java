@@ -819,7 +819,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                     return getEnumTypeName(field) + " " + field.useLowerName();
                 }
             case Field.SEQUENCE:
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
                 return "Integer " + field.useLowerName();
             case Field.LONG:
                 return "Long " + field.useLowerName();
@@ -872,7 +872,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                     break;
                 }
             case Field.SEQUENCE:
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
                 type = "Integer ";
                 break;
             case Field.LONG:
@@ -950,7 +950,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                     return field.useLowerName() + " = null;";
                 }
             case Field.SEQUENCE:
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
                 return field.useLowerName() + " = null;";
             case Field.LONG:
                 return field.useLowerName() + " = null;";
@@ -995,7 +995,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 return "Long";
             case Field.INT:
             case Field.SEQUENCE:
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
                 return "Int";
             case Field.LONG:
                 return "Long";

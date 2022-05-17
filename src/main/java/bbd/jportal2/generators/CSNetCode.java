@@ -1464,11 +1464,11 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.BYTE:
             case Field.DOUBLE:
             case Field.FLOAT:
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
             case Field.INT:
             case Field.LONG:
             case Field.SEQUENCE:
-            case Field.BIGIDENTITY:
+            case Field.MSSQLBIGIDENTITY:
             case Field.BIGSEQUENCE:
             case Field.SHORT:
             case Field.MONEY:
@@ -1506,7 +1506,7 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
                 if (field.precision > 15)
                     return "GetDecimal(" + occurence + tail;
                 return "GetDouble(" + occurence + tail;
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
                 return "GetInt(" + occurence + tail;
             case Field.INT:
                 return "GetInt(" + occurence + tail;
@@ -1514,7 +1514,7 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
                 return "GetLong(" + occurence + tail;
             case Field.BIGSEQUENCE:
                 return "GetLong(" + occurence + tail;
-            case Field.BIGIDENTITY:
+            case Field.MSSQLBIGIDENTITY:
                 return "GetLong(" + occurence + tail;
             case Field.MONEY:
                 return "GetDecimal(" + occurence + tail;
@@ -1564,9 +1564,9 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
                 if (field.precision > 15)
                     return "String";
                 return "Double";
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
                 return "Int32";
-            case Field.BIGIDENTITY:
+            case Field.MSSQLBIGIDENTITY:
                 return "Int64";
             case Field.INT:
                 return "Int32";
@@ -1682,12 +1682,12 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
                 break;
             case Field.INT:
             case Field.SEQUENCE:
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
                 result = "int";
                 break;
             case Field.LONG:
             case Field.BIGSEQUENCE:
-            case Field.BIGIDENTITY:
+            case Field.MSSQLBIGIDENTITY:
                 result = "long";
                 break;
             case Field.SHORT:
@@ -1726,10 +1726,10 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.FLOAT:
             case Field.INT:
             case Field.SEQUENCE:
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
             case Field.LONG:
             case Field.BIGSEQUENCE:
-            case Field.BIGIDENTITY:
+            case Field.MSSQLBIGIDENTITY:
             case Field.SHORT:
                 nullableType = true;
                 break;
@@ -1789,12 +1789,12 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
                 break;
             case Field.INT:
             case Field.SEQUENCE:
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
                 result = "int";
                 break;
             case Field.LONG:
             case Field.BIGSEQUENCE:
-            case Field.BIGIDENTITY:
+            case Field.MSSQLBIGIDENTITY:
                 result = "long";
                 break;
             case Field.SHORT:
@@ -1824,11 +1824,11 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
                 return "smallint";
             case Field.INT:
             case Field.SEQUENCE:
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
                 return "integer";
             case Field.LONG:
             case Field.BIGSEQUENCE:
-            case Field.BIGIDENTITY:
+            case Field.MSSQLBIGIDENTITY:
                 return "longint";
             case Field.CHAR:
                 if (field.length > 8000) {

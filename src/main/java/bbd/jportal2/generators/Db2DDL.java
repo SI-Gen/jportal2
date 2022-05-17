@@ -164,9 +164,9 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
                 int no = table.getFieldIndex(fieldName);
                 if (no != -1) {
                     Field field = (Field) table.fields.elementAt(no);
-                    if (field.type == Field.BIGIDENTITY
+                    if (field.type == Field.MSSQLBIGIDENTITY
                             || field.type == Field.BIGSEQUENCE
-                            || field.type == Field.IDENTITY
+                            || field.type == Field.MSSQLIDENTITY
                             || field.type == Field.SEQUENCE)
                         PSH = true;
                 }
@@ -453,7 +453,7 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
                 return "VARCHAR(50)";
             case Field.XML:
                 return "XML";
-            case Field.IDENTITY:
+            case Field.MSSQLIDENTITY:
                 return "<not supported>";
         }
         return "unknown";

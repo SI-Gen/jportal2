@@ -294,7 +294,7 @@ public class PlaceHolder implements Serializable
       if (questionsSeen < proc.inputs.size())
       {
         Field field = (Field) proc.inputs.elementAt(questionsSeen++);
-        if (field.type == Field.IDENTITY && proc.isInsert)
+        if (field.type == Field.MSSQLIDENTITY && proc.isInsert)
           field = (Field) proc.inputs.elementAt(questionsSeen++);
         line.insert(findPos, ":" + field.name);
         anchor = findPos + field.name.length() + 1;
