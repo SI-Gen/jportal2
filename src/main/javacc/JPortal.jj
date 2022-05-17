@@ -416,6 +416,7 @@ TOKEN[IGNORE_CASE] :          // Keywords
 | <AS:            "as">
 | <AUTOTIMESTAMP:"autotimestamp">
 | <BIGIDENTITY:  "bigidentity">
+| <BIGJSON:      "bigjson">
 | <BIGSEQUENCE:  "bigsequence">
 | <BIGXML:       "bigxml">
 | <BLOB:         "blob">
@@ -455,6 +456,7 @@ TOKEN[IGNORE_CASE] :          // Keywords
 | <INPUT:        "input">
 | <INSERT:       "insert">
 | <INT:         ("int"|"integer")>
+| <JSON:        "json">
 | <KEY:          "key">
 | <LINK:         "link">
 | <LONG:         "long">
@@ -640,7 +642,8 @@ void jInput() :
   ( jTables()
     {
       if (database.hasTable(table.name))
-        logger.warn(table.name+" is already present");
+        logger.warn
+        (table.name+" is already present");
       else
         database.tables.addElement(table);
     }
@@ -1054,6 +1057,18 @@ void jDatatype() :
   {
     field.type = Field.BIGXML;
     field.length = Field.DEFAULT_BIG_XML;
+  }
+  (jCharsize())?
+| <JSON>
+  {
+    field.type = Field.JSON;
+    field.length = Field.DEFAULT_JSON;
+  }
+  (jCharsize())?
+| <BIGJSON>
+  {
+    field.type = Field.BIGJSON;
+    field.length = Field.DEFAULT_BIG_JSON;
   }
   (jCharsize())?
 |  <USERSTAMP>
@@ -1991,6 +2006,8 @@ void jStdProc() :
     {
       if (table.hasBigXML)
         logger.warn("proc SelectAll is invalid with BigXML field");
+      else if (table.hasBigJSON)
+        logger.warn("proc SelectAll is invalid with BigJSON field");
       else
       {
         proc.name = "SelectAll";

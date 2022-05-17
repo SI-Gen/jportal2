@@ -624,6 +624,7 @@ public class IdlCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.TLOB:
             case Field.USERSTAMP:
             case Field.XML:
+            case Field.JSON:
                 result = "string";
                 break;
             case Field.MONEY:
@@ -716,6 +717,7 @@ public class IdlCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.MONEY:
             case Field.TLOB:
             case Field.XML:
+            case Field.JSON:
             case Field.USERSTAMP:
             case Field.DATE:
             case Field.DATETIME:
@@ -735,6 +737,7 @@ public class IdlCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.ANSICHAR:
             case Field.CHAR:
             case Field.XML:
+            case Field.JSON:
             case Field.TLOB:
             case Field.USERSTAMP:
                 return false;

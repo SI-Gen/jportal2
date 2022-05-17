@@ -1,0 +1,19 @@
+///
+/// Name:TableWithJSONColumn.si
+///
+DATABASE testDatabase
+PACKAGE  co.za.entities
+OUTPUT   TableWithJSONColumn
+SERVER   PostgeSQL95
+
+Table TableWithJSONColumn
+  ID                            INT
+  Payload                       BIGJSON(512)
+
+KEY PKEY PRIMARY ID
+
+PROC Insert
+PROC SelectOne
+PROC Update
+PROC DeleteOne
+
