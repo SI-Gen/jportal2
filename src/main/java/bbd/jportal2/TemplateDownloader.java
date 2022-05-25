@@ -56,22 +56,30 @@ public class TemplateDownloader {
             return true;
         }
 
+        if (FilenameUtils.getExtension(fullGeneratorDownloadPath.toString()).equals("zip")) {
+                return downloadZippedGenerator(generatorName, generatorURL, GeneratorDownloadDirectoryPath, fullGeneratorDownloadPath);
+        }
+
+        return true;
+    }
+
+    private boolean downloadZippedGenerator(String generatorName, URL generatorURL, Path GeneratorDownloadDirectoryPath, Path fullGeneratorDownloadPath) {
         try {
-            logger.info("Downloading generator {} from {}",generatorName, generatorURL);
+            logger.info("Downloading generator {} from {}", generatorName, generatorURL.toString());
             downloadFromURL(generatorURL, fullGeneratorDownloadPath.toString());
             if (FilenameUtils.getExtension(fullGeneratorDownloadPath.toString()).equals("zip")) {
-                logger.info("Unzipping {} to {}",fullGeneratorDownloadPath.toString(), GeneratorDownloadDirectoryPath.toString());
-                unzipFolderZip4j(fullGeneratorDownloadPath,GeneratorDownloadDirectoryPath);
+                logger.info("Unzipping {} to {}", fullGeneratorDownloadPath.toString(), GeneratorDownloadDirectoryPath.toString());
+                unzipFolderZip4j(fullGeneratorDownloadPath, GeneratorDownloadDirectoryPath);
             }
             else {
                 logger.error("JPortal only supports automatic downloading of templates in .zip format.");
             }
 
         } catch (Exception e) {
-            logger.error("Error downloading: " + generatorURLString, e);
-            return false;
+            logger.error("Error downloading: {}", generatorURL.toString(), e);
+            return true;
         }
-        return true;
+        return false;
     }
 
     // it takes `File` as arguments
