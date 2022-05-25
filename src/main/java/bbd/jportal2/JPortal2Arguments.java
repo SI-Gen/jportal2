@@ -12,10 +12,10 @@ import java.util.List;
 public class JPortal2Arguments {
 
     @Parameter(names = {"--debug", "-D"}, description = "Enable debug logging")
-    private Boolean debug = false;
+    private boolean debug = false;
 
     @Parameter(names = {"--projectCompile", "-pc"}, description = "Enable project-level compilation")
-    public Boolean projectCompile = false;
+    public boolean projectCompile = false;
 
     @Parameter(names = {"--log", "-l"}, description = "Logfile name i.e. --log=jportal2.log")
     private String logFileName = null;
@@ -28,6 +28,18 @@ public class JPortal2Arguments {
 
     @Parameter(names = {"--builtin-generator", "-o"}, description = "Built-In (Java-based) generatorName to run. Format is <generator_name>:<dest_dir> i.e. --builtin-generator=CSNetCode:./cs")
     private List<String> builtinSIProcessors = new ArrayList<>();
+
+    @Parameter(names = {"--download-template-location", "-dtl"}, description = "Location in which to place downloaded Freemarker templates. Default is <current_working_directory>/jportal2_downloaded_templates")
+    private String downloadedTemplateLocation =  "jportal2_downloaded_templates";
+
+    @Parameter(names = {"--download-template", "-dt"},
+            description =
+                    "Download the specified template from the given location. "
+                            + "Zip files as well as git repos are supported."
+                            + "Format is <freemarker_generator_name>:<url> i.e. "
+                            + "'--download-template=MyCustomGenerator:https://github/SI-Gen/SQLAlchemy.zip'. "
+                            + "The files will be downloaded to and unzipped in, to <template-location>/<freemarker_generator_name>")
+    private List<String> templatesToDownload = new ArrayList<>();
 
     @Parameter(names = {"--template-generator", "-t"},
             description =
@@ -88,6 +100,12 @@ public class JPortal2Arguments {
     public List<String> getTemplateLocations() {
         return templateLocations;
     }
+
+    public String getDownloadedTemplateLocation() {
+        return downloadedTemplateLocation;
+    }
+
+    public List<String> getTemplatesToDownload() { return templatesToDownload; }
 
     public List<String> getFlags() {
         return flags;
@@ -152,6 +170,7 @@ public class JPortal2Arguments {
                 ", builtinPostProcessors=" + builtinPostProcessors +
                 ", templatePostProcessors=" + templatePostProcessors +
                 ", templateLocations=" + templateLocations +
+                ", templatesToDownload=" + templatesToDownload +
                 ", flags=" + flags +
                 '}';
     }

@@ -42,6 +42,9 @@ public class Main {
         }
 
         try {
+            int downloadRC =  new TemplateDownloader().downloadTemplates(arguments);
+            if (downloadRC>0) System.exit(downloadRC);
+
             ProjectCompiler pj = ProjectCompilerBuilder.build(arguments);
 
             if (Objects.nonNull(pj)) {
