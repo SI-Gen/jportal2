@@ -1,5 +1,7 @@
 package bbd.jportal2;
 
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.model.UnzipParameters;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -8,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -34,28 +37,49 @@ public class TemplateDownloader {
         TemplateDownloader.GeneratorDownloadParameters generatorParameters = new TemplateDownloader.GeneratorDownloadParameters(templateGenerator).extractParametersFromOption();
         String generatorName = generatorParameters.getGeneratorName();
         String generatorURLString = generatorParameters.getGeneratorURL();
-        String generatorDownloadDirectory = addTrailingSlash(downloadedTemplateLocation);
-        File templateDownloadLocationFile = Paths.get(generatorDownloadDirectory).toFile();
+        String templateDownloadDirectory = addTrailingSlash(downloadedTemplateLocation);
+        File templateDownloadLocationFile = Paths.get(templateDownloadDirectory).toFile();
+
         URL generatorURL = null;
         try {
             generatorURL = new URL(generatorURLString);
         } catch (IOException e) {
-            logger.error("Error downloading template " + generatorName + " from  " + generatorURLString, e);
+            logger.error("Invalid URL: {}",generatorURLString, e);
             return false;
         }
 
-        Path fullGeneratorPath = Paths.get(templateDownloadLocationFile.getAbsolutePath(), generatorName,
-                FilenameUtils.getName(generatorURL.getPath()));
+        Path GeneratorDownloadDirectoryPath = Paths.get(templateDownloadLocationFile.getAbsolutePath(), generatorName);
+        Path fullGeneratorDownloadPath = Paths.get(GeneratorDownloadDirectoryPath.toString(), FilenameUtils.getName(generatorURL.getPath()));
+
+        if (Files.exists(GeneratorDownloadDirectoryPath)) {
+            logger.info("Template {} already exists in template-download-location {}. If you want to force a fresh download, delete the directory {}", generatorName, templateDownloadLocationFile.toString(), GeneratorDownloadDirectoryPath.toAbsolutePath());
+            return true;
+        }
+
         try {
             logger.info("Downloading generator {} from {}",generatorName, generatorURL);
-            downloadFromURL(generatorURL,fullGeneratorPath.toString());
-        } catch (IOException e) {
+            downloadFromURL(generatorURL, fullGeneratorDownloadPath.toString());
+            if (FilenameUtils.getExtension(fullGeneratorDownloadPath.toString()).equals("zip")) {
+                logger.info("Unzipping {} to {}",fullGeneratorDownloadPath.toString(), GeneratorDownloadDirectoryPath.toString());
+                unzipFolderZip4j(fullGeneratorDownloadPath,GeneratorDownloadDirectoryPath);
+            }
+            else {
+                logger.error("JPortal only supports automatic downloading of templates in .zip format.");
+            }
+
+        } catch (Exception e) {
             logger.error("Error downloading: " + generatorURLString, e);
             return false;
         }
         return true;
     }
 
+    // it takes `File` as arguments
+    public static void unzipFolderZip4j(Path source, Path target)
+            throws IOException {
+        new ZipFile(source.toFile())
+                .extractAll(target.toString());
+    }
 
     private void downloadFromURL(URL url, String fileName) throws IOException {
         FileUtils.copyURLToFile(url, new File(fileName));
