@@ -117,7 +117,7 @@ public class TemplateDownloader {
 
             logger.info("Checking out tag/branch: {}", gitTag);
             git.checkout()
-                    .setName(gitTag)
+                    .setName("refs/tags/" + gitTag)
                     .call();
         } catch (Exception e) {
             logger.error("Error downloading: {}", generatorURL.toString(), e);
