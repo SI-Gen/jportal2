@@ -36,12 +36,15 @@ public class JPortal2Arguments {
             description =
                     "Download the specified template from the given location. "
                             + "Zip files as well as git repos are supported."
-                            + "Format is <freemarker_generator_name>:<url>[|tag]  i.e. \n"
+                            + "Format is <freemarker_generator_name>:<url>[|downloadSpecifier]  i.e. \n"
                             + "'--download-template=MyCustomGenerator:https://github/SI-Gen/SQLAlchemy.zip'.\n "
                             + "or,\n"
                             + "'--download-template=MyCustomGenerator:https://github.com/SI-Gen/jportal2-generator-vanguard-sqlalchemy.git|1.3'.\n "
                             + "*** NOTE THE REQUIRED TAG AT THE END OF THE GIT URL!!! ***\n"
                             + "For GIT, you MUST specify either a tag (recommended), or a branch."
+                            + "For ZIP, you can optionally specify 'stripBaseDir' as a downloadSpecifier. This option is useful if you"
+                            + " download zip files from eg. github tags, where they automatically put a container directory around the actual files.\n"
+                            + "Eg. --download-template=MyCustomGenerator:https://github/SI-Gen/SQLAlchemy.zip|stripBaseDir'.\n"
                             + "The files will be downloaded to and unzipped in, to <template-location>/<freemarker_generator_name>")
     private List<String> templatesToDownload = new ArrayList<>();
 

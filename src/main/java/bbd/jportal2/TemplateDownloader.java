@@ -1,7 +1,6 @@
 package bbd.jportal2;
 
 import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.model.UnzipParameters;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.api.Git;
@@ -10,17 +9,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
-import java.util.List;
-import java.util.Vector;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
-import static bbd.jportal2.JPortal.database;
 import static bbd.jportal2.PathHelpers.addTrailingSlash;
 
 
@@ -63,24 +63,26 @@ public class TemplateDownloader {
         }
 
         if (FilenameUtils.getExtension(fullGeneratorDownloadPath.toString()).equals("zip")) {
-                return downloadZippedGenerator(generatorName, generatorURL, generatorDownloadDirectoryPath, fullGeneratorDownloadPath);
+                return downloadZippedGenerator(generatorName, generatorURL, generatorParameters.downloadSpecifier, generatorDownloadDirectoryPath, fullGeneratorDownloadPath);
         }
 
         if (FilenameUtils.getExtension(fullGeneratorDownloadPath.toString()).equals("git")) {
-            return downloadGittedGenerator(generatorName, generatorURL, generatorParameters.gitTag, generatorDownloadDirectoryPath);
+            return downloadGittedGenerator(generatorName, generatorURL, generatorParameters.downloadSpecifier, generatorDownloadDirectoryPath);
         }
 
         logger.error("JPortal can only deal with URL's that end in .git or .zip. Something is wrong with {}", generatorURL);
         return false;
     }
 
-    private boolean downloadZippedGenerator(String generatorName, URL generatorURL, Path GeneratorDownloadDirectoryPath, Path fullGeneratorDownloadPath) {
+    private boolean downloadZippedGenerator(String generatorName, URL generatorURL, String mustStripBaseDir, Path GeneratorDownloadDirectoryPath, Path fullGeneratorDownloadPath) {
         try {
-            logger.info("Downloading generator {} from {}", generatorName, generatorURL.toString());
+            boolean stripBaseDir = (mustStripBaseDir != null && mustStripBaseDir.toLowerCase().contains("stripbasedir")?true:false);
+            logger.info("Downloading generator {} from {} (stripBaseDir = {})", generatorName, generatorURL.toString(),stripBaseDir);
             downloadFromURL(generatorURL, fullGeneratorDownloadPath.toString());
             if (FilenameUtils.getExtension(fullGeneratorDownloadPath.toString()).equals("zip")) {
                 logger.info("Unzipping {} to {}", fullGeneratorDownloadPath.toString(), GeneratorDownloadDirectoryPath.toString());
-                unzipFolderZip4j(fullGeneratorDownloadPath, GeneratorDownloadDirectoryPath);
+                //unzipFolderZip4j(fullGeneratorDownloadPath, GeneratorDownloadDirectoryPath);
+                unzipFolder(fullGeneratorDownloadPath,GeneratorDownloadDirectoryPath, stripBaseDir);
             }
             else {
                 logger.error("JPortal only supports automatic downloading of templates in .zip format.");
@@ -133,6 +135,90 @@ public class TemplateDownloader {
                 .extractAll(target.toString());
     }
 
+    private void unzipFolder(Path source, Path target, boolean stripBaseDir) throws IOException {
+
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(source.toFile()))) {
+
+            ZipEntry zipEntry = zis.getNextEntry();
+            String baseDir = "";
+            if (stripBaseDir) {
+                //If stripBaseDir is true, we will strip the root dir from all files,
+                //i.e. data/mystuff.txt will just extract to mystuff.txt
+                baseDir = zipEntry.getName().split(File.separator)[0] + File.separator;
+            }
+            while (zipEntry != null) {
+
+                boolean isDirectory = false;
+                // example 1.1
+                // some zip stored files and folders separately
+                // e.g data/
+                //     data/folder/
+                //     data/folder/file.txt
+                if (zipEntry.getName().endsWith(File.separator)) {
+                    isDirectory = true;
+                }
+
+                Path newPath = zipSlipProtect(zipEntry, target);
+
+                //Strip basedir if needed
+                String tmpNewPath = newPath.toString();
+                tmpNewPath = tmpNewPath.replace(baseDir,"");
+                newPath = Paths.get(tmpNewPath);
+
+                if (isDirectory) {
+                    Files.createDirectories(newPath);
+                } else {
+
+                    // example 1.2
+                    // some zip stored file path only, need create parent directories
+                    // e.g data/folder/file.txt
+                    if (newPath.getParent() != null) {
+                        if (Files.notExists(newPath.getParent())) {
+                            Files.createDirectories(newPath.getParent());
+                        }
+                    }
+
+                    // copy files, nio
+                    Files.copy(zis, newPath, StandardCopyOption.REPLACE_EXISTING);
+
+                    // copy files, classic
+                    /*try (FileOutputStream fos = new FileOutputStream(newPath.toFile())) {
+                        byte[] buffer = new byte[1024];
+                        int len;
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len);
+                        }
+                    }*/
+                }
+
+                zipEntry = zis.getNextEntry();
+
+            }
+            zis.closeEntry();
+
+        }
+
+    }
+
+    // protect zip slip attack
+    private Path zipSlipProtect(ZipEntry zipEntry, Path targetDir)
+            throws IOException {
+
+        // test zip slip vulnerability
+        // Path targetDirResolved = targetDir.resolve("../../" + zipEntry.getName());
+
+        Path targetDirResolved = targetDir.resolve(zipEntry.getName());
+
+        // make sure normalized file still has targetDir as its prefix
+        // else throws exception
+        Path normalizePath = targetDirResolved.normalize();
+        if (!normalizePath.startsWith(targetDir)) {
+            throw new IOException("Bad zip entry: " + zipEntry.getName());
+        }
+
+        return normalizePath;
+    }
+
     private void downloadFromURL(URL url, String fileName) throws IOException {
         FileUtils.copyURLToFile(url, new File(fileName));
     }
@@ -142,7 +228,7 @@ public class TemplateDownloader {
         private final String generator;
         private String generatorName;
 
-        private String gitTag;
+        private String downloadSpecifier;
 
         private String generatorURL;
 
@@ -158,8 +244,8 @@ public class TemplateDownloader {
             return generatorURL;
         }
 
-        String getGitTag() {
-            return gitTag;
+        String getDownloadSpecifier() {
+            return downloadSpecifier;
         }
 
         TemplateDownloader.GeneratorDownloadParameters extractParametersFromOption() {
@@ -173,13 +259,15 @@ public class TemplateDownloader {
                 generatorURL = generator.substring(strchr + 1, generator.length());
                 int strchr2 = generatorURL.lastIndexOf('|');
                 if (strchr2 != -1) {
-                    gitTag = generatorURL.substring(strchr2 + 1, generatorURL.length());
+                    downloadSpecifier = generatorURL.substring(strchr2 + 1, generatorURL.length());
                     generatorURL = generatorURL.substring(0, strchr2);
                 }
                 return this;
             }
             throw new RuntimeException();
         }
+
+
     }
 
 }
