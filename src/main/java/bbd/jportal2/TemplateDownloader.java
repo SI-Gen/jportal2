@@ -1,6 +1,5 @@
 package bbd.jportal2;
 
-import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.api.Git;
@@ -126,13 +125,6 @@ public class TemplateDownloader {
             return false;
         }
         return true;
-    }
-
-    // it takes `File` as arguments
-    public static void unzipFolderZip4j(Path source, Path target)
-            throws IOException {
-        new ZipFile(source.toFile())
-                .extractAll(target.toString());
     }
 
     private void unzipFolder(Path source, Path target, boolean stripBaseDir) throws IOException {
