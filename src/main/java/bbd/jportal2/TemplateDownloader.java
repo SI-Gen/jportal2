@@ -53,7 +53,8 @@ public class TemplateDownloader {
             return false;
         }
 
-        Path generatorDownloadDirectoryPath = Paths.get(templateDownloadLocationFile.getAbsolutePath(), generatorName);
+        //Path generatorDownloadDirectoryPath = Paths.get(templateDownloadLocationFile.getAbsolutePath(), generatorName);
+        Path generatorDownloadDirectoryPath = Paths.get(templateDownloadLocationFile.getAbsolutePath());
         Path fullGeneratorDownloadPath = Paths.get(generatorDownloadDirectoryPath.toString(), FilenameUtils.getName(generatorURL.getPath()));
 
         if (Files.exists(generatorDownloadDirectoryPath)) {
