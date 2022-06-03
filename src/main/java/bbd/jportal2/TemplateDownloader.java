@@ -57,7 +57,7 @@ public class TemplateDownloader {
         Path generatorDownloadDirectoryPath = Paths.get(templateDownloadLocationFile.getAbsolutePath());
         Path fullGeneratorDownloadPath = Paths.get(generatorDownloadDirectoryPath.toString(), FilenameUtils.getName(generatorURL.getPath()));
 
-        if (Files.exists(generatorDownloadDirectoryPath)) {
+        if (Files.exists(Paths.get(generatorDownloadDirectoryPath.toString(), generatorName))) {
             logger.info("Template {} already exists in template-download-location {}. If you want to force a fresh download, delete the directory {}", generatorName, generatorDownloadDirectoryPath.toString(), generatorDownloadDirectoryPath.toAbsolutePath());
             return true;
         }
