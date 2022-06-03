@@ -53,11 +53,10 @@ public class TemplateDownloader {
             return false;
         }
 
-        //Path generatorDownloadDirectoryPath = Paths.get(templateDownloadLocationFile.getAbsolutePath(), generatorName);
-        Path generatorDownloadDirectoryPath = Paths.get(templateDownloadLocationFile.getAbsolutePath());
+        Path generatorDownloadDirectoryPath = Paths.get(templateDownloadLocationFile.getAbsolutePath(), generatorName);
         Path fullGeneratorDownloadPath = Paths.get(generatorDownloadDirectoryPath.toString(), FilenameUtils.getName(generatorURL.getPath()));
 
-        if (Files.exists(Paths.get(generatorDownloadDirectoryPath.toString(), generatorName))) {
+        if (Files.exists(generatorDownloadDirectoryPath)) {
             logger.info("Template {} already exists in template-download-location {}. If you want to force a fresh download, delete the directory {}", generatorName, generatorDownloadDirectoryPath.toString(), generatorDownloadDirectoryPath.toAbsolutePath());
             return true;
         }
