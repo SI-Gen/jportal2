@@ -353,7 +353,9 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
                 if (getFlags().contains("UseJSONInsteadOfJsonB"))
                     return "json";
                 return "jsonb";
-
+            case Field.XML:
+            case Field.BIGXML:
+                return "xml";
         }
         return "unknown";
     }
