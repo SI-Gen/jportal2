@@ -1470,6 +1470,9 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.SEQUENCE:
             case Field.MSSQLBIGIDENTITY:
             case Field.BIGSEQUENCE:
+            case Field.SMALLIDENTITY_STD2003:
+            case Field.IDENTITY_STD2003:
+            case Field.BIGIDENTITY_STD2003:
             case Field.SHORT:
             case Field.MONEY:
             case Field.STATUS:
@@ -1513,14 +1516,17 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.LONG:
                 return "GetLong(" + occurence + tail;
             case Field.BIGSEQUENCE:
+            case Field.BIGIDENTITY_STD2003:
                 return "GetLong(" + occurence + tail;
             case Field.MSSQLBIGIDENTITY:
                 return "GetLong(" + occurence + tail;
             case Field.MONEY:
                 return "GetDecimal(" + occurence + tail;
             case Field.SEQUENCE:
+            case Field.IDENTITY_STD2003:
                 return "GetInt(" + occurence + tail;
             case Field.SHORT:
+            case Field.SMALLIDENTITY_STD2003:
                 return "GetShort(" + occurence + tail;
             case Field.TIME:
                 return "GetDateTime(" + occurence + tail;
@@ -1578,10 +1584,13 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.MONEY:
                 return "String";
             case Field.SEQUENCE:
+            case Field.IDENTITY_STD2003:
                 return "Int32";
             case Field.BIGSEQUENCE:
+            case Field.BIGIDENTITY_STD2003:
                 return "Int64";
             case Field.SHORT:
+            case Field.SMALLIDENTITY_STD2003:
                 return "Int16";
             case Field.TIME:
                 return "DateTime";
@@ -1694,14 +1703,17 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.INT:
             case Field.SEQUENCE:
             case Field.MSSQLIDENTITY:
+            case Field.IDENTITY_STD2003:
                 result = "int";
                 break;
             case Field.LONG:
             case Field.BIGSEQUENCE:
+            case Field.BIGIDENTITY_STD2003:
             case Field.MSSQLBIGIDENTITY:
                 result = "long";
                 break;
             case Field.SHORT:
+            case Field.SMALLIDENTITY_STD2003:
                 result = "short";
                 break;
             case Field.DYNAMIC:
@@ -1741,6 +1753,9 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.LONG:
             case Field.BIGSEQUENCE:
             case Field.MSSQLBIGIDENTITY:
+            case Field.SMALLIDENTITY_STD2003:
+            case Field.IDENTITY_STD2003:
+            case Field.BIGIDENTITY_STD2003:
             case Field.SHORT:
                 nullableType = true;
                 break;
@@ -1804,15 +1819,18 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
                 break;
             case Field.INT:
             case Field.SEQUENCE:
+            case Field.IDENTITY_STD2003:
             case Field.MSSQLIDENTITY:
                 result = "int";
                 break;
             case Field.LONG:
             case Field.BIGSEQUENCE:
+            case Field.BIGIDENTITY_STD2003:
             case Field.MSSQLBIGIDENTITY:
                 result = "long";
                 break;
             case Field.SHORT:
+            case Field.SMALLIDENTITY_STD2003:
                 result = "short";
                 break;
             default:
@@ -1836,14 +1854,17 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.BYTE:
                 return "tinyint";
             case Field.SHORT:
+            case Field.SMALLIDENTITY_STD2003:
                 return "smallint";
             case Field.INT:
             case Field.SEQUENCE:
+            case Field.IDENTITY_STD2003:
             case Field.MSSQLIDENTITY:
                 return "integer";
             case Field.LONG:
             case Field.BIGSEQUENCE:
             case Field.MSSQLBIGIDENTITY:
+            case Field.BIGIDENTITY_STD2003:
                 return "longint";
             case Field.CHAR:
                 if (field.length > 8000) {

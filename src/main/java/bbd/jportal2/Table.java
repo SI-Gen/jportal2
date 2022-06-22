@@ -105,7 +105,10 @@ public class Table implements Serializable {
     }
 
     static boolean isSequence(Field field) {
-        return field.type == Field.BIGSEQUENCE || field.type == Field.SEQUENCE;
+        return field.type == Field.BIGSEQUENCE || field.type == Field.SEQUENCE
+                || field.type == Field.SMALLIDENTITY_STD2003
+                || field.type == Field.IDENTITY_STD2003
+                || field.type == Field.BIGIDENTITY_STD2003;
     }
 
     /**
@@ -116,14 +119,17 @@ public class Table implements Serializable {
             case Field.BYTE:
                 return "SMALLINT";
             case Field.SHORT:
+            case Field.SMALLIDENTITY_STD2003:
                 return "SMALLINT";
             case Field.INT:
             case Field.SEQUENCE:
             case Field.MSSQLIDENTITY:
+            case Field.IDENTITY_STD2003:
                 return "INT";
             case Field.LONG:
             case Field.BIGSEQUENCE:
             case Field.MSSQLBIGIDENTITY:
+            case Field.BIGIDENTITY_STD2003:
                 return "BIGINT";
             case Field.CHAR:
                 if (field.length > 32762)

@@ -415,7 +415,8 @@ TOKEN[IGNORE_CASE] :          // Keywords
 | <ANSICHAR:    ("ansi"|"ansichar")>
 | <AS:            "as">
 | <AUTOTIMESTAMP:"autotimestamp">
-| <BIGIDENTITY:  "bigidentity">
+| <BIGMSSQLIDENTITY:  "bigmssqlidentity">
+| <BIGIDENTITY_STD2003:  "bigidentity_std2003">
 | <BIGJSON:      "bigjson">
 | <BIGSEQUENCE:  "bigsequence">
 | <BIGXML:       "bigxml">
@@ -449,7 +450,7 @@ TOKEN[IGNORE_CASE] :          // Keywords
 | <FLOAT:        "float">
 | <FOR:          "for">
 | <GRANT:        "grant">
-| <IDENTITY:     "identity">
+| <IDENTITY_STD2003:  "identity_std2003">
 | <IMPORT:       "import">
 | <IN:           "in">
 | <INOUT:        "inout">
@@ -462,6 +463,7 @@ TOKEN[IGNORE_CASE] :          // Keywords
 | <LONG:         "long">
 | <MERGE:        "merge">
 | <MONEY:        "money">
+| <MSSQLIDENTITY:"mssqlidentity">
 | <MULTIPLE:     "multiple">
 | <NAMES:        "names">
 | <NOT:          "not">
@@ -488,6 +490,7 @@ TOKEN[IGNORE_CASE] :          // Keywords
 | <SET:          "set">
 | <SHORT:        "short">
 | <SINGLE:       "single">
+| <SMALLIDENTITY_STD2003:  "smallidentity_std2003">
 | <SQL:          "sql">
 | <SPROC:       ("storedproc"|"sproc")>
 | <STANDARD:     "standard">
@@ -1091,14 +1094,35 @@ void jDatatype() :
     table.hasSequence = true;
     field.length = 8;
   }
-|  <IDENTITY>
+|  <SMALLIDENTITY_STD2003>
+  {
+    field.type = Field.SMALLIDENTITY_STD2003;
+    field.isSequence = true;
+    table.hasSequence = true;
+    field.length = 2;
+  }
+|  <IDENTITY_STD2003>
+  {
+    field.type = Field.IDENTITY_STD2003;
+    field.isSequence = true;
+    table.hasSequence = true;
+    field.length = 4;
+  }
+|  <BIGIDENTITY_STD2003>
+  {
+    field.type = Field.BIGIDENTITY_STD2003;
+    field.isSequence = true;
+    table.hasSequence = true;
+    field.length = 8;
+  }
+|  <MSSQLIDENTITY>
   {
   field.type = Field.MSSQLIDENTITY;
   field.isSequence = true;
   table.hasSequence = true;
   field.length = 4;
 }
-|  <BIGIDENTITY>
+|  <BIGMSSQLIDENTITY>
   {
   field.type = Field.MSSQLBIGIDENTITY;
   field.isSequence = true;

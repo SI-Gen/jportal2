@@ -1,0 +1,19 @@
+///
+/// Name:TableWithJSONColumn.si
+///
+DATABASE testDatabase
+PACKAGE  co.za.entities
+OUTPUT   TableWithIDENITY_STD2003Column
+SERVER   PostgeSQL95
+
+Table TableWithIDENITY_STD2003Column
+  ID                            IDENTITY_STD2003
+  Payload                       CHAR(50)
+
+KEY PKEY PRIMARY ID
+
+PROC Insert
+PROC SelectOne
+PROC Update
+PROC DeleteOne
+

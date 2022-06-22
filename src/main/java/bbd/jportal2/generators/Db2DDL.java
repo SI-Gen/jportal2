@@ -89,7 +89,7 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
             outData.println("CREATE TABLE " + tableName);
             for (int i = 0; i < table.fields.size(); i++, comma = ", ") {
                 Field field = (Field) table.fields.elementAt(i);
-                if (field.type == Field.BIGSEQUENCE)
+                if (field.type == Field.BIGSEQUENCE || field.type == Field.BIGIDENTITY_STD2003)
                     useBigSequence = true;
                 outData.print(comma + field.name + " " + varType(field));
                 if (field.defaultValue.length() > 0)
@@ -167,7 +167,10 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
                     if (field.type == Field.MSSQLBIGIDENTITY
                             || field.type == Field.BIGSEQUENCE
                             || field.type == Field.MSSQLBIGIDENTITY
-                            || field.type == Field.SEQUENCE)
+                            || field.type == Field.SEQUENCE
+                            || field.type == Field.SMALLIDENTITY_STD2003
+                            || field.type == Field.IDENTITY_STD2003
+                            || field.type == Field.BIGIDENTITY_STD2003)
                         PSH = true;
                 }
                 if ((!key.isPrimary && !key.isUnique) || PSH == true)
@@ -414,12 +417,15 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.BYTE:
                 return "SMALLINT";
             case Field.SHORT:
+            case Field.SMALLIDENTITY_STD2003:
                 return "SMALLINT";
             case Field.INT:
             case Field.SEQUENCE:
+            case Field.IDENTITY_STD2003:
                 return "INT";
             case Field.LONG:
             case Field.BIGSEQUENCE:
+            case Field.BIGIDENTITY_STD2003:
                 return "BIGINT";
             case Field.CHAR:
                 if (field.length > 32762)

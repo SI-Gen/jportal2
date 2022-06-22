@@ -289,6 +289,12 @@ public class PythonTreeCode extends BaseGenerator implements IBuiltInSIProcessor
                 return "FLOAT";
             case Field.MSSQLIDENTITY:
                 return "IDENTITY";
+            case Field.SMALLIDENTITY_STD2003:
+                return "SMALLIDENTITY_STD2003";
+            case Field.IDENTITY_STD2003:
+                return "IDENTITY_STD2003";
+            case Field.BIGIDENTITY_STD2003:
+                return "BIGIDENTITY_STD2003";
             case Field.INT:
                 return "INT";
             case Field.LONG:

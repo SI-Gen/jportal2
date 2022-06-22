@@ -111,7 +111,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
                     hasNotNull = true;
                 }
 
-                if (field.type == Field.BIGSEQUENCE) {
+                if (field.type == Field.BIGSEQUENCE || field.type == Field.BIGIDENTITY_STD2003) {
                     tableHasBigSequence = true;
                 }
 

@@ -657,15 +657,18 @@ public class IdlCode extends BaseGenerator implements IBuiltInSIProcessor {
                 break;
             case Field.INT:
             case Field.MSSQLIDENTITY:
+            case Field.IDENTITY_STD2003:
             case Field.SEQUENCE:
                 result = "int";
                 break;
             case Field.LONG:
             case Field.MSSQLBIGIDENTITY:
             case Field.BIGSEQUENCE:
+            case Field.BIGIDENTITY_STD2003:
                 result = "long";
                 break;
             case Field.SHORT:
+            case Field.SMALLIDENTITY_STD2003:
                 result = "short";
                 break;
             case Field.DYNAMIC:

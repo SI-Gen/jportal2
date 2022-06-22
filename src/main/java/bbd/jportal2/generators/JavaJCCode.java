@@ -811,14 +811,17 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.BYTE:
                 return "Byte " + field.useLowerName();
             case Field.SHORT:
+            case Field.SMALLIDENTITY_STD2003:
                 return "Short " + field.useLowerName();
             case Field.BIGSEQUENCE:
+            case Field.BIGIDENTITY_STD2003:
                 return "Long " + field.useLowerName();
             case Field.INT:
                 if (shouldUtilizeEnums() && hasEnums(field)) {
                     return getEnumTypeName(field) + " " + field.useLowerName();
                 }
             case Field.SEQUENCE:
+            case Field.IDENTITY_STD2003:
             case Field.MSSQLIDENTITY:
                 return "Integer " + field.useLowerName();
             case Field.LONG:
@@ -861,9 +864,11 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 type = "Byte ";
                 break;
             case Field.SHORT:
+            case Field.SMALLIDENTITY_STD2003:
                 type = "Short ";
                 break;
             case Field.BIGSEQUENCE:
+            case Field.BIGIDENTITY_STD2003:
                 type = "Long ";
                 break;
             case Field.INT:
@@ -872,6 +877,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                     break;
                 }
             case Field.SEQUENCE:
+            case Field.IDENTITY_STD2003:
             case Field.MSSQLIDENTITY:
                 type = "Integer ";
                 break;
@@ -939,17 +945,17 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 return field.useLowerName() + " = new Timestamp(0);";
             case Field.FLOAT:
             case Field.DOUBLE:
-                return field.useLowerName() + " = null;";
             case Field.BLOB:
             case Field.TLOB:
-                return field.useLowerName() + " = null;";
             case Field.BIGSEQUENCE:
+            case Field.BIGIDENTITY_STD2003:
                 return field.useLowerName() + " = null;";
             case Field.INT:
                 if (shouldUtilizeEnums() && hasEnums(field)) {
                     return field.useLowerName() + " = null;";
                 }
             case Field.SEQUENCE:
+            case Field.IDENTITY_STD2003:
             case Field.MSSQLIDENTITY:
                 return field.useLowerName() + " = null;";
             case Field.LONG:
@@ -957,6 +963,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.MONEY:
                 return field.useLowerName() + " = null;";
             case Field.SHORT:
+            case Field.SMALLIDENTITY_STD2003:
                 return field.useLowerName() + " = null;";
             case Field.TIME:
                 return field.useLowerName() + " = new Time(0);";
@@ -992,9 +999,11 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.TLOB:
                 return "String";
             case Field.BIGSEQUENCE:
+            case Field.BIGIDENTITY_STD2003:
                 return "Long";
             case Field.INT:
             case Field.SEQUENCE:
+            case Field.IDENTITY_STD2003:
             case Field.MSSQLIDENTITY:
                 return "Int";
             case Field.LONG:
@@ -1002,6 +1011,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.MONEY:
                 return "BigDecimal";
             case Field.SHORT:
+            case Field.SMALLIDENTITY_STD2003:
                 return "Short";
             case Field.TIME:
                 return "Time";

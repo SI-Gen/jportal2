@@ -208,6 +208,9 @@ public class Field implements Serializable
   , BIGXML     = 30
   , JSON       = 31
   , BIGJSON       = 32
+  , SMALLIDENTITY_STD2003      = 33
+  , IDENTITY_STD2003      = 34
+  , BIGIDENTITY_STD2003      = 35
   ;
 
   public static final int DEFAULT_XML = 4096;

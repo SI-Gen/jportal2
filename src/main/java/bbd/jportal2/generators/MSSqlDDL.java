@@ -175,7 +175,7 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
     for (int i = 0; i < table.fields.size(); i++)
     {
       Field field = (Field) table.fields.elementAt(i);
-      outData.println(", " + varType(field, true, false) + " NULL");
+      outData.println(", " + varType(field, true, false, tableName) + " NULL");
     }
     outData.println(")");
     outData.println("GO");
@@ -233,12 +233,24 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
     outData.println("    DROP TABLE " + tableName);
     outData.println("GO");
     outData.println();
+
+    for (int i = 0; i < table.fields.size(); i++, comma = ", ")
+    {
+      Field field = (Field) table.fields.elementAt(i);
+      if (field.type == Field.SMALLIDENTITY_STD2003
+        || field.type == Field.IDENTITY_STD2003
+        || field.type == Field.BIGIDENTITY_STD2003)
+      {
+        outData.println("CREATE SEQUENCE "+ tableName + field.name + "Seq START WITH 0 INCREMENT BY 1;");
+      }
+    }
+
     outData.println("CREATE TABLE " + tableName);
     outData.println("(");
     for (int i = 0; i < table.fields.size(); i++, comma = ", ")
     {
       Field field = (Field) table.fields.elementAt(i);
-      outData.print(comma + varType(field, false, table.hasSequenceReturning));
+      outData.print(comma + varType(field, false, table.hasSequenceReturning, tableName));
       if (field.defaultValue.length() > 0)
       {
         int [] b = new int[] {4, 5, 6, 17, 18, 21, 23};
@@ -609,7 +621,7 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
   /**
    * Translates field type to SQLServer SQL column types
    */
-  String varType(Field field, boolean typeOnly, boolean hasSequenceReturning)
+  String varType(Field field, boolean typeOnly, boolean hasSequenceReturning, String tableName)
   {
     switch (field.type)
     {
@@ -623,6 +635,11 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
       return field.name + " INT";
     case Field.LONG:
       return field.name + " BIGINT";
+    case Field.SMALLIDENTITY_STD2003:
+    case Field.IDENTITY_STD2003:
+    case Field.BIGIDENTITY_STD2003:
+      //Dieter - this needs to be tested.
+        return field.name + " BIGINT DEFAULT NEXT VALUE FOR " + tableName + field.name + "Seq";
     case Field.SEQUENCE:
       if (hasSequenceReturning)
         return field.name + " INTEGER IDENTITY(1,1)";

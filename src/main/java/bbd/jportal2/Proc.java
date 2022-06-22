@@ -516,6 +516,9 @@ public class Proc implements Serializable
       Field field = (Field) inputs.elementAt(i);
       if ((field.type == Field.SEQUENCE && isInsert == true)
       || (field.type == Field.BIGSEQUENCE && isInsert == true)
+      || (field.type == Field.SMALLIDENTITY_STD2003)
+      || (field.type == Field.IDENTITY_STD2003)
+      || (field.type == Field.BIGIDENTITY_STD2003)
       ||  field.type == Field.USERSTAMP
       ||  field.type == Field.TIMESTAMP)
         return true;
