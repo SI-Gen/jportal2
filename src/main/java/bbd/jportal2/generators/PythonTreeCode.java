@@ -315,6 +315,8 @@ public class PythonTreeCode extends BaseGenerator implements IBuiltInSIProcessor
                 return "UID";
             case Field.XML:
                 return "XML";
+            case Field.JSON:
+                return "JSON";
         }
         return "0";
     }

@@ -206,9 +206,15 @@ public class Field implements Serializable
   , WANSICHAR  = 28
   , UTF8       = 29
   , BIGXML     = 30
+  , JSON       = 31
+  , BIGJSON       = 32
   ;
+
   public static final int DEFAULT_XML = 4096;
   public static final int DEFAULT_BIG_XML = 4194304;
+  public static final int DEFAULT_JSON = 4096;
+  public static final int DEFAULT_BIG_JSON = 4194304;
+
   /** constructor ensures fields have correct default values */
   public Field()
   {

@@ -68,10 +68,10 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
       flagsVector = new Vector<>();
         flagsVector.addElement(new Flag("add timestamp", addTimestamp, "Add Timestamp - legacy getFlags"));
         flagsVector.addElement(new Flag("use insert trigger", useInsertTrigger, "Use Insert Trigger - legacy getFlags"));
-        flagsVector.addElement(new Flag("use update trigger", new Boolean(useUpdateTrigger), "Use Update Trigger - legacy getFlags"));
-        flagsVector.addElement(new Flag("internal stamps", new Boolean(internalStamps), "Use Internal Stamps - legacy getFlags"));
-        flagsVector.addElement(new Flag("generate 4.2", new Boolean(generate42), "Generate for SqlServer 4.2 - legacy getFlags"));
-      flagsVector.addElement(new Flag("auditTrigger", new Boolean(auditTrigger), "Generate Auditing Table and Triggers"));
+        flagsVector.addElement(new Flag("use update trigger", useUpdateTrigger, "Use Update Trigger - legacy getFlags"));
+        flagsVector.addElement(new Flag("internal stamps", internalStamps, "Use Internal Stamps - legacy getFlags"));
+        flagsVector.addElement(new Flag("generate 4.2", generate42, "Generate for SqlServer 4.2 - legacy getFlags"));
+      flagsVector.addElement(new Flag("auditTrigger", auditTrigger, "Generate Auditing Table and Triggers"));
     }
     return flagsVector;
   }
@@ -669,6 +669,9 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
     case Field.BIGXML:
     case Field.XML:
       return field.name + " XML";
+    case Field.BIGJSON:
+    case Field.JSON:
+        return field.name + " JSON";
     case Field.MONEY:
       return field.name + " MONEY";
     case Field.USERSTAMP:

@@ -758,6 +758,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
         case Field.CHAR:
         case Field.TLOB:
         case Field.XML:
+        case Field.JSON:
         case Field.USERSTAMP:
           outData.println("  q_.BindCharArray(" + i + ", " + field.useName() + ", " + size + useNull(field));
           break;

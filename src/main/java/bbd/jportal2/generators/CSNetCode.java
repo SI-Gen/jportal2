@@ -1531,6 +1531,9 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.XML:
             case Field.BIGXML:
                 return "GetString(" + occurence + tail;
+            case Field.JSON:
+            case Field.BIGJSON:
+                return "GetString(" + occurence + tail;
             case Field.UID:
                 return "GetGuid(" + occurence + tail;
             case Field.USERSTAMP:
@@ -1589,6 +1592,10 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.XML:
             case Field.BIGXML:
                 return "String";
+            case Field.JSON:
+            case Field.BIGJSON:
+                return "String";
+
             case Field.UID:
                 return "Guid";
             case Field.USERSTAMP:
@@ -1652,6 +1659,10 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
                 break;
             case Field.XML:
             case Field.BIGXML:
+                result = "string";
+                break;
+            case Field.JSON:
+            case Field.BIGJSON:
                 result = "string";
                 break;
             case Field.UID:
@@ -1762,6 +1773,10 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.BIGXML:
                 result = "string";
                 break;
+            case Field.JSON:
+            case Field.BIGJSON:
+                result = "string";
+                break;
             case Field.UID:
                 result = "Guid";
                 break;
@@ -1857,6 +1872,9 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.XML:
             case Field.BIGXML:
                 return "xml";
+            case Field.JSON:
+            case Field.BIGJSON:
+                return "json";
             case Field.UID:
                 return "uniqueidentifier";
             case Field.MONEY:

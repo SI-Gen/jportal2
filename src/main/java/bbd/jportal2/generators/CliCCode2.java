@@ -220,6 +220,7 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
                 case Field.BLOB:
                 case Field.TLOB:
                 case Field.XML:
+                case Field.JSON:
                     needsFold = true;
                     break;
                 case Field.CHAR:
@@ -287,6 +288,7 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.TLOB:
                 return ", " + field.length;
             case Field.XML:
+            case Field.JSON:
                 return ", " + field.length;
             case Field.CHAR:
                 if (isCLOB(field))
@@ -499,6 +501,7 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
                     break;
                 case Field.TLOB:
                 case Field.XML:
+                case Field.JSON:
                 case Field.CHAR:
                 case Field.USERSTAMP:
                     outData.println("  q_.BindCharArray(" + i + ", " + field.useName() + ", " + size + useNull(field));
@@ -954,6 +957,7 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
             case Field.MSSQLIDENTITY:
                 return "IDL2_INT32_PAD(" + fillerNo + ");";
             case Field.XML:
+            case Field.JSON:
             case Field.TLOB:
                 return "";
             case Field.CHAR:
@@ -998,6 +1002,7 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
                 return 8;
             case Field.TLOB:
             case Field.XML:
+            case Field.JSON:
                 return 8;
             case Field.CHAR:
                 if (isCLOB(field))
@@ -1027,12 +1032,12 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
     }
 
     String charFieldFlag(Field field) {
-        if (isCLOB(field) || field.type == Field.TLOB || field.type == Field.XML)
+        if (isCLOB(field) || field.type == Field.TLOB || field.type == Field.XML || field.type == Field.JSON)
             return ", 0, 1";
         //return "";
-        if (field.type != Field.CHAR && field.type != Field.ANSICHAR && field.type != Field.TLOB && field.type != Field.XML)
+        if (field.type != Field.CHAR && field.type != Field.ANSICHAR && field.type != Field.TLOB && field.type != Field.XML && field.type != Field.JSON)
             return "";
-        if ((field.type == Field.CHAR || field.type == Field.TLOB || field.type == Field.XML) && field.isNull == true)
+        if ((field.type == Field.CHAR || field.type == Field.TLOB || field.type == Field.XML || field.type == Field.JSON) && field.isNull == true)
             return ", 0, 1";
         if (field.type == Field.ANSICHAR)
             if (field.isNull == true)
@@ -1111,6 +1116,7 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
                 return field.useName() + " = 0;";
             case Field.TLOB:
             case Field.XML:
+            case Field.JSON:
                 return field.useName() + " = \"\";";
             case Field.CHAR:
                 if (isCLOB(field))
@@ -1156,6 +1162,7 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
                 return "int64  " + field.useName();
             case Field.TLOB:
             case Field.XML:
+            case Field.JSON:
                 return "string " + field.useName();
             case Field.CHAR:
                 if (isCLOB(field))
@@ -1201,6 +1208,7 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
                 return "sizeof(int64)";
             case Field.TLOB:
             case Field.XML:
+            case Field.JSON:
             case Field.CHAR:
             case Field.ANSICHAR:
                 return "" + (field.length + 1);
@@ -1259,6 +1267,7 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
                 return "int32 *" + field.useName() + " = (int32 *)(q_.data + " + offset + " * noOf);";
             case Field.TLOB:
             case Field.XML:
+            case Field.JSON:
             case Field.CHAR:
             case Field.ANSICHAR:
                 return "char *" + field.useName() + " = (char *)(q_.data + " + offset + " * noOf);";
@@ -1299,6 +1308,7 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
                     return field.useName();
             case Field.TLOB:
             case Field.XML:
+            case Field.JSON:
                 return "(char *)" + field.useName() + ".c_str(), " + (field.length);
             case Field.CHAR:
                 if (isCLOB(field))
@@ -1343,6 +1353,7 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
                 return "(int64*) (q_.data+" + field.useName().toUpperCase() + "_POS)";
             case Field.TLOB:
             case Field.XML:
+            case Field.JSON:
             case Field.CHAR:
                 return "(char*)  (q_.data+" + field.useName().toUpperCase() + "_POS), " + (field.length + 1);
             case Field.ANSICHAR:
@@ -1394,6 +1405,7 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
                 return padder(field.useName() + ",", 32) + " q_.data+" + field.useName().toUpperCase() + "_POS, 21";
             case Field.TLOB:
             case Field.XML:
+            case Field.JSON:
             case Field.CHAR:
             case Field.ANSICHAR:
                 return padder(field.useName() + ",", 32) + " q_.data+" + field.useName().toUpperCase() + "_POS, " + (field.length + 1);
@@ -1433,6 +1445,7 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
                 return "strncpy(" + field.useName() + ", a" + field.useName() + ", sizeof(" + field.useName() + ")-1);";
             case Field.TLOB:
             case Field.XML:
+            case Field.JSON:
                 return field.useName() + " = a" + field.useName() + ";";
             case Field.CHAR:
                 if (isCLOB(field))
@@ -1477,6 +1490,7 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
                 return "strncpy(&" + field.useName() + "[i*" + size + "], Recs[i]." + field.useName() + ", " + size + "-1);";
             case Field.TLOB:
             case Field.XML:
+            case Field.JSON:
                 return "strncpy(&" + field.useName() + "[i*" + size + "], Recs[i]." + field.useName() + ".c_str(), " + size + "-1);";
             //return field.useName() + "[i] = Recs[i]." + field.useName() + ";";
             case Field.CHAR:
@@ -1524,6 +1538,7 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
                 return "int64  a" + field.useName();
             case Field.TLOB:
             case Field.XML:
+            case Field.JSON:
                 return "string a" + field.useName();
             case Field.CHAR:
                 if (isCLOB(field))

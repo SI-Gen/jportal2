@@ -59,5 +59,9 @@
         <#return "Unknown">       <#-- UTF8 -->
     <#elseif typeInt == 30>
         <#return "Unknown">       <#-- BIGXML -->
+    <#elseif typeInt == 31>
+        <#return "String">       <#-- JSON -->
+    <#elseif typeInt == 32>
+        <#return "String">       <#-- BIGJSON -->
     </#if>
 </#function>

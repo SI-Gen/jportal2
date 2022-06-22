@@ -59,6 +59,7 @@ public class Table implements Serializable {
     public boolean hasIdentity;
     public boolean hasSequenceReturning;
     public boolean hasBigXML;
+    public boolean hasBigJSON;
     public boolean isStoredProc;
     public boolean isLiteral;
     public int start;
@@ -93,6 +94,7 @@ public class Table implements Serializable {
         hasIdentity = false;
         hasSequenceReturning = false;
         hasBigXML = false;
+        hasBigJSON = false;
         isStoredProc = false;
         isLiteral = false;
         start = 0;
@@ -156,6 +158,9 @@ public class Table implements Serializable {
                 return "VARCHAR(50)";
             case Field.XML:
                 return "XML";
+            case Field.JSON:
+            case Field.BIGJSON:
+                return "JSON";
         }
         return "unknown";
     }
@@ -300,8 +305,12 @@ public class Table implements Serializable {
         return hasSequenceReturning;
     }
 
-    public boolean isHasBigXML() {
+    public boolean hasBigXML() {
         return hasBigXML;
+    }
+
+    public boolean hasBigJSON() {
+        return hasBigJSON;
     }
 
     public boolean isStoredProc() {

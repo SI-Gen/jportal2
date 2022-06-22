@@ -146,7 +146,7 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
             outData.println("_DOUBLE = 7;_DYNAMIC = 8;_FLOAT = 9;_IDENTITY = 10;_INT = 11;_LONG = 12");
             outData.println("_MONEY = 13;_SEQUENCE = 14;_SHORT = 15;_STATUS = 16;_TIME = 17");
             outData.println("_TIMESTAMP = 18;_TLOB = 19;_USERSTAMP = 20;_ANSICHAR = 21;_UID = 22;_XML = 23");
-            outData.println("_BIGSEQUENCE = 24;_BIGIDENTITY = 25");
+            outData.println("_BIGSEQUENCE = 24;_BIGIDENTITY = 25;_JSON = 26;_BIGJSON = 27");
             outData.println();
             outData.println("# =i=n=d=e=n=t=a=t=i=o=n===b=y===f=o=u=r======");
             outData.println("# s    : value as a string");
@@ -155,7 +155,7 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
             outData.println("# =i=s===a===p=a=i=n==========================");
             outData.println();
             outData.println("def _validate(s, attr, name):");
-            outData.println("    if attr[0] in (_CHAR, _ANSICHAR, _DATE, _DATETIME, _TIME, _TIMESTAMP, _USERSTAMP, _XML):");
+            outData.println("    if attr[0] in (_CHAR, _ANSICHAR, _DATE, _DATETIME, _TIME, _TIMESTAMP, _USERSTAMP, _XML, _JSON):");
             outData.println("        if len(s) > attr[1]: raise AssertionError('%s:Length exceeds %d' % (name, attr[1]))");
             outData.println("    elif attr[0] in (_DOUBLE, _FLOAT) and attr[2] > 15:");
             outData.println("        if len(s) > attr[2]+2: raise AssertionError('%s:Length exceeds %d' % (name, attr[2]+2))");
@@ -607,6 +607,7 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
             case Field.ANSICHAR:
             case Field.TLOB:
             case Field.XML:
+            case Field.JSON:
             case Field.USERSTAMP:
                 return "char";
             case Field.BLOB:
@@ -643,6 +644,7 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
             case Field.ANSICHAR:
             case Field.TLOB:
             case Field.XML:
+            case Field.JSON:
             case Field.USERSTAMP:
                 return "''";
             case Field.BLOB:

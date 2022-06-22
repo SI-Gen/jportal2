@@ -5,11 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.net.URI;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
-import java.util.stream.Stream;
+
+import static bbd.jportal2.PathHelpers.addTrailingSlash;
+import static bbd.jportal2.PathHelpers.createOutputDirectory;
 
 public class SingleFileCompiler {
     private static final Logger logger = LoggerFactory.getLogger(SingleFileCompiler.class);
@@ -36,7 +37,6 @@ public class SingleFileCompiler {
             if (database == null) {
                 logger.error("::>" + piece + "<:: compile has errors");
                 hasErrors = true;
-                continue;
             }
         }
 
@@ -114,9 +114,10 @@ public class SingleFileCompiler {
 
         logger.info("Executing generator [{}] found in [{}]", generatorName, templateBaseDir);
 
-        createOutputDirectory(generatorDirectory);
+        createOutputDirectory(generatorDirectory, logger);
         generatorDirectory = addTrailingSlash(generatorDirectory);
         File templateLocationFile = Paths.get(templateBaseDir).toFile();
+
         try {
             FreeMarker fm = new FreeMarker();
             fm.generateTemplate(database, table, templateLocationFile.getAbsolutePath(), generatorName, new File(generatorDirectory));
@@ -135,7 +136,7 @@ public class SingleFileCompiler {
 
         logger.info("Executing: " + generatorName);
 
-        createOutputDirectory(generatorDirectory);
+        createOutputDirectory(generatorDirectory, logger);
         generatorDirectory = addTrailingSlash(generatorDirectory);
 
         Class<?> c;
@@ -154,29 +155,7 @@ public class SingleFileCompiler {
         return true;
     }
 
-    private String addTrailingSlash(String generatorDirectory) {
-        char term = File.separatorChar;
-        char ch = generatorDirectory.charAt(generatorDirectory.length() - 1);
-        if (ch != term)
-            generatorDirectory = generatorDirectory + term;
-        return generatorDirectory;
-    }
 
-    private void createOutputDirectory(String generatorDirectory) {
-        File outputDirectory = new File(generatorDirectory);
-        // if the directory does not exist, create it
-        if (!outputDirectory.exists()) {
-            logger.info("creating directory: " + outputDirectory.getName());
-            boolean result = false;
-
-            try {
-                outputDirectory.mkdirs();
-            } catch (SecurityException se) {
-                //handle it
-                logger.error("A Security Exception occurred:", se);
-            }
-        }
-    }
 
     private class GeneratorParameters {
         private final String generator;
