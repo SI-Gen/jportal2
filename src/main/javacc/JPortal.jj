@@ -1824,6 +1824,15 @@ void jStdProc() :
           proc.isBuiltIn = true;
         })?
       {
+        //proc.name is set by <AS> clause above
+        if(proc.name == null || proc.name.trim().isEmpty())
+        {
+          proc.name = "UpdateBy";
+          for (String fname : proc.fields)
+          {
+            proc.name += fname;
+          }
+        }
         proc.isUpdate = true;
         table.buildUpdateBy(proc);
         table.hasStdProcs = true;
