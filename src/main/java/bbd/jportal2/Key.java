@@ -28,6 +28,27 @@ public class Key implements Serializable
    * 
    */
   private static final long serialVersionUID = 1L;
+
+  public String getName() {
+    return name;
+  }
+
+  public Vector<String> getFields() {
+    return fields;
+  }
+
+  public Vector<String> getOptions() {
+    return options;
+  }
+
+  public boolean isPrimary() {
+    return isPrimary;
+  }
+
+  public boolean isUnique() {
+    return isUnique;
+  }
+
   /** Name of index or key */
   public String name;
   /** List of fields used in the index or key */
