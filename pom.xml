@@ -155,6 +155,11 @@
             <version>1.26</version>
         </dependency>
 
+        <dependency>
+            <groupId>net.sf.extcos</groupId>
+            <artifactId>extcos</artifactId>
+            <version>0.4b</version>
+        </dependency>
 
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
