@@ -1,7 +1,6 @@
 package bbd.jportal2;
 
-import net.sf.extcos.ComponentQuery;
-import net.sf.extcos.ComponentScanner;
+import org.reflections.Reflections;
 import java.util.*;
 
 public class BuiltInGeneratorHelpers {
@@ -17,18 +16,7 @@ public class BuiltInGeneratorHelpers {
     }
 
     private Set<Class<?>> findClasses(Class T) {
-        final Set<Class<?>> foundClasses = new HashSet<>();
-        ComponentScanner scanner = new ComponentScanner();
-
-        scanner.getClasses(new ComponentQuery() {
-
-            protected void query() {
-                select().from("bbd.jportal2").andStore(
-                        thoseImplementing(T).into(foundClasses));
-                //thoseAnnotatedWith(SampleAnnotation.class).into(samples));
-            }
-
-        });
-        return foundClasses;
+        Reflections reflections = new Reflections("bbd.jportal2");
+        return  (Set<Class<?>>) reflections.getSubTypesOf(T);
     }
 }
