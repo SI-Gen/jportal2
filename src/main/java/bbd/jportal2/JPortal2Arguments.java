@@ -14,6 +14,9 @@ public class JPortal2Arguments {
     @Parameter(names = {"--debug", "-D"}, description = "Enable debug logging")
     private boolean debug = false;
 
+    @Parameter(names = {"--multiFileProject", "-mfp"}, description = "Enable Multi-File Project")
+    public Boolean multiFileProjectCompile = false;
+
     @Parameter(names = {"--projectCompile", "-pc"}, description = "Enable project-level compilation")
     public boolean projectCompile = false;
 

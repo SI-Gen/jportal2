@@ -22,6 +22,9 @@ public class Line implements Serializable
 {
   private static final long serialVersionUID = 1L;
   public String line;
+  public String placeHolder = "";
+  public Integer placeHolderInputPos = -1;
+
   public boolean isVar() {
     return isVar;
   }
@@ -55,15 +58,16 @@ public class Line implements Serializable
     line = line.replace("\"", "\\\"");
     return line;
   }
-
+  public Integer getPlaceHolderInputPos() {
+    return placeHolderInputPos;
+  }
   public String getUnformattedLine()
   {
     return line;
   }
 
-  public String toString() {
+    public String toString() {
     return getlineval();
   }
-
 }
 

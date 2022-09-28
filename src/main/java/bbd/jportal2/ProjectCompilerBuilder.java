@@ -20,6 +20,7 @@ public class ProjectCompilerBuilder {
         Objects.requireNonNull(allArguments, "No arguments provided for JPortal2 compiler");
 
         ProjectCompiler pj = new ProjectCompiler(allArguments.projectCompile);
+        pj.setMultiFileProject(allArguments.multiFileProjectCompile);
         pj.addInputDirs(allArguments.getInputDirs());
         pj.addInputFiles(allArguments.getInputFiles());
         pj.addCompilerFlags(allArguments.getFlags());
