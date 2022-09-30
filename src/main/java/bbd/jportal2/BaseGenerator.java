@@ -20,7 +20,7 @@ public class BaseGenerator {
         return generatedOutputFiles;
     }
 
-    public BaseGenerator(Class inheritedGeneratorClass) {
+    public BaseGenerator(Class<?> inheritedGeneratorClass) {
         generatedOutputFiles = new GeneratedFiles(inheritedGeneratorClass.getSimpleName());
 
     }

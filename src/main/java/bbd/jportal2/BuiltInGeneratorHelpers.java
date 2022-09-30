@@ -1,8 +1,6 @@
 package bbd.jportal2;
 
-
 import org.reflections.Reflections;
-
 import java.util.*;
 
 public class BuiltInGeneratorHelpers {
@@ -10,7 +8,7 @@ public class BuiltInGeneratorHelpers {
         Set<Class<?>> ALL_BUILTIN_GENERATORS = findClasses(classType);
 
         Vector<String> foundGenerators = new Vector<>();
-        for (Class generatorClass : ALL_BUILTIN_GENERATORS) {
+        for (Class<?> generatorClass : ALL_BUILTIN_GENERATORS) {
             String generator = generatorClass.getSimpleName();
             foundGenerators.add(generator);
         }

@@ -14,10 +14,9 @@ import java.util.List;
 public class ProjectCompiler {
     private static final Logger logger = LoggerFactory.getLogger(ProjectCompiler.class);
 
-
+    private Boolean multiFileProject = false;
     private List<String> inputDirs = new ArrayList<>();
     private List<String> inputFiles = new ArrayList<>();
-    private List<String> builtin = new ArrayList<>();
     private List<String> compilerFlags = new ArrayList<>();
     private List<String> builtinSIProcessors = new ArrayList<>();
     private List<String> templateBasedSIProcessors = new ArrayList<>();
@@ -25,12 +24,11 @@ public class ProjectCompiler {
     private List<String> templateBasedPostProcessors = new ArrayList<>();
     private List<String> templateLocations = new ArrayList<>();
 
-    private Boolean projectCompile = false;
+    public ProjectCompiler(Boolean projectCompile) { }
 
-    public ProjectCompiler(Boolean projectCompile) {
-        this.projectCompile = projectCompile;
+    public void setMultiFileProject(Boolean value) {
+        multiFileProject = value;
     }
-
     public void addInputDirs(List<String> listOfInputDirs) {
         this.inputDirs.addAll(listOfInputDirs);
     }
@@ -58,36 +56,41 @@ public class ProjectCompiler {
         if (compilerFlags.size() == 0)
             logger.info("No compiler getFlags detected.");
 
-        int rc = 0;
         if (builtinSIProcessors.size() == 0 && templateBasedSIProcessors.size() == 0) {
             //\n does not get expanded. put the log and two calls to get formatting on the console right
             logger.error("No generators were specified!");
             logger.error("You need to specify at least one builtin generator (using --generator) or one template-based generator (using --template-generator).");
-            rc = 1;
+            return 1;
         }
 
-        if (rc != 0)
-            return rc;
-
-        SingleFileCompiler sfCompiler = new SingleFileCompiler();
-
-        for (String filename : allInputFiles) {
-            int resultRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, true);
-            if (resultRc > 0)
-                rc = resultRc;
+        if (this.inputDirs.size() == 1 && multiFileProject)
+        {
+            MultiFileCompiler mfCompiler = new MultiFileCompiler();
+            for (String filename : allInputFiles) {
+                int resultRc = mfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, true);
+                if (resultRc > 0)
+                    return resultRc;
+            }
+            return mfCompiler.compile(allInputFiles.get(0), compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, false);
         }
+        else
+        {
+            SingleFileCompiler sfCompiler = new SingleFileCompiler();
+            for (String filename : allInputFiles) {
+                int resultRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, true);
+                if (resultRc > 0)
+                    return resultRc;
+            }
 
-        if (rc != 0)
-            return rc;
+            for (String filename : allInputFiles) {
+                logger.info("Generating for SI File: " + filename);
+                int localRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, false);
+                if (localRc > 0)
+                    return 1;
 
-        for (String filename : allInputFiles) {
-            logger.info("Generating for SI File: " + filename);
-            int localRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, false);
-            if (localRc > 0)
-                rc = 1;
-
+            }
         }
-        return rc;
+        return 0;
     }
 
     private void addAllInputFilesToList(List<String> listToAddTo) {
