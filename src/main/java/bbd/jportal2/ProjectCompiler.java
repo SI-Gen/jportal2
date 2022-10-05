@@ -5,10 +5,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 
 public class ProjectCompiler {
@@ -24,6 +28,7 @@ public class ProjectCompiler {
     private List<String> builtinPostProcessors = new ArrayList<>();
     private List<String> templateBasedPostProcessors = new ArrayList<>();
     private List<String> templateLocations = new ArrayList<>();
+    private JPortalTemplateOutputOptions templateOutputOptions;
 
     private Boolean projectCompile = false;
 
@@ -72,7 +77,7 @@ public class ProjectCompiler {
         SingleFileCompiler sfCompiler = new SingleFileCompiler();
 
         for (String filename : allInputFiles) {
-            int resultRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, true);
+            int resultRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, templateOutputOptions,true);
             if (resultRc > 0)
                 rc = resultRc;
         }
@@ -82,7 +87,7 @@ public class ProjectCompiler {
 
         for (String filename : allInputFiles) {
             logger.info("Generating for SI File: " + filename);
-            int localRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, false);
+            int localRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, templateOutputOptions, false);
             if (localRc > 0)
                 rc = 1;
 
@@ -167,5 +172,59 @@ public class ProjectCompiler {
 
     public void addTemplateLocation(String templateLocation) {
         this.templateLocations.add(templateLocation);
+    }
+
+    public void overrideWithPropertiesFile(String propertiesFileName) throws RuntimeException {
+        if (propertiesFileName.isEmpty())
+            return;
+
+        try (InputStream input = new FileInputStream(propertiesFileName)) {
+
+            Properties prop = new Properties();
+
+            // load a properties file
+            prop.load(input);
+
+            templateOutputOptions = JPortalTemplateOutputOptions.defaultOptions();
+            prop.forEach((key,value) -> this.setTemplateOutputProperty((String)key, (String)value));
+
+        } catch (IOException ex) {
+            logger.error("Error processing properties file " + propertiesFileName, ex);
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private void setTemplateOutputProperty(String key, String value){
+        logger.debug("Property specified: " + key + " -> " + value);
+        switch (key) {
+            case "TemplateOutputOptions.DatabaseNamePrefix" : templateOutputOptions.DatabaseNamePrefix  = value;
+                break;
+            case "TemplateOutputOptions.DatabaseNameSuffix" : templateOutputOptions.DatabaseNameSuffix = value;
+                break;
+            case "TemplateOutputOptions.SchemaNamePrefix" : templateOutputOptions.SchemaNamePrefix  = value;
+                break;
+            case "TemplateOutputOptions.SchemaNameSuffix" : templateOutputOptions.SchemaNameSuffix  = value;
+                break;
+            case "TemplateOutputOptions.TableNamePrefix" : templateOutputOptions.TableNamePrefix  = value;
+                break;
+            case "TemplateOutputOptions.TableNameSuffix" : templateOutputOptions.TableNameSuffix  = value;
+                break;
+            case "TemplateOutputOptions.FieldNamePrefix" : templateOutputOptions.FieldNamePrefix  = value;
+                break;
+            case "TemplateOutputOptions.FieldNameSuffix" : templateOutputOptions.FieldNameSuffix  = value;
+                break;
+            case "TemplateOutputOptions.FieldVariablePrefix" : templateOutputOptions.FieldVariablePrefix  = value;
+                break;
+            case "TemplateOutputOptions.FieldVariableSuffix" : templateOutputOptions.FieldVariableSuffix  = value;
+                break;
+            case "TemplateOutputOptions.EngineSugarPrefix" : templateOutputOptions.EngineSugarPrefix  = value;
+                break;
+            case "TemplateOutputOptions.EngineSugarSuffix" : templateOutputOptions.EngineSugarSuffix  = value;
+                break;
+            case "TemplateOutputOptions.DynamicVariablePrefix" : templateOutputOptions.DynamicVariablePrefix  = value;
+                break;
+            case "TemplateOutputOptions.DynamicVariableSuffix" : templateOutputOptions.DynamicVariableSuffix  = value;
+                break;
+        }
     }
 }

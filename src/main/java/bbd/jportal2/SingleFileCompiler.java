@@ -23,6 +23,7 @@ public class SingleFileCompiler {
                        List<String> builtinPostProcessors,
                        List<String> templateBasedPostProcessors,
                        List<String> templateLocations,
+                       JPortalTemplateOutputOptions templateOutputOptions,
                        Boolean preCompile
     )
             throws Exception {
@@ -30,6 +31,7 @@ public class SingleFileCompiler {
 
         String[] pieces = source.split("\\+");
         Database database = JPortal.database;
+        database.templateOutputOptions = templateOutputOptions;
         boolean hasErrors = false;
         for (String piece : pieces) {
             String nubDir = "";

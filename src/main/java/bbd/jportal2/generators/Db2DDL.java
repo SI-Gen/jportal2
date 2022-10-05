@@ -26,7 +26,7 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
     JPortalTemplateOutputOptions outputOptions;
     public Db2DDL() {
         super(Db2DDL.class);
-        outputOptions = new JPortalTemplateOutputOptions();
+        outputOptions = JPortalTemplateOutputOptions.defaultOptions();
     }
 
     /**

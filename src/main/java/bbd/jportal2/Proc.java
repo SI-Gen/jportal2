@@ -618,15 +618,15 @@ public class Proc implements Serializable
     return false;
   }
   /** */
-  public void checkPlaceHolders(JPortalTemplateOutputOptions options)
+  public void checkPlaceHolders()
   {
     for (int i=0; i < lines.size(); i++)
     {
       Line code = (Line) lines.elementAt(i);
       if (code.isVar == true)
         continue;
-      String work = code.getDecoratedLine(options).toUpperCase();
-      String work2 = code.getDecoratedLine(options).toString();
+      String work = code.getDecoratedLine(table.database.templateOutputOptions).toUpperCase();
+      String work2 = code.getDecoratedLine(table.database.templateOutputOptions).toString();
       String alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ_#$";
       String alphanum = alpha + "0123456789";
       int n = work.indexOf(':');

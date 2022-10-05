@@ -29,7 +29,7 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
     JPortalTemplateOutputOptions outputOptions;
     public MSSqlDDL() {
         super(MSSqlDDL.class);
-        outputOptions = new JPortalTemplateOutputOptions();
+        outputOptions = JPortalTemplateOutputOptions.defaultOptions();
     }
 
 

@@ -24,7 +24,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
 {
     public MSSqlCCode() {
         super(MSSqlCCode.class);
-        MSSqlCCodeOutputOptions = new JPortalTemplateOutputOptions();
+        MSSqlCCodeOutputOptions = JPortalTemplateOutputOptions.defaultOptions();
     }
 
     /**

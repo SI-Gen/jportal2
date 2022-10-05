@@ -21,7 +21,7 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
     JPortalTemplateOutputOptions outputOptions;
     public PostgresDDL() {
         super(PostgresDDL.class);
-        outputOptions = new JPortalTemplateOutputOptions();
+        outputOptions = JPortalTemplateOutputOptions.defaultOptions();
     }
 
     /**

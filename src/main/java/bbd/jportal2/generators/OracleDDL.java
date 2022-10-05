@@ -16,7 +16,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
     public OracleDDL() {
         super(OracleDDL.class);
-        OracleOutputOptions = new JPortalTemplateOutputOptions();
+        OracleOutputOptions = JPortalTemplateOutputOptions.defaultOptions();
     }
 
     @Override

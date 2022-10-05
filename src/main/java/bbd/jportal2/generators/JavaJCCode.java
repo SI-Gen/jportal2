@@ -52,7 +52,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     JPortalTemplateOutputOptions JavaJCCodeOutputOptions;
     public JavaJCCode() {
         super(JavaJCCode.class);
-        JavaJCCodeOutputOptions = new JPortalTemplateOutputOptions();
+        JavaJCCodeOutputOptions = JPortalTemplateOutputOptions.defaultOptions();
     }
 
     /**

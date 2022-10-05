@@ -28,7 +28,7 @@ public class PythonTreeCode extends BaseGenerator implements IBuiltInSIProcessor
     static JPortalTemplateOutputOptions PythonTreeCodeOutputOptions;
     public PythonTreeCode() {
         super(PythonTreeCode.class);
-        PythonTreeCodeOutputOptions = new JPortalTemplateOutputOptions();
+        PythonTreeCodeOutputOptions = JPortalTemplateOutputOptions.defaultOptions();
     }
 
     public String description() {

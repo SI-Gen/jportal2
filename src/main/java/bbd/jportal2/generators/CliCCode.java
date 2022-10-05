@@ -24,7 +24,7 @@ public class CliCCode extends BaseGenerator implements IBuiltInSIProcessor {
 
     public CliCCode() {
         super(CliCCode.class);
-        CliCCodeOutputOptions = new JPortalTemplateOutputOptions();
+        CliCCodeOutputOptions = JPortalTemplateOutputOptions.defaultOptions();
     }
 
 
