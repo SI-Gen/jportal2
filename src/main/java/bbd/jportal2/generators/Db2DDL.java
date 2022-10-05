@@ -23,9 +23,10 @@ import java.io.PrintWriter;
 
 public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
     private static final Logger logger = LoggerFactory.getLogger(Db2DDL.class);
-
+    JPortalTemplateOutputOptions outputOptions;
     public Db2DDL() {
         super(Db2DDL.class);
+        outputOptions = new JPortalTemplateOutputOptions();
     }
 
     /**
@@ -401,7 +402,7 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
     void generate(Proc proc, PrintWriter outData) {
         for (int i = 0; i < proc.lines.size(); i++) {
             Line l = proc.lines.elementAt(i);
-            outData.println(l.line);
+            outData.println(l.getDecoratedLine(outputOptions));
         }
         outData.println();
     }

@@ -95,7 +95,7 @@ public class Proc implements Serializable
         return updateFields;
     }
 
-    public Vector<String> getOrderFields() {
+    public Vector<Field> getOrderFields() {
         return orderFields;
     }
 
@@ -205,7 +205,7 @@ public class Proc implements Serializable
   /** SelectFor update fields   */
   public Vector<String> updateFields;
   /** Select in order fields */
-  public Vector<String> orderFields;
+  public Vector<Field> orderFields;
   /** Indicates the procedure uses stored procedure logic Code */
   public boolean isProc;
   /** Indicates the procedure uses stored procedure logic Code */
@@ -261,7 +261,7 @@ public class Proc implements Serializable
     options         = new Vector<String>();
     fields          = new Vector<String>();
     updateFields    = new Vector<String>();
-    orderFields = new Vector<String>();
+    orderFields = new Vector<>();
     isProc          = false;
     isSProc         = false;
     isData          = false;
@@ -332,7 +332,7 @@ public class Proc implements Serializable
     {
       String data = ids.readUTF();
       boolean isVar = ids.readBoolean();
-      Line value = new Line(data, isVar);
+      Line value = new Line(new SQLProcStringToken(data), isVar);
       lines.addElement(value);
     }
     noOf = ids.readInt();
@@ -618,15 +618,15 @@ public class Proc implements Serializable
     return false;
   }
   /** */
-  public void checkPlaceHolders()
+  public void checkPlaceHolders(JPortalTemplateOutputOptions options)
   {
     for (int i=0; i < lines.size(); i++)
     {
       Line code = (Line) lines.elementAt(i);
       if (code.isVar == true)
         continue;
-      String work = code.line.toUpperCase();
-      String work2 = code.line;
+      String work = code.getDecoratedLine(options).toUpperCase();
+      String work2 = code.getDecoratedLine(options).toString();
       String alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ_#$";
       String alphanum = alpha + "0123456789";
       int n = work.indexOf(':');
@@ -679,7 +679,7 @@ public class Proc implements Serializable
   {
     for (int i = 0; i < orderFields.size(); i++)
     {
-      String option = (String)orderFields.elementAt(i);
+      String option = (String)orderFields.elementAt(i).useLiteral();
       if (option.toLowerCase().compareTo(value.toLowerCase()) == 0)
         return true;
     }

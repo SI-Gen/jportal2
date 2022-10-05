@@ -25,9 +25,10 @@ import java.util.Vector;
 public class PythonTreeCode extends BaseGenerator implements IBuiltInSIProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(PythonTreeCode.class);
-
+    static JPortalTemplateOutputOptions PythonTreeCodeOutputOptions;
     public PythonTreeCode() {
         super(PythonTreeCode.class);
+        PythonTreeCodeOutputOptions = new JPortalTemplateOutputOptions();
     }
 
     public String description() {
@@ -244,7 +245,7 @@ public class PythonTreeCode extends BaseGenerator implements IBuiltInSIProcessor
             //outData.println();
             outData.println("_pr.outputs.append(_fd)");
         }
-        PlaceHolder holder = new PlaceHolder(proc, PlaceHolder.COLON, "&");
+        PlaceHolder holder = new PlaceHolder(proc, PythonTreeCodeOutputOptions, PlaceHolder.COLON, "&");
         Vector<String> lines = holder.getLines();
         if (lines.size() > 0) {
             outData.print("_pr.lines = ");
@@ -358,8 +359,8 @@ public class PythonTreeCode extends BaseGenerator implements IBuiltInSIProcessor
     }
 
     void generateLine(Line line, PrintWriter outData) {
-        if (line.line.trim().length() > 0)
-            outData.println((line.isVar ? "&" : "") + line.line);
+        if (line.getDecoratedLine(PythonTreeCodeOutputOptions).toString().trim().length() > 0)
+            outData.println((line.isVar ? "&" : "") + line.getDecoratedLine(PythonTreeCodeOutputOptions));
     }
 
     void generateEnum(Enum entry, PrintWriter outData) {

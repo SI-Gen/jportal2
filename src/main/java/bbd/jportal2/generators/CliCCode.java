@@ -24,6 +24,7 @@ public class CliCCode extends BaseGenerator implements IBuiltInSIProcessor {
 
     public CliCCode() {
         super(CliCCode.class);
+        CliCCodeOutputOptions = new JPortalTemplateOutputOptions();
     }
 
 
@@ -36,6 +37,8 @@ public class CliCCode extends BaseGenerator implements IBuiltInSIProcessor {
     }
 
     static PlaceHolder placeHolder;
+
+    JPortalTemplateOutputOptions CliCCodeOutputOptions;
 
     /**
      * Generates the procedure classes for each table present.
@@ -587,13 +590,13 @@ public class CliCCode extends BaseGenerator implements IBuiltInSIProcessor {
     }
 
     void generateMultipleImplementation(Table table, Proc proc, PrintWriter outData) {
-        placeHolder = new PlaceHolder(proc, PlaceHolder.QUESTION, "");
+        placeHolder = new PlaceHolder(proc, CliCCodeOutputOptions, PlaceHolder.QUESTION, "");
         String dataStruct;
         if (proc.isStdExtended() || proc.isStd)
             dataStruct = "D" + table.useName();
         else
             dataStruct = "D" + table.useName() + proc.upperFirst();
-        placeHolder = new PlaceHolder(proc, PlaceHolder.QUESTION, "");
+        placeHolder = new PlaceHolder(proc, CliCCodeOutputOptions, PlaceHolder.QUESTION, "");
         String fullName = table.useName() + proc.upperFirst();
         outData.println("void T" + fullName + "::Exec(int32 noOf, " + dataStruct + " *Recs)");
         outData.println("{");
@@ -697,7 +700,7 @@ public class CliCCode extends BaseGenerator implements IBuiltInSIProcessor {
     }
 
     void generateImplementation(Table table, Proc proc, PrintWriter outData) {
-        placeHolder = new PlaceHolder(proc, PlaceHolder.QUESTION, "");
+        placeHolder = new PlaceHolder(proc,CliCCodeOutputOptions, PlaceHolder.QUESTION, "");
         String fullName = table.useName() + proc.upperFirst();
         outData.println("void T" + fullName + "::Exec()");
         outData.println("{");
@@ -716,7 +719,7 @@ public class CliCCode extends BaseGenerator implements IBuiltInSIProcessor {
         for (int j = 0; j < placeHolder.pairs.size(); j++) {
             PlaceHolderPairs pair = (PlaceHolderPairs) placeHolder.pairs.elementAt(j);
             Field field = pair.field;
-            String tablename = table.tableName();
+            String tablename = table.tableNameWithSchema();
             String bind = "Bind";
             if (field.type == Field.BLOB) bind += "Blob";
             //else if (field.type == Field.BIGXML) bind += "BigXML";
@@ -804,7 +807,7 @@ public class CliCCode extends BaseGenerator implements IBuiltInSIProcessor {
                 isReturning = true;
                 front = "select " + field.useName() + " from new table(";
                 back = ")";
-                sequencer = "nextval for " + proc.table.tableName() + "seq";
+                sequencer = "nextval for " + proc.table.tableNameWithSchema() + "seq";
                 size += front.length();
                 size += back.length();
                 size += sequencer.length();
@@ -812,7 +815,7 @@ public class CliCCode extends BaseGenerator implements IBuiltInSIProcessor {
         }
         if (proc.isMultipleInput == true && proc.isInsert == true) {
             isBulkSequence = true;
-            sequencer = "nextval for " + proc.table.tableName() + "seq";
+            sequencer = "nextval for " + proc.table.tableNameWithSchema() + "seq";
             size += sequencer.length();
         }
         for (int i = 0; i < lines.size(); i++) {
@@ -912,7 +915,7 @@ public class CliCCode extends BaseGenerator implements IBuiltInSIProcessor {
 
     void generateInterface(Table table, Proc proc, String dataStruct,
                            PrintWriter outData) {
-        placeHolder = new PlaceHolder(proc, PlaceHolder.QUESTION, "");
+        placeHolder = new PlaceHolder(proc,CliCCodeOutputOptions, PlaceHolder.QUESTION, "");
         String front = "  { ";
         boolean standardExec = true;
         if (proc.outputs.size() > 0) {

@@ -12,57 +12,81 @@
 
 package bbd.jportal2;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /** Lines of SQL Code */
 public class Line implements Serializable
 {
   private static final long serialVersionUID = 1L;
-  public String line;
+  private ArrayList<ISQLProcToken> line;
   public boolean isVar() {
     return isVar;
   }
 
   public boolean isVar;
   /** Constructs line needed to be enclosed in double quotes */
-  public Line(String l)
+  public Line(ISQLProcToken... args)
   {
-    line = l;
+    line = new ArrayList<>();
+    Collections.addAll(line, args);
+    isVar = false;
+  }
+
+  public Line(List<ISQLProcToken> args)
+  {
+    line = new ArrayList<>();
+    line.addAll(args);
     isVar = false;
   }
   /** Constructs line used in variable substitution */
-  public Line(String l, boolean t)
+  public Line(ISQLProcToken l, boolean t)
   {
-    line = l;
+    line = new ArrayList<>();
+    line.add(l);
     isVar = t;
   }
-  public void reader(DataInputStream ids) throws IOException
-  {
-    line = ids.readUTF();
-    isVar = ids.readBoolean();
+  public void reader(DataInputStream ids) throws IOException, ClassNotFoundException {
+    ObjectInputStream ois = new ObjectInputStream(ids);
+    line = (ArrayList<ISQLProcToken>) ois.readObject();
+    isVar = ois.readBoolean();
   }
   public void writer(DataOutputStream ods) throws IOException
   {
-    ods.writeUTF(line);
-    ods.writeBoolean(isVar);
+    ObjectOutputStream oos = new ObjectOutputStream(ods);
+    oos.writeObject(line);
+    oos.writeBoolean(isVar);
   }
   public String getlineval()
   {
-    line = line.replaceAll("\\:{1}\\w*", "?");
-    line = line.replace("\"", "\\\"");
-    return line;
+    // Convert elements to strings and concatenate them, separated by commas
+    String joined = line.stream()
+            .map(ISQLProcToken::getUnformattedLine)
+            .collect(Collectors.joining());
+    joined = joined.replaceAll("\\:{1}\\w*", "?");
+    joined = joined.replace("\"", "\\\"");
+    return joined;
   }
 
   public String getUnformattedLine()
   {
-    return line;
+    return line.stream()
+          .map(ISQLProcToken::getUnformattedLine)
+          .collect(Collectors.joining());
   }
 
+  public String getDecoratedLine(JPortalTemplateOutputOptions options)
+  {
+    return line.stream()
+            .map(s -> s.getDecoratedLine(options))
+            .collect(Collectors.joining());
+  }
   public String toString() {
-    return getlineval();
+    //return "XXX" + getlineval();
+    throw new RuntimeException();
   }
 
 }

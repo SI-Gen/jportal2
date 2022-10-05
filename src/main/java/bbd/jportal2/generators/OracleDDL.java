@@ -12,8 +12,11 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(OracleDDL.class);
 
+    private JPortalTemplateOutputOptions OracleOutputOptions;
+
     public OracleDDL() {
         super(OracleDDL.class);
+        OracleOutputOptions = new JPortalTemplateOutputOptions();
     }
 
     @Override
@@ -404,7 +407,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
     private void generate(Proc proc, PrintWriter outData) {
 
         for (Line line : proc.getLines()) {
-            outData.println(line);
+            outData.println(line.getDecoratedLine(OracleOutputOptions));
         }
 
         outData.println();
