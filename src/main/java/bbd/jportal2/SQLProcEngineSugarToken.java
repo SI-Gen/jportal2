@@ -32,7 +32,6 @@ public class SQLProcEngineSugarToken implements ISQLProcToken, Serializable
   public boolean isVar() {
     return isVar;
   }
-
   public boolean isVar;
   /** Constructs line needed to be enclosed in double quotes */
   public SQLProcEngineSugarToken(EngineSugarType t)
@@ -62,9 +61,21 @@ public class SQLProcEngineSugarToken implements ISQLProcToken, Serializable
     return "_ret." + value.name().toLowerCase();
   }
 
+  private String getDecoratedValue(JPortalTemplateOutputOptions options, EngineSugarType type) {
+    switch (type) {
+      case Output:
+        return options.EngineSugarOutput;
+      case Sequence:
+        return options.EngineSugarSequence;
+      case Tail:
+        return options.EngineSugarTail;
+      default:
+        return type.name();
+    }
+  }
   @Override
   public String getDecoratedLine(JPortalTemplateOutputOptions options) {
-    return options.EngineSugarPrefix + value.name().toLowerCase() + options.EngineSugarSuffix;
+    return options.EngineSugarPrefix + getDecoratedValue(options, value).toLowerCase() + options.EngineSugarSuffix;
   }
 
   public String toString() {

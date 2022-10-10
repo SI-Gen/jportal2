@@ -28,7 +28,7 @@ public class ProjectCompiler {
     private List<String> builtinPostProcessors = new ArrayList<>();
     private List<String> templateBasedPostProcessors = new ArrayList<>();
     private List<String> templateLocations = new ArrayList<>();
-    private JPortalTemplateOutputOptions templateOutputOptions;
+    private JPortalTemplateOutputOptions templateOutputOptions = JPortalTemplateOutputOptions.defaultTemplateOptions();
 
     private Boolean projectCompile = false;
 
@@ -184,8 +184,6 @@ public class ProjectCompiler {
 
             // load a properties file
             prop.load(input);
-
-            templateOutputOptions = JPortalTemplateOutputOptions.defaultOptions();
             prop.forEach((key,value) -> this.setTemplateOutputProperty((String)key, (String)value));
 
         } catch (IOException ex) {
@@ -221,10 +219,20 @@ public class ProjectCompiler {
                 break;
             case "TemplateOutputOptions.EngineSugarSuffix" : templateOutputOptions.EngineSugarSuffix  = value;
                 break;
+            case "TemplateOutputOptions.EngineSugarOutput" : templateOutputOptions.EngineSugarOutput  = value;
+                break;
+            case "TemplateOutputOptions.EngineSugarSequence" : templateOutputOptions.EngineSugarSequence  = value;
+                break;
+            case "TemplateOutputOptions.EngineSugarTail" : templateOutputOptions.EngineSugarSuffix  = value;
+                break;
             case "TemplateOutputOptions.DynamicVariablePrefix" : templateOutputOptions.DynamicVariablePrefix  = value;
                 break;
             case "TemplateOutputOptions.DynamicVariableSuffix" : templateOutputOptions.DynamicVariableSuffix  = value;
                 break;
+
+
+            default:
+                logger.warn("Property: " + key + " not matched!");
         }
     }
 }

@@ -26,25 +26,29 @@ public class Line implements Serializable
   public boolean isVar() {
     return isVar;
   }
+  public JPortalTemplateOutputOptions options;
 
   public boolean isVar;
   /** Constructs line needed to be enclosed in double quotes */
-  public Line(ISQLProcToken... args)
+  public Line(JPortalTemplateOutputOptions options, ISQLProcToken... args)
   {
     line = new ArrayList<>();
+    this.options = options;
     Collections.addAll(line, args);
     isVar = false;
   }
 
-  public Line(List<ISQLProcToken> args)
+  public Line(JPortalTemplateOutputOptions options, List<ISQLProcToken> args)
   {
+    this.options = options;
     line = new ArrayList<>();
     line.addAll(args);
     isVar = false;
   }
   /** Constructs line used in variable substitution */
-  public Line(ISQLProcToken l, boolean t)
+  public Line(JPortalTemplateOutputOptions options, ISQLProcToken l, boolean t)
   {
+    this.options = options;
     line = new ArrayList<>();
     line.add(l);
     isVar = t;
@@ -78,12 +82,20 @@ public class Line implements Serializable
           .collect(Collectors.joining());
   }
 
+  public String getDecoratedLine()
+  {
+    return line.stream()
+            .map(s -> s.getDecoratedLine(this.options))
+            .collect(Collectors.joining());
+  }
+
   public String getDecoratedLine(JPortalTemplateOutputOptions options)
   {
     return line.stream()
             .map(s -> s.getDecoratedLine(options))
             .collect(Collectors.joining());
   }
+
   public String toString() {
     //return "XXX" + getlineval();
     throw new RuntimeException();

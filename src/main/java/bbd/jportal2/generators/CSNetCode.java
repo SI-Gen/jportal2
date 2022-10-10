@@ -28,7 +28,7 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
     JPortalTemplateOutputOptions CSNetCodeOutputOptions;
     public CSNetCode() {
         super(CSNetCode.class);
-        CSNetCodeOutputOptions = JPortalTemplateOutputOptions.defaultOptions();
+        CSNetCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();
     }
 
     private static final Logger logger = LoggerFactory.getLogger(CSNetCode.class);

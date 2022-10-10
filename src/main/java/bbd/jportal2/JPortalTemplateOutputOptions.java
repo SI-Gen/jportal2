@@ -12,13 +12,16 @@ public class JPortalTemplateOutputOptions {
     public String FieldNamePrefix="";
     public String FieldNameSuffix="";
 
-    public String FieldVariablePrefix=":";
+    public String FieldVariablePrefix="";
     public String FieldVariableSuffix="";
 
-    public String EngineSugarPrefix = "_ret.";
+    public String EngineSugarPrefix = "";
     public String EngineSugarSuffix = "";
+    public String EngineSugarOutput = "";
+    public String EngineSugarSequence = "";
+    public String EngineSugarTail = "";
 
-    public String DynamicVariablePrefix = "&";
+    public String DynamicVariablePrefix = "";
     public String DynamicVariableSuffix = "";
 
 
@@ -28,7 +31,7 @@ public class JPortalTemplateOutputOptions {
         return new JPortalTemplateOutputOptions();
     }
 
-    public static JPortalTemplateOutputOptions defaultOptions() {
+    public static JPortalTemplateOutputOptions defaultBuiltInOptions() {
         JPortalTemplateOutputOptions options = new JPortalTemplateOutputOptions();
         options.DatabaseNameSuffix="";
         options.DatabaseNamePrefix="";
@@ -46,9 +49,41 @@ public class JPortalTemplateOutputOptions {
 
         options.EngineSugarPrefix = "_ret.";
         options.EngineSugarSuffix = "";
+        options.EngineSugarOutput = "Output";
+        options.EngineSugarSequence = "Sequence";
+        options.EngineSugarTail = "Tail";
+
 
         options.DynamicVariablePrefix = "&";
         options.DynamicVariableSuffix = "";
+
+        return options;
+    }
+
+    public static JPortalTemplateOutputOptions defaultTemplateOptions() {
+        JPortalTemplateOutputOptions options = new JPortalTemplateOutputOptions();
+        options.DatabaseNameSuffix="";
+        options.DatabaseNamePrefix="";
+
+        options.SchemaNamePrefix="";
+        options.SchemaNameSuffix="";
+
+        options.TableNamePrefix="";
+        options.TableNameSuffix="";
+        options.FieldNamePrefix="";
+        options.FieldNameSuffix="";
+
+        options.FieldVariablePrefix=":";
+        options.FieldVariableSuffix="";
+
+        options.EngineSugarPrefix = "{_ret.";
+        options.EngineSugarSuffix = "}";
+        options.EngineSugarOutput = "Output";
+        options.EngineSugarSequence = "Sequence";
+        options.EngineSugarTail = "Tail";
+
+        options.DynamicVariablePrefix = "{";
+        options.DynamicVariableSuffix = "}";
 
         return options;
     }

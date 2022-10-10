@@ -18,10 +18,8 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
     public String documentation() {
         return "Generate PostgreSQL DDL.";
     }
-    JPortalTemplateOutputOptions outputOptions;
     public PostgresDDL() {
         super(PostgresDDL.class);
-        outputOptions = JPortalTemplateOutputOptions.defaultOptions();
     }
 
     /**
@@ -156,7 +154,7 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
      */
     private void generateProc(Proc proc, PrintWriter outData) {
         for (int i = 0; i < proc.lines.size(); i++) {
-            String l = proc.lines.elementAt(i).getDecoratedLine(outputOptions).toString();
+            String l = proc.lines.elementAt(i).getDecoratedLine().toString();
             outData.println(l);
         }
         outData.println();

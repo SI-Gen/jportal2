@@ -31,11 +31,10 @@ public class SingleFileCompiler {
 
         String[] pieces = source.split("\\+");
         Database database = JPortal.database;
-        database.templateOutputOptions = templateOutputOptions;
         boolean hasErrors = false;
         for (String piece : pieces) {
             String nubDir = "";
-            database = JPortal.run(piece, nubDir);
+            database = JPortal.run(piece, nubDir, templateOutputOptions);
             if (database == null) {
                 logger.error("::>" + piece + "<:: compile has errors");
                 hasErrors = true;

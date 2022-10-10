@@ -58,7 +58,7 @@ public class PlaceHolder implements Serializable
       break;
   }
   }
-	private static final String BEGIN = "\uFFBB", END = "\uFFEE";
+  private static final String BEGIN = "\uFFBB", END = "\uFFEE";
   public Vector<String> getLines()
   {
     Vector<String> result = new Vector<String>();
@@ -109,7 +109,7 @@ public class PlaceHolder implements Serializable
       if (l.isVar)
       {
         command.append(varPrefix);
-        command.append(l.getDecoratedLine(options));
+        command.append(l.getDecoratedLine());
         totalDynamicSize += proc.getDynamicSize(l.getDecoratedLine(options).toString());
       }
       else

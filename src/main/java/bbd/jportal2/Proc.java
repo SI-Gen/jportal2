@@ -332,7 +332,7 @@ public class Proc implements Serializable
     {
       String data = ids.readUTF();
       boolean isVar = ids.readBoolean();
-      Line value = new Line(new SQLProcStringToken(data), isVar);
+      Line value = new Line(table.database.templateOutputOptions, new SQLProcStringToken(data), isVar);
       lines.addElement(value);
     }
     noOf = ids.readInt();
@@ -625,8 +625,8 @@ public class Proc implements Serializable
       Line code = (Line) lines.elementAt(i);
       if (code.isVar == true)
         continue;
-      String work = code.getDecoratedLine(table.database.templateOutputOptions).toUpperCase();
-      String work2 = code.getDecoratedLine(table.database.templateOutputOptions).toString();
+      String work = code.getDecoratedLine().toUpperCase();
+      String work2 = code.getDecoratedLine().toString();
       String alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ_#$";
       String alphanum = alpha + "0123456789";
       int n = work.indexOf(':');
