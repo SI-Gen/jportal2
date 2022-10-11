@@ -3,7 +3,6 @@
 
 [![GitHub release](https://img.shields.io/github/release/SI-Gen/jportal2.svg)](https://github.com/SI-Gen/jportal2/releases)
 [![Documentation Site](https://img.shields.io/badge/DOCS_SITE-YES-GREEN.svg)](https://si-gen.github.io/jportal2/)
-[<img src="https://dieterrosch.visualstudio.com/_apis/public/build/definitions/62fc2ca3-38b4-432f-8341-af383b7ba8e4/3/badge"/>](https://dieterrosch.visualstudio.com/_apis/public/build/definitions/62fc2ca3-38b4-432f-8341-af383b7ba8e4/3/badge)
 [![GitHub forks](https://img.shields.io/github/forks/SI-Gen/jportal2.svg?style=social&label=Fork&maxAge=2592000)](https://github.com/SI-Gen/jportal2/network/)
 
 JPortal2 is the newest version of the JPortal SI-file based generator.
@@ -17,7 +16,7 @@ To use it, you define database tables using a small, easy-to-understand Domain-S
     * Code stubs that can be used in other generators to create Client/Server and other Applications
     * Anything else you want to generate off your database structure
 
-JPortal2 has a number of built-in code generators written in Java, but also has built-in Freemarker support to allow you to easily add you own generators.
+JPortal2 has a number of built-in code generators written in Java, but also has built-in Freemarker support to allow you to easily add your own generators.
 
 ## History
 ### JPortal
@@ -288,3 +287,6 @@ Notice that the Description column is named 'Desc', which is a reserved word (bo
 ### Workflow
 A detailed description of the workflow process is mentioned in the [Contribution.md](/docs/Contribution.md)
 Feel free to add any suggestions or any help in the 
+
+# Documentation
+For comprehensive documentation. Refer to the [docs](docs/index.md)
