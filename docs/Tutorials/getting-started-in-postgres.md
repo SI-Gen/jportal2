@@ -255,7 +255,7 @@ class DB_ToDoList(Base, DBMixin):
       return DB_ToDoList.ListTypeEnum(value)
 
 
-  ID: int = DBColumn("id", sa.Integer(), primary_key=True, autoincrement=True)
+  ID: int = DBColumn("id", sa.Integer(), sa.Sequence("todolist_id_seq", metadata=Base.metadata, schema=TODOLIST_SCHEMA), primary_key=True, autoincrement=False)
   ListName: str = DBColumn("listname", db_types.NonNullableString(length=255))
   ListType: ListTypeEnum = DBColumn("listtype", sa.SmallInteger())
   Description: str = DBColumn("description", db_types.NonNullableString(length=255))
@@ -269,6 +269,7 @@ class DB_ToDoList(Base, DBMixin):
       ListType=ListType.value if isinstance(ListType, enum.Enum) else ListType,
       Description=Description,
       LastUpdated=LastUpdated)
+  # Insert yes
 
 @dataclass
 class DB_ToDoListInsertReturning:
@@ -301,6 +302,7 @@ class DB_ToDoListInsertReturning:
     statement = sa.text(
       f"/* PROC ToDoList_App.ToDoList.Insert */"
       f"insert into ToDoList_App.ToDoList ("
+      f"  ID,"
       f"  ListName,"
       f"  ListType,"
       f"  Description,"
@@ -308,6 +310,7 @@ class DB_ToDoListInsertReturning:
       f" ) "
       f"{_ret.output}"
       f" values ("
+      f"{_ret.sequence}"
       f"  :ListName,"
       f"  :ListType,"
       f"  :Description,"
@@ -347,8 +350,7 @@ class DB_ToDoListInsertReturning:
                                                                       ], rec)
 
     return None
-  # Identity no
-
+  # Update yes
 
 @dataclass
 class DB_ToDoListUpdate:
@@ -516,6 +518,32 @@ class DB_ToDoListDeleteOne:
                                                ])
     res = session.execute(cls.get_statement(*params))
     res.close()
+  #  no
+
+@dataclass
+class DB_ToDoListStaticData:
+
+
+  @classmethod
+  def get_statement(cls
+                    ) -> TextAsFrom:
+    class _ret:
+      sequence = "default," #postgres uses default for sequences
+      output = ""
+      tail = ""
+      #session.bind.dialect.name
+
+    statement = sa.text(
+      f"INSERT INTO ToDoList_App.ToDoList(ListName,ListType,Description,LastUpdated) VALUES ('Takeon Test List 1', 1, 'Take on test list description', CURRENT_DATE )")
+
+    text_statement = statement.columns()
+    return text_statement
+
+  @classmethod
+  def execute(cls, session: Session) -> None:
+    res = session.execute(cls.get_statement())
+    res.close()
+
 ```
 
 Yikes! That's a lot of generated code! Fortunately, you will see a lot of it is simply repetition. This is one of the benefits of using a tool like JPortal2. Without it, you would have had to write all this code by hand.
@@ -553,7 +581,7 @@ class DB_ToDoList(Base, DBMixin):
       return DB_ToDoList.ListTypeEnum(value)
 
 
-  ID: int = DBColumn("id", sa.Integer(), primary_key=True, autoincrement=True)
+  ID: int = DBColumn("id", sa.Integer(), sa.Sequence("todolist_id_seq", metadata=Base.metadata, schema=TODOLIST_SCHEMA), primary_key=True, autoincrement=False)
   ListName: str = DBColumn("listname", db_types.NonNullableString(length=255))
   ListType: ListTypeEnum = DBColumn("listtype", sa.SmallInteger())
   Description: str = DBColumn("description", db_types.NonNullableString(length=255))
@@ -575,7 +603,7 @@ SQLAlchemy is a popular ORM in the Python space. We don't really know why anyone
 
 In any event, SQLAlchemy requires that you define your table structures in the format above. We find it quite long-winded and obtuse, but fortunately using JPortal2, a lot of the complexity goes away. If you want, you can now simply use the class above, and follow SQLAlchemy's docs to do things their way. But we prefer a slightly different approach. Let's look at the rest of the file.
 
-```python linenums="46"
+```python linenums="47"
 @dataclass
 class DB_ToDoListInsertReturning:
   # Enum for ListType field
@@ -607,6 +635,7 @@ class DB_ToDoListInsertReturning:
     statement = sa.text(
       f"/* PROC ToDoList_App.ToDoList.Insert */"
       f"insert into ToDoList_App.ToDoList ("
+      f"  ID,"
       f"  ListName,"
       f"  ListType,"
       f"  Description,"
@@ -614,6 +643,7 @@ class DB_ToDoListInsertReturning:
       f" ) "
       f"{_ret.output}"
       f" values ("
+      f"{_ret.sequence}"
       f"  :ListName,"
       f"  :ListType,"
       f"  :Description,"
@@ -657,17 +687,17 @@ class DB_ToDoListInsertReturning:
 
 Now this is a lot more interesting. We are declaring a class called **DB_ToDoListInsertReturning**, but it has a lot of interesting members.  
 
-The first thing we notice, is that on **line 49-55**, we generate an Enum called ListTypeEnum. Remember how when we created the SI file, we created the field ListType as a SHORT, but we specified that we wanted an enum with two value, "Public" and "Private"? The SQLAlchemy generator picked that up, and generated an enum for us, to use in our code. For more information about enums, see < TODO >.
+The first thing we notice, is that on **line 49-56**, we generate an Enum called ListTypeEnum. Remember how when we created the SI file, we created the field ListType as a SHORT, but we specified that we wanted an enum with two value, "Public" and "Private"? The SQLAlchemy generator picked that up, and generated an enum for us, to use in our code. For more information about enums, see < TODO >.
 
-Next, on **line 58-59** we specify that this class has an **OUTPUT** member ID. In JPortal2, database operations can have INPUT and/or OUTPUT fields. Input fields are obviously fields you pass into the class, before it interacts with the database. Output fields are fields we want to get back from the database.
+Next, on **line 59-60** we specify that this class has an **OUTPUT** member ID. In JPortal2, database operations can have INPUT and/or OUTPUT fields. Input fields are obviously fields you pass into the class, before it interacts with the database. Output fields are fields we want to get back from the database.
 
 In this case, remember we specified that we wanted JPortal to create an Insert function for us, specifically an *Insert Returning*, which would return the Primary Key after inserting? In this table, ID is the primary key, so the Insert Returning must return the ID field for us.
 
 Let's move on the the rest of the file.  
 
-**Line 61-98** is a method called get_statement. If you look over the code, you will see it basically creates an inline SQL statement that allows you to insert an entire ToDoList record. Most of it is probably very straightforward, but you may be confused by the lines that contain "_ret.". Don't worry about it too much. For now, just accept that this is required because different databases like Postgres, SQLServer, Oracle, DB/2 etc. all have slightly varying syntaxes, and this allows us to cater for differences at runtime.
+**Line 62-101** is a method called get_statement. If you look over the code, you will see it basically creates an inline SQL statement that allows you to insert an entire ToDoList record. Most of it is probably very straightforward, but you may be confused by the lines that contain "_ret.". Don't worry about it too much. For now, just accept that this is required because different databases like Postgres, SQLServer, Oracle, DB/2 etc. all have slightly varying syntaxes, and this allows us to cater for differences at runtime.
 
-Finally, we get to **line 100-122**. This is a method called execute(), which does exactly what it says, it executes the quert defined above in get_statement, and reads back the inserted ID field that was returned.
+Finally, we get to **line 103-125**. This is a method called execute(), which does exactly what it says, it executes the quert defined above in get_statement, and reads back the inserted ID field that was returned.
 
 
 At this point, take a step back and consider the power of JPortal2. If you look at our initial SI file, you will see that in 17 lines, we defined a database, a schema, a table with 5 fields, and a complex insert statement.
