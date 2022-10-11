@@ -59,7 +59,7 @@ nav:
   - Home: 'README.md'
   - 'Overview':
       - 'Installing JPortal2': 'Overview/installing-jportal2.md'
-      - 'Quickstart':
+      - 'Quickstarts':
           - 'Quickstart with PostgreSQL': ''
           - 'Quickstart with SQLServer': ''
           - 'Quickstart with Oracle': ''
