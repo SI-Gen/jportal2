@@ -3,7 +3,7 @@ FROM eclipse-temurin:11-jre-alpine
 RUN apk --no-cache add --update bash openssl
 
 RUN addgroup jportal2 && adduser -S -h /jportal2 -D -G jportal2 jportal2
-WORKDIR /jportal2
+WORKDIR /local
 
 USER jportal2
 
