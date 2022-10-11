@@ -32,13 +32,13 @@ public class Main {
         if (arguments == null)
             System.exit(0);
 
-        if (arguments.mustDebug()) {
-            ((ch.qos.logback.classic.Logger) logger).setLevel(Level.DEBUG);
-        }
-
         //Set this before the logger starts.
         if (arguments.getLogFileName() != null){
             System.setProperty("log.name", arguments.getLogFileName());
+        }
+
+        if (arguments.mustDebug()) {
+            ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.DEBUG);
         }
 
         try {

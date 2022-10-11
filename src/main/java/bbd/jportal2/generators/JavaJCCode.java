@@ -49,9 +49,10 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     public static final String ENTITY_CLASS_SUFFIX = "Struct";
 
     private Set<String> flags = new HashSet<>();
-
+    JPortalTemplateOutputOptions JavaJCCodeOutputOptions;
     public JavaJCCode() {
         super(JavaJCCode.class);
+        JavaJCCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();
     }
 
     /**
@@ -467,7 +468,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
         outData.println("   */");
         outData.println("  public static void " + proc.lowerFirst() + "(Connector connector) throws SQLException");
         outData.println("  {");
-        placeHolders = new PlaceHolder(proc, PlaceHolder.QUESTION, "");
+        placeHolders = new PlaceHolder(proc, JavaJCCodeOutputOptions, PlaceHolder.QUESTION, "");
         Vector<?> lines = placeHolders.getLines();
         outData.println("    String statement = ");
         String plus = "    ";
@@ -524,7 +525,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
         else
             outData.println("  public Query " + procName + "() throws SQLException");
         outData.println("  {");
-        placeHolders = new PlaceHolder(proc, PlaceHolder.QUESTION, "");
+        placeHolders = new PlaceHolder(proc, JavaJCCodeOutputOptions, PlaceHolder.QUESTION, "");
         Vector<?> lines = placeHolders.getLines();
 
         Field primaryKeyField = null;

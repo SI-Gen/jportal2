@@ -23,6 +23,7 @@ public class SingleFileCompiler {
                        List<String> builtinPostProcessors,
                        List<String> templateBasedPostProcessors,
                        List<String> templateLocations,
+                       JPortalTemplateOutputOptions templateOutputOptions,
                        Boolean preCompile
     )
             throws Exception {
@@ -33,7 +34,7 @@ public class SingleFileCompiler {
         boolean hasErrors = false;
         for (String piece : pieces) {
             String nubDir = "";
-            database = JPortal.run(piece, nubDir);
+            database = JPortal.run(piece, nubDir, templateOutputOptions);
             if (database == null) {
                 logger.error("::>" + piece + "<:: compile has errors");
                 hasErrors = true;

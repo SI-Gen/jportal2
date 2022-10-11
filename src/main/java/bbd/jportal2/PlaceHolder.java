@@ -29,12 +29,12 @@ public class PlaceHolder implements Serializable
   private int questionsSeen;
   private String varPrefix;
   public int totalDynamicSize;
-  public PlaceHolder(Proc proc, byte useMark, String varPrefix)
+  public PlaceHolder(Proc proc, JPortalTemplateOutputOptions options, byte useMark, String varPrefix)
   {
     this.proc = proc;
     this.varPrefix = varPrefix;
     totalDynamicSize = 0;
-    makeCommand();
+    makeCommand(options);
     makePairs();
     switch (useMark)
     {
@@ -58,7 +58,7 @@ public class PlaceHolder implements Serializable
       break;
   }
   }
-	private static final String BEGIN = "\uFFBB", END = "\uFFEE";
+  private static final String BEGIN = "\uFFBB", END = "\uFFEE";
   public Vector<String> getLines()
   {
     Vector<String> result = new Vector<String>();
@@ -100,7 +100,7 @@ public class PlaceHolder implements Serializable
   {
     return totalDynamicSize;
   }
-  private void makeCommand()
+  private void makeCommand(JPortalTemplateOutputOptions options)
   {
     command = new StringBuffer();
 		for (int i = 0; i < proc.lines.size(); i++)
@@ -109,13 +109,13 @@ public class PlaceHolder implements Serializable
       if (l.isVar)
       {
         command.append(varPrefix);
-        command.append(l.line);
-        totalDynamicSize += proc.getDynamicSize(l.line);
+        command.append(l.getDecoratedLine());
+        totalDynamicSize += proc.getDynamicSize(l.getDecoratedLine(options).toString());
       }
       else
       {
         command.append(BEGIN);
-        command.append(question(new StringBuffer(l.line)));
+        command.append(question(new StringBuffer(l.getDecoratedLine(options).toString())));
         command.append(END);
       }
 		}

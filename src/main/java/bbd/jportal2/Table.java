@@ -69,17 +69,17 @@ public class Table implements Serializable {
         alias = "";
         check = "";
         literalName = "";
-        fields = new Vector<Field>();
-        keys = new Vector<Key>();
-        links = new Vector<Link>();
-        grants = new Vector<Grant>();
-        views = new Vector<View>();
-        procs = new Vector<Proc>();
-        comments = new Vector<String>();
-        options = new Vector<String>();
-        allUsers = new Vector<String>();
-        parameters = new Vector<Parameter>();
-        consts = new Vector<Const>();
+        fields = new Vector<>();
+        keys = new Vector<>();
+        links = new Vector<>();
+        grants = new Vector<>();
+        views = new Vector<>();
+        procs = new Vector<>();
+        comments = new Vector<>();
+        options = new Vector<>();
+        allUsers = new Vector<>();
+        parameters = new Vector<>();
+        consts = new Vector<>();
         hasExecute = false;
         hasSelect = false;
         hasInsert = false;
@@ -127,11 +127,11 @@ public class Table implements Serializable {
                 return "BIGINT";
             case Field.CHAR:
                 if (field.length > 32762)
-                    return "CLOB(" + String.valueOf(field.length) + ")";
+                    return "CLOB(" + field.length + ")";
                 else
-                    return "VARCHAR(" + String.valueOf(field.length) + ")";
+                    return "VARCHAR(" + field.length + ")";
             case Field.ANSICHAR:
-                return "CHAR(" + String.valueOf(field.length) + ")";
+                return "CHAR(" + field.length + ")";
             case Field.DATE:
                 return "DATE";
             case Field.DATETIME:
@@ -144,7 +144,7 @@ public class Table implements Serializable {
             case Field.FLOAT:
             case Field.DOUBLE:
                 if (field.scale != 0)
-                    return "DECIMAL(" + String.valueOf(field.precision) + ", " + String.valueOf(field.scale) + ")";
+                    return "DECIMAL(" + field.precision + ", " + field.scale + ")";
                 else if (field.precision != 0)
                     return "DECIMAL(" + String.valueOf(field.precision) + ", 0)";
                 return "DOUBLE";
@@ -504,7 +504,7 @@ public class Table implements Serializable {
     }
 
     /**
-     * If there is an literal uses that else returns name
+     * If there is a literal uses that else returns name
      */
     public String useLiteral() {
         if (isLiteral)
@@ -617,7 +617,7 @@ public class Table implements Serializable {
         }
     }
 
-    public String tableName() {
+    public String tableNameWithSchema() {
         if (database.schema.length() == 0)
             if (isLiteral)
                 return literalName;
@@ -632,87 +632,89 @@ public class Table implements Serializable {
      * Builds a merge proc generated as part of standard record class
      */
     public void buildMerge(Proc proc) {
-        String name = tableName();
+        String name = tableNameWithSchema();
         int i;
         String comma = "  ";
         String front = "  ";
         proc.isStd = true;
         proc.isSql = true;
-        proc.lines.addElement(new Line(Misc.generateProcNameComment(proc)));
-        proc.lines.addElement(new Line("merge into " + name));
-        proc.lines.addElement(new Line("using table"));
-        proc.lines.addElement(new Line("      ("));
-        proc.lines.addElement(new Line("        values"));
-        proc.lines.addElement(new Line("        ("));
+        proc.lines.addElement(new Line(database.templateOutputOptions, Misc.generateProcNameComment(proc)));
+        proc.lines.addElement(new Line(database.templateOutputOptions,new SQLProcStringToken("merge into "), new SQLProcTableNameToken(this)));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("using table")));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("      (")));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("        values")));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("        (")));
         for (i = 0; i < fields.size(); i++) {
             Field field = fields.elementAt(i);
-            proc.lines.addElement(new Line("        " + comma + "cast("+field.useLiteral()+" as " + varType(field) + ")"));
+            proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("        "),
+                                            new SQLProcStringToken( comma),
+                                            new SQLProcStringToken( "cast("), new SQLProcFieldToken(field),new SQLProcStringToken(" as " + varType(field) + ")")));
             proc.inputs.addElement(field);
             comma = ", ";
         }
-        proc.lines.addElement(new Line("        )"));
-        proc.lines.addElement(new Line("      )"));
-        proc.lines.addElement(new Line("      temp_" + proc.table.name));
-        proc.lines.addElement(new Line("      ("));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("        )")));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("      )")));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("      temp_" + proc.table.name)));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("      (")));
         comma = "  ";
         for (i = 0; i < fields.size(); i++) {
             Field field = fields.elementAt(i);
-            proc.lines.addElement(new Line("      " + comma + field.useLiteral()));
+            proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("      "), new SQLProcStringToken(comma),  new SQLProcFieldToken(field)));
             comma = ", ";
         }
-        proc.lines.addElement(new Line("      )"));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("      )")));
         front = "on  ";
         for (i = 0; i < fields.size(); i++) {
             Field field = fields.elementAt(i);
             if (field.isPrimaryKey == true) {
-                proc.lines.addElement(new Line(front + name + "" + field.useLiteral() + " = temp_" + proc.table.name + "." + field.useLiteral()));
+                proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(front + name + ""), new SQLProcFieldToken(field), new SQLProcStringToken( " = temp_"), new SQLProcTableNameToken(proc.table), new SQLProcStringToken("."), new SQLProcFieldToken(field)));
                 front = "and ";
             }
         }
-        proc.lines.addElement(new Line("when matched then"));
-        proc.lines.addElement(new Line("  update set"));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("when matched then")));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("  update set")));
         comma = "    ";
         for (i = 0; i < fields.size(); i++) {
             Field field = fields.elementAt(i);
             if (field.isPrimaryKey == false) {
-                proc.lines.addElement(new Line(comma + name + "" + field.useLiteral() + " = temp_" + proc.table.name + "." + field.useLiteral()));
+                proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(comma + name + ""), new SQLProcFieldToken(field), new SQLProcStringToken(" = temp_"), new SQLProcTableNameToken(proc.table), new SQLProcStringToken("."), new SQLProcFieldToken(field)));
                 comma = "  , ";
             }
         }
-        proc.lines.addElement(new Line("when not matched then"));
-        proc.lines.addElement(new Line("  insert"));
-        proc.lines.addElement(new Line("  ("));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("when not matched then")));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("  insert")));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("  (")));
         comma = "    ";
         for (i = 0; i < fields.size(); i++) {
             Field field = fields.elementAt(i);
-            proc.lines.addElement(new Line(comma + field.useLiteral()));
+            proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(comma + field.useLiteral())));
             comma = "  , ";
         }
-        proc.lines.addElement(new Line("  )"));
-        proc.lines.addElement(new Line("  values"));
-        proc.lines.addElement(new Line("  ("));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("  )")));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("  values")));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("  (")));
         comma = "    ";
         for (i = 0; i < fields.size(); i++) {
             Field field = fields.elementAt(i);
-            proc.lines.addElement(new Line(comma + "temp_" + proc.table.name + "" + field.useLiteral()));
+            proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(comma + "temp_"), new SQLProcTableNameToken(proc.table), new SQLProcStringToken( ""), new SQLProcFieldToken(field)));
             comma = "  , ";
         }
-        proc.lines.addElement(new Line("  )"));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("  )")));
     }
 
     /**
      * Builds an insert proc generated as part of standard record class
      */
     public void buildInsert(Proc proc) {
-        String name = tableName();
+        String name = tableNameWithSchema();
         int i;
         String line = "  ";
         proc.isStd = true;
         proc.isSql = true;
         proc.isInsert = true;
         String identityName = "";
-        proc.lines.addElement(new Line(Misc.generateProcNameComment(proc)));
-        proc.lines.addElement(new Line("insert into " + name + " ("));
+        proc.lines.addElement(new Line(database.templateOutputOptions, Misc.generateProcNameComment(proc)));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("insert into "), new SQLProcTableNameToken(this), new SQLProcStringToken(" (")));
         for (i = 0; i < fields.size(); i++) {
             String comma = i + 1 < fields.size() ? "," : "";
             Field field = fields.elementAt(i);
@@ -732,7 +734,7 @@ public class Table implements Serializable {
             } else if (isSequence(field)) {
 
                 if (proc.hasReturning) {
-                    proc.lines.addElement(new Line(line + field.name + comma));
+                    proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line) , new SQLProcFieldToken(field), new SQLProcStringToken(comma)));
                 }
 
                 if (proc.hasReturning) {
@@ -743,12 +745,12 @@ public class Table implements Serializable {
 
             } else {
                 proc.inputs.addElement(field);
-                proc.lines.addElement(new Line(line + field.useLiteral() + comma));
+                proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field),new SQLProcStringToken(comma)));
             }
 
         }
 
-        proc.lines.addElement(new Line(" ) "));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(" ) ")));
 
         if (hasIdentity == true) {
             //The original use for IDENTITY was for SQL Server.
@@ -757,11 +759,11 @@ public class Table implements Serializable {
             //handle using the normal _ret style.
             //SQL Server Generators can be updated to support _ret going forward
             //proc.lines.addElement(new Line(" OUTPUT INSERTED." + identityName));
-            proc.lines.addElement(new Line("_ret.output", true));
+            proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcEngineSugarToken(SQLProcEngineSugarToken.EngineSugarType.Output), true));
         } else if (proc.hasReturning) {
-            proc.lines.addElement(new Line("_ret.output", true));
+            proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcEngineSugarToken(SQLProcEngineSugarToken.EngineSugarType.Output), true));
         }
-        proc.lines.addElement(new Line(" values ("));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(" values (")));
         for (i = 0; i < fields.size(); i++) {
             String comma = i + 1 < fields.size() ? "," : "";
             Field field = fields.elementAt(i);
@@ -771,15 +773,15 @@ public class Table implements Serializable {
 
             if (isSequence(field)) {
                 if (proc.hasReturning) {
-                    proc.lines.addElement(new Line("_ret.sequence", true));
+                    proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcEngineSugarToken(SQLProcEngineSugarToken.EngineSugarType.Sequence), true));
                 }
             } else {
-                proc.lines.addElement(new Line(line + ":" + field.useLiteral() + comma));
+                proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line + ":"), new SQLProcFieldToken(field),new SQLProcStringToken(comma)));
             }
         }
-        proc.lines.addElement(new Line(" )"));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(" )")));
         if (proc.hasReturning)
-            proc.lines.add(new Line("_ret.tail", true));
+            proc.lines.add(new Line(database.templateOutputOptions, new SQLProcEngineSugarToken(SQLProcEngineSugarToken.EngineSugarType.Tail), true));
     }
 
     /**
@@ -794,7 +796,7 @@ public class Table implements Serializable {
      * Builds an identity proc generated as part of standard record class
      */
     public void buildIdentity(Proc proc) {
-        String name = tableName();
+        String name = tableNameWithSchema();
         int i;
         String line;
         proc.isSql = true;
@@ -805,7 +807,7 @@ public class Table implements Serializable {
                 continue;
             proc.outputs.addElement(field);
             line = "select max(" + field.useLiteral() + ") " + field.useLiteral() + " from " + name;
-            proc.lines.addElement(new Line(line));
+            proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line)));
         }
     }
 
@@ -813,13 +815,13 @@ public class Table implements Serializable {
      * Builds an update proc generated as part of standard record class
      */
     public void buildUpdate(Proc proc) {
-        String name = tableName();
+        String name = tableNameWithSchema();
         int i, j;
         String line;
         proc.isStd = true;
         proc.isSql = true;
-        proc.lines.addElement(new Line("update " + name));
-        proc.lines.addElement(new Line(" set"));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("update "), new SQLProcTableNameToken(this)));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(" set")));
         for (i = 0, j = 0; i < fields.size(); i++) {
             Field field = fields.elementAt(i);
             if (field.isPrimaryKey || field.isCalc || field.isSequence)
@@ -830,7 +832,7 @@ public class Table implements Serializable {
             else
                 line = ", ";
             j++;
-            proc.lines.addElement(new Line(line + field.useLiteral() + " = :" + field.useLiteral()));
+            proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field), new SQLProcStringToken( " = "), new SQLProcFieldVariableToken(field)));
 
         }
         for (i = 0, j = 0; i < fields.size(); i++) {
@@ -842,26 +844,25 @@ public class Table implements Serializable {
                 else
                     line = "   and ";
                 j++;
-                line = line + field.useLiteral() + " = :" + field.useLiteral();
-                proc.lines.addElement(new Line(line));
+                proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line),new SQLProcFieldToken(field), new SQLProcStringToken(" = "), new SQLProcFieldVariableToken(field)));
             }
         }
         if (proc.hasReturning)
-            proc.lines.add(new Line("_ret.tail", true));
+            proc.lines.add(new Line(database.templateOutputOptions, new SQLProcEngineSugarToken(SQLProcEngineSugarToken.EngineSugarType.Tail), true));
     }
 
     /**
      * Builds an update proc generated as part of standard record class
      */
     public void buildUpdateFor(Proc proc) {
-        String name = tableName();
+        String name = tableNameWithSchema();
         int i, j, k;
         String line;
         proc.isStd = true;
         proc.isSql = true;
-        proc.lines.addElement(new Line(Misc.generateProcNameComment(proc)));
-        proc.lines.addElement(new Line("update " + name));
-        proc.lines.addElement(new Line(" set"));
+        proc.lines.addElement(new Line(database.templateOutputOptions, Misc.generateProcNameComment(proc)));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("update "), new SQLProcTableNameToken(this)));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(" set")));
         for (i = 0, j = 0; i < proc.fields.size(); i++) {
             String fieldName = (String) proc.fields.elementAt(i);
             for (k = 0; k < fields.size(); k++) {
@@ -875,7 +876,7 @@ public class Table implements Serializable {
                     else
                         line = ", ";
                     j++;
-                    proc.lines.addElement(new Line(line + field.useLiteral() + " = :" + field.useLiteral()));
+                    proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line),new SQLProcFieldToken(field), new SQLProcStringToken(" = ") , new SQLProcFieldVariableToken(field)));
                 }
             }
         }
@@ -889,26 +890,25 @@ public class Table implements Serializable {
                 else
                     line = "   and ";
                 j++;
-                line = line + field.useLiteral() + " = :" + field.useLiteral();
-                proc.lines.addElement(new Line(line));
+                proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field), new SQLProcStringToken(" = "), new SQLProcFieldVariableToken(field)));
             }
         }
         if (proc.hasReturning)
-            proc.lines.add(new Line("_ret.tail", true));
+            proc.lines.add(new Line(database.templateOutputOptions, new SQLProcEngineSugarToken(SQLProcEngineSugarToken.EngineSugarType.Tail), true));
     }
 
     /**
      * Builds an updateby proc generated as part of standard record class
      */
     public void buildUpdateBy(Proc proc) {
-        String name = tableName();
+        String name = tableNameWithSchema();
         int i, j, k;
         String line;
         proc.isStd = true;
         proc.isSql = true;
-        proc.lines.addElement(new Line(Misc.generateProcNameComment(proc)));
-        proc.lines.addElement(new Line("update " + name));
-        proc.lines.addElement(new Line(" set"));
+        proc.lines.addElement(new Line(database.templateOutputOptions, Misc.generateProcNameComment(proc)));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("update "), new SQLProcTableNameToken(this)));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(" set")));
         if (proc.fields.size() == 0) {
             for (k = 0; k < proc.updateFields.size(); k++) {
                 String fieldName = (String) proc.updateFields.elementAt(k);
@@ -923,7 +923,8 @@ public class Table implements Serializable {
                     else
                         line = ", ";
                     j++;
-                    proc.lines.addElement(new Line(line + field.useLiteral() + " = :" + field.useLiteral()));
+                    proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field), new SQLProcStringToken( " = "), new SQLProcFieldVariableToken(field)));
+
 
                 }
             }
@@ -939,7 +940,7 @@ public class Table implements Serializable {
                         else
                             line = ", ";
                         j++;
-                        proc.lines.addElement(new Line(line + field.useLiteral() + " = :" + field.useLiteral()));
+                        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field), new SQLProcStringToken(" = "), new SQLProcFieldVariableToken(field)));
                     }
                 }
             }
@@ -956,13 +957,12 @@ public class Table implements Serializable {
                     else
                         line = "   and ";
                     j++;
-                    line = line + field.useLiteral() + " = :" + field.useLiteral();
-                    proc.lines.addElement(new Line(line));
+                    proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field), new SQLProcStringToken(" = "), new SQLProcFieldVariableToken(field)));
                 }
             }
         }
         if (proc.hasReturning)
-            proc.lines.add(new Line("_ret.tail", true));
+            proc.lines.add(new Line(database.templateOutputOptions, new SQLProcEngineSugarToken(SQLProcEngineSugarToken.EngineSugarType.Tail), true));
     }
 
     private void AddTimeStampUserStamp(Proc proc) {
@@ -978,14 +978,14 @@ public class Table implements Serializable {
                     proc.inputs.addElement(field);
                     line = ", ";
 
-                    proc.lines.addElement(new Line(line + field.useLiteral() + " = :" + field.useLiteral()));
+                    proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field), new SQLProcStringToken( " = "), new SQLProcFieldVariableToken(field)));
                 }
             } else if (field.type == Field.TIMESTAMP && !tmAdded) {
                 tmAdded = true;
                 if (!proc.inputs.contains(field)) {
                     proc.inputs.addElement(field);
                     line = ", ";
-                    proc.lines.addElement(new Line(line + field.useLiteral() + " = :" + field.useLiteral()));
+                    proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field), new SQLProcStringToken(" = ") , new SQLProcFieldVariableToken(field)));
                 }
             }
         }
@@ -1003,12 +1003,12 @@ public class Table implements Serializable {
      * Builds a delete by primary key proc
      */
     public void buildDeleteOne(Proc proc) {
-        String name = tableName();
+        String name = tableNameWithSchema();
         int i, j;
         String line;
         proc.isSql = true;
-        proc.lines.addElement(new Line(Misc.generateProcNameComment(proc)));
-        proc.lines.addElement(new Line("delete from " + name));
+        proc.lines.addElement(new Line(database.templateOutputOptions, Misc.generateProcNameComment(proc)));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("delete from "), new SQLProcTableNameToken(this)));
         for (i = 0, j = 0; i < fields.size(); i++) {
             Field field = fields.elementAt(i);
             if (field.isPrimaryKey) {
@@ -1018,31 +1018,30 @@ public class Table implements Serializable {
                 else
                     line = "   and ";
                 j++;
-                line = line + field.useLiteral() + " = :" + field.useLiteral();
-                proc.lines.addElement(new Line(line));
+                proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field), new SQLProcStringToken( " = "), new SQLProcFieldVariableToken(field)));
             }
         }
         if (proc.hasReturning)
-            proc.lines.add(new Line("_ret.tail", true));
+            proc.lines.add(new Line(database.templateOutputOptions, new SQLProcEngineSugarToken(SQLProcEngineSugarToken.EngineSugarType.Tail), true));
     }
 
     /**
      * Builds a delete all rows proc
      */
     public void buildDeleteAll(Proc proc) {
-        String name = tableName();
+        String name = tableNameWithSchema();
         proc.isSql = true;
-        proc.lines.addElement(new Line(Misc.generateProcNameComment(proc)));
-        proc.lines.addElement(new Line("delete from " + name));
+        proc.lines.addElement(new Line(database.templateOutputOptions, Misc.generateProcNameComment(proc)));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("delete from "), new SQLProcTableNameToken(this)));
         if (proc.hasReturning)
-            proc.lines.add(new Line("_ret.tail", true));
+            proc.lines.add(new Line(database.templateOutputOptions, new SQLProcEngineSugarToken(SQLProcEngineSugarToken.EngineSugarType.Tail), true));
     }
 
     /**
      * Builds a count rows proc
      */
     public void buildCount(Proc proc) {
-        String name = tableName();
+        String name = tableNameWithSchema();
         proc.isSql = true;
         proc.isSingle = true;
         Field field = new Field();
@@ -1050,15 +1049,15 @@ public class Table implements Serializable {
         field.type = Field.INT;
         field.length = 4;
         proc.outputs.addElement(field);
-        proc.lines.addElement(new Line(Misc.generateProcNameComment(proc)));
-        proc.lines.addElement(new Line("select count(*) noOf from " + name));
+        proc.lines.addElement(new Line(database.templateOutputOptions, Misc.generateProcNameComment(proc)));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("select count(*) noOf from "), new SQLProcTableNameToken(this)));
     }
 
     /**
-     * Builds a check for primary key existance proc
+     * Builds a check for primary key existence proc
      */
     public void buildExists(Proc proc) {
-        String name = tableName();
+        String name = tableNameWithSchema();
         int i, j;
         String line;
         proc.isSql = true;
@@ -1068,8 +1067,8 @@ public class Table implements Serializable {
         count.type = Field.INT;
         count.length = 4;
         proc.outputs.addElement(count);
-        proc.lines.addElement(new Line(Misc.generateProcNameComment(proc)));
-        proc.lines.addElement(new Line("select count(*) noOf from " + name));
+        proc.lines.addElement(new Line(database.templateOutputOptions, Misc.generateProcNameComment(proc)));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("select count(*) noOf from "), new SQLProcTableNameToken(this)));
         for (i = 0, j = 0; i < fields.size(); i++) {
             Field field = fields.elementAt(i);
             if (field.isPrimaryKey) {
@@ -1079,8 +1078,7 @@ public class Table implements Serializable {
                 else
                     line = "   and ";
                 j++;
-                line = line + field.useLiteral() + " = :" + field.useLiteral();
-                proc.lines.addElement(new Line(line));
+                proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field), new SQLProcStringToken(" = "), new SQLProcFieldVariableToken(field)));
             }
         }
     }
@@ -1089,14 +1087,14 @@ public class Table implements Serializable {
      * Builds a select on primary key proc
      */
     public void buildSelectOne(Proc proc, boolean update, boolean readonly) {
-        String name = tableName();
+        String name = tableNameWithSchema();
         int i, j;
         String line;
         proc.isStd = true;
         proc.isSql = true;
         proc.isSingle = true;
-        proc.lines.addElement(new Line(Misc.generateProcNameComment(proc)));
-        proc.lines.addElement(new Line("select"));
+        proc.lines.addElement(new Line(database.templateOutputOptions, Misc.generateProcNameComment(proc)));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("select")));
         for (i = 0, j = 0; i < fields.size(); i++) {
             Field field = fields.elementAt(i);
             if (!field.isPrimaryKey) {
@@ -1106,10 +1104,10 @@ public class Table implements Serializable {
                 else
                     line = ", ";
                 j++;
-                proc.lines.addElement(new Line(line + field.useLiteral()));
+                proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field)));
             }
         }
-        proc.lines.addElement(new Line(" from " + name));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(" from "), new SQLProcTableNameToken(this)));
         for (i = 0, j = 0; i < fields.size(); i++) {
             Field field = fields.elementAt(i);
             if (field.isPrimaryKey) {
@@ -1119,47 +1117,46 @@ public class Table implements Serializable {
                 else
                     line = "   and ";
                 j++;
-                line = line + field.useLiteral() + " = :" + field.useLiteral();
-                proc.lines.addElement(new Line(line));
+                proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field), new SQLProcStringToken(" = "), new SQLProcFieldVariableToken(field)));
             }
         }
         if (update)
-            proc.lines.addElement(new Line(" for update"));
+            proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(" for update")));
         else if (readonly)
-            proc.lines.addElement(new Line(" for read only"));
+            proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(" for read only")));
     }
 
     /**
      * Builds a select on primary key proc
      */
     public void buildMaxTmStamp(Proc proc) {
-        String name = tableName();
+        String name = tableNameWithSchema();
         int i;
         proc.isStd = true;
         proc.isSql = true;
         proc.isSingle = true;
-        proc.lines.addElement(new Line("select"));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("select")));
         for (i = 0; i < fields.size(); i++) {
             Field field = fields.elementAt(i);
             if (field.type == Field.TIMESTAMP) {
                 proc.outputs.addElement(field);
-                proc.lines.addElement(new Line("max(" + field.useLiteral() + ")"));
+                proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("max("), new SQLProcFieldToken(field), new SQLProcStringToken(")")));
             }
         }
-        proc.lines.addElement(new Line(" from " + name));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(" from "), new SQLProcTableNameToken(this)));
     }
 
     /**
      * Builds a select all rows proc
      */
     public void buildSelectAll(Proc proc, boolean update, boolean readonly, boolean inOrder, boolean descending) {
-        String name = tableName();
+        String name = tableNameWithSchema();
         int i;
         String line;
         proc.isStd = true;
         proc.isSql = true;
-        proc.lines.addElement(new Line(Misc.generateProcNameComment(proc)));
-        proc.lines.addElement(new Line("select"));
+        proc.lines.addElement(new Line(database.templateOutputOptions, Misc.generateProcNameComment(proc)));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("select")));
         for (i = 0; i < fields.size(); i++) {
             Field field = fields.elementAt(i);
             proc.outputs.addElement(field);
@@ -1167,9 +1164,9 @@ public class Table implements Serializable {
                 line = "  ";
             else
                 line = ", ";
-            proc.lines.addElement(new Line(line + field.useLiteral()));
+            proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field)));
         }
-        proc.lines.addElement(new Line(" from " + name));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(" from "), new SQLProcTableNameToken(this)));
         selectFor(proc, update, readonly);
         selectOrderBy(proc, inOrder, descending);
     }
@@ -1183,12 +1180,12 @@ public class Table implements Serializable {
             for (i = 0; i < fields.size(); i++) {
                 Field field = fields.elementAt(i);
                 if (field.isPrimaryKey)
-                    proc.orderFields.addElement(field.useLiteral());
+                    proc.orderFields.addElement(field);
             }
         }
         n = proc.orderFields.size();
         for (i = 0; i < n; i++) {
-            String fieldName = proc.orderFields.elementAt(i);
+            Field field = proc.orderFields.elementAt(i);
             if (i == 0)
                 line = " order by ";
             else
@@ -1197,25 +1194,25 @@ public class Table implements Serializable {
                 tail = " desc";
             else
                 tail = "";
-            proc.lines.addElement(new Line(line + fieldName + tail));
+            proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field), new SQLProcStringToken(tail)));
         }
     }
 
     private void selectFor(Proc proc, boolean update, boolean readonly) {
         if (update)
-            proc.lines.addElement(new Line(" for update"));
+            proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(" for update")));
         else if (readonly)
-            proc.lines.addElement(new Line(" for read only"));
+            proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(" for read only")));
     }
 
     public void buildDeleteBy(Proc proc) {
-        String name = tableName();
+        String name = tableNameWithSchema();
         int i, j, k;
         String line;
         proc.isStd = true;
         proc.isSql = true;
-        proc.lines.addElement(new Line(Misc.generateProcNameComment(proc)));
-        proc.lines.addElement(new Line("Delete from " + name));
+        proc.lines.addElement(new Line(database.templateOutputOptions, Misc.generateProcNameComment(proc)));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("Delete from "), new SQLProcTableNameToken(this)));
         for (i = 0, j = 0; i < proc.fields.size(); i++) {
             String fieldName = (String) proc.fields.elementAt(i);
             for (k = 0; k < fields.size(); k++) {
@@ -1228,25 +1225,25 @@ public class Table implements Serializable {
                         line = "   and ";
                     j++;
                     line = line + field.useLiteral() + " = :" + field.useLiteral();
-                    proc.lines.addElement(new Line(line));
+                    proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field), new SQLProcStringToken(" = "), new SQLProcFieldVariableToken(field)));
                 }
             }
         }
         if (proc.hasReturning)
-            proc.lines.add(new Line("_ret.tail", true));
+            proc.lines.add(new Line(database.templateOutputOptions, new SQLProcEngineSugarToken(SQLProcEngineSugarToken.EngineSugarType.Tail), true));
         if (j == 0) {
             throw new Error("Error generating buildDeleteBy");
         }
     }
 
     public void buildSelectBy(Proc proc, boolean forUpdate, boolean forReadOnly, boolean inOrder, boolean descending) {
-        String name = tableName();
+        String name = tableNameWithSchema();
         int i, j, k;
         String line;
         proc.isStd = true;
         proc.isSql = true;
-        proc.lines.addElement(new Line(Misc.generateProcNameComment(proc)));
-        proc.lines.addElement(new Line("select"));
+        proc.lines.addElement(new Line(database.templateOutputOptions, Misc.generateProcNameComment(proc)));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken("select")));
         if (proc.outputs.size() > 0) {
             for (i = 0; i < proc.outputs.size(); i++) {
                 Field fieldOut = (Field) proc.outputs.elementAt(i);
@@ -1257,7 +1254,7 @@ public class Table implements Serializable {
                             line = "  ";
                         else
                             line = ", ";
-                        proc.lines.addElement(new Line(line + field.useLiteral()));
+                        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field)));
                     }
                 }
             }
@@ -1269,10 +1266,10 @@ public class Table implements Serializable {
                     line = "  ";
                 else
                     line = ", ";
-                proc.lines.addElement(new Line(line + field.useLiteral()));
+                proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line), new SQLProcFieldToken(field)));
             }
         }
-        proc.lines.addElement(new Line(" from " + name));
+        proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(" from "), new SQLProcTableNameToken(this)));
         selectFor(proc, forUpdate, forReadOnly);
         for (i = 0, j = 0; i < proc.fields.size(); i++) {
             String fieldName = (String) proc.fields.elementAt(i);
@@ -1285,8 +1282,7 @@ public class Table implements Serializable {
                     else
                         line = "   and ";
                     j++;
-                    line = line + field.useLiteral() + " = :" + field.useLiteral();
-                    proc.lines.addElement(new Line(line));
+                    proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(line),new SQLProcFieldToken(field), new SQLProcStringToken(" = "), new SQLProcFieldVariableToken(field)));
                 }
             }
         }
@@ -1296,77 +1292,77 @@ public class Table implements Serializable {
         selectOrderBy(proc, inOrder, descending);
     }
 
-    public void buildSelectFrom(Proc proc, Table table) {
-        String name = tableName();
-        int i, j, k;
-        String line;
-        proc.extendsStd = false;
-        proc.isSql = true;
-        String preFix = "";
-        boolean doSelect = true;
-        Line first;
-        if (proc.lines.size() > 0) {
-            first = (Line) proc.lines.elementAt(0);
-            for (k = 0; k < proc.lines.size(); k++) {
-                first = (Line) proc.lines.elementAt(k);
-                if (first.line.toLowerCase().indexOf("select ") > -1 && first.line.toLowerCase().indexOf("select ") < 5) {
-                    doSelect = false;
-                    logger.warn("Select found not generating SELECT." + first.line.toLowerCase().indexOf("select "));
-                    break;
-                }
-            }
-        }
-        if (doSelect) {
-            if (preFix == "") {
-                for (k = 0; k < proc.lines.size(); k++) {
-                    first = (Line) proc.lines.elementAt(k);
-                    if (first.line.toLowerCase().indexOf(name.toLowerCase()) > -1) {
-                        preFix = first.line.substring(first.line.toLowerCase().indexOf(name.toLowerCase()) + name.length()).trim();
-                        int n = preFix.indexOf(' ');
-                        if (n > 0) {
-                            preFix = preFix.substring(0, n).trim();
-                        }
-                        if (!name.toLowerCase().startsWith(preFix.toLowerCase().substring(0, 1))) {
-                            logger.warn("PREFIX mismatch. Dropping PREFIX");
-                            preFix = "";
-                        }
-                        break;
-                    }
-                }
-            }
-            if (preFix.equals("")) {
-                logger.warn("Unable to determine PREFIX for table");
-            }
-            proc.lines.insertElementAt(new Line("SELECT "), 0);
-            for (j = 0; j < proc.outputs.size(); j++) {
-                Field fieldName = (Field) proc.outputs.elementAt(j);
-                if (table.hasField(fieldName.name)) {
-                    if (j == 0)
-                        if (preFix.length() > 0)
-                            line = "  " + preFix + "";
-                        else
-                            line = "  ";
-                    else if (preFix.length() > 0)
-                        line = ", " + preFix + "";
-                    else
-                        line = ", ";
-                } else {
-                    fieldName.isExtStd = true;
-                    fieldName.isExtStdOut = true;
-                    if (j == 0)
-                        line = "  ";
-                    else
-                        line = ", ";
-                }
-                proc.lines.insertElementAt(new Line(line + fieldName.useLiteral() + " "), j + 1);
-            }
-            if (proc.isStd) {
-                proc.isStd = false;
-                proc.extendsStd = true;
-                proc.useStd = true;
-            }
-        }
-    }
+//    public void buildSelectFrom(Proc proc, Table table) {
+//        String name = tableName();
+//        int i, j, k;
+//        String line;
+//        proc.extendsStd = false;
+//        proc.isSql = true;
+//        String preFix = "";
+//        boolean doSelect = true;
+//        Line first;
+//        if (proc.lines.size() > 0) {
+//            first = (Line) proc.lines.elementAt(0);
+//            for (k = 0; k < proc.lines.size(); k++) {
+//                first = (Line) proc.lines.elementAt(k);
+//                if (first.line.toString().toLowerCase().indexOf("select ") > -1 && first.line.toString().toLowerCase().indexOf("select ") < 5) {
+//                    doSelect = false;
+//                    logger.warn("Select found not generating SELECT." + first.line.toString().toLowerCase().indexOf("select "));
+//                    break;
+//                }
+//            }
+//        }
+//        if (doSelect) {
+//            if (preFix == "") {
+//                for (k = 0; k < proc.lines.size(); k++) {
+//                    first = (Line) proc.lines.elementAt(k);
+//                    if (first.line.toString().toLowerCase().indexOf(name.toLowerCase()) > -1) {
+//                        preFix = first.line.toString().substring(first.line.toString().toLowerCase().indexOf(name.toLowerCase()) + name.length()).trim();
+//                        int n = preFix.indexOf(' ');
+//                        if (n > 0) {
+//                            preFix = preFix.substring(0, n).trim();
+//                        }
+//                        if (!name.toLowerCase().startsWith(preFix.toLowerCase().substring(0, 1))) {
+//                            logger.warn("PREFIX mismatch. Dropping PREFIX");
+//                            preFix = "";
+//                        }
+//                        break;
+//                    }
+//                }
+//            }
+//            if (preFix.equals("")) {
+//                logger.warn("Unable to determine PREFIX for table");
+//            }
+//            proc.lines.insertElementAt(new Line("SELECT "), 0);
+//            for (j = 0; j < proc.outputs.size(); j++) {
+//                Field fieldName = (Field) proc.outputs.elementAt(j);
+//                if (table.hasField(fieldName.name)) {
+//                    if (j == 0)
+//                        if (preFix.length() > 0)
+//                            line = "  " + preFix + "";
+//                        else
+//                            line = "  ";
+//                    else if (preFix.length() > 0)
+//                        line = ", " + preFix + "";
+//                    else
+//                        line = ", ";
+//                } else {
+//                    fieldName.isExtStd = true;
+//                    fieldName.isExtStdOut = true;
+//                    if (j == 0)
+//                        line = "  ";
+//                    else
+//                        line = ", ";
+//                }
+//                proc.lines.insertElementAt(new Line(line + fieldName.useLiteral() + " "), j + 1);
+//            }
+//            if (proc.isStd) {
+//                proc.isStd = false;
+//                proc.extendsStd = true;
+//                proc.useStd = true;
+//            }
+//        }
+//    }
 
     public String toString() {
         return name;

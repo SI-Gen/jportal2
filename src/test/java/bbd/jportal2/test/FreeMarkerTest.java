@@ -2,6 +2,7 @@ package bbd.jportal2.test;
 
 import bbd.jportal2.Database;
 import bbd.jportal2.JPortal;
+import bbd.jportal2.JPortalTemplateOutputOptions;
 import bbd.jportal2.Table;
 import bbd.jportal2.generators.FreeMarker.FreeMarker;
 import org.junit.Test;
@@ -38,7 +39,7 @@ public class FreeMarkerTest {
         Path outputDir = Paths.get(OUTPUT_DIR,nameOfTest);
 
         String nubDir="";
-        Database db = JPortal.run(siFile.toString(), nubDir);
+        Database db = JPortal.run(siFile.toString(), nubDir, JPortalTemplateOutputOptions.defaultBuiltInOptions());
         File outputDirectory = new File(outputDir.toString());
         (new FreeMarker()).generateTemplate(db, db.tables.get(0), TEMPLATE_DIR, nameOfTest, outputDirectory);
 
@@ -57,7 +58,7 @@ public class FreeMarkerTest {
 
         String nubDir="";
     
-        Database db = JPortal.run(siFile.toString(), nubDir);
+        Database db = JPortal.run(siFile.toString(), nubDir, JPortalTemplateOutputOptions.defaultBuiltInOptions());
         File outputDirectory = new File(outputDir.toString());
         (new FreeMarker()).generateTemplate(db, db.tables.get(0), TEMPLATE_DIR, nameOfTest, outputDirectory);
 
@@ -83,7 +84,8 @@ public class FreeMarkerTest {
         Path outputDir = Paths.get(OUTPUT_DIR, nameOfTest);
 
         String nubDir="";
-        Database db = JPortal.run(siFile.toString(), nubDir);
+        JPortalTemplateOutputOptions options = JPortalTemplateOutputOptions.defaultBuiltInOptions();
+        Database db = JPortal.run(siFile.toString(), nubDir, options);
         File outputDirectory = new File(outputDir.toString());
 
         Table tab = null;
@@ -132,7 +134,7 @@ public class FreeMarkerTest {
         Path outputDir = Paths.get(OUTPUT_DIR, nameOfTest);
 
         String nubDir="";
-        Database db = JPortal.run(siFile.toString(), nubDir);
+        Database db = JPortal.run(siFile.toString(), nubDir, JPortalTemplateOutputOptions.defaultBuiltInOptions());
         File outputDirectory = new File(outputDir.toString());
         (new FreeMarker()).generateTemplate(db, db.tables.get(0), TEMPLATE_DIR, nameOfTest, outputDirectory);
 
@@ -152,7 +154,7 @@ public class FreeMarkerTest {
         Path outputDir = Paths.get(OUTPUT_DIR, nameOfTest);
 
         String nubDir="";
-        Database db = JPortal.run(siFile.toString(), nubDir);
+        Database db = JPortal.run(siFile.toString(), nubDir, JPortalTemplateOutputOptions.defaultBuiltInOptions());
         File outputDirectory = new File(outputDir.toString());
         (new FreeMarker()).generateTemplate(db, db.tables.get(0), TEMPLATE_DIR, nameOfTest, outputDirectory);
 
@@ -180,7 +182,7 @@ public class FreeMarkerTest {
 
 
         String nubDir="";
-        Database db = JPortal.run(siFile.toString(), nubDir);
+        Database db = JPortal.run(siFile.toString(), nubDir, JPortalTemplateOutputOptions.defaultBuiltInOptions());
         File outputDirectory = new File(outputDir.toString());
         (new FreeMarker()).generateTemplate(db, db.tables.get(0), TEMPLATE_DIR, nameOfTest, outputDirectory);
 
@@ -200,7 +202,7 @@ public class FreeMarkerTest {
         Path outputDir = Paths.get(OUTPUT_DIR, nameOfTest);
 
         String nubDir = "";
-        Database db = JPortal.run(siFile.toString(), nubDir);
+        Database db = JPortal.run(siFile.toString(), nubDir, JPortalTemplateOutputOptions.defaultBuiltInOptions());
         File outputDirectory = new File(outputDir.toString());
         (new FreeMarker()).generateTemplate(db, db.tables.get(0), TEMPLATE_DIR, nameOfTest, outputDirectory);
         JPortal.clearDatabase();

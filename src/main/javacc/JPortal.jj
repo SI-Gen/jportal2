@@ -51,6 +51,7 @@ public class JPortal
   static private boolean fieldsNullByDefault = false;
   static private boolean isLiteral = false;
   static private String literal = "";
+
   /**
   * Reads input from standard input
   */
@@ -79,14 +80,14 @@ public class JPortal
   {
     return run(inFile);
   }
-  public static Database run(String inFile, String inNub)
+  public static Database run(String inFile, String inNub, JPortalTemplateOutputOptions options)
   {
     try
     {
       FileReader reader = new FileReader(inFile);
       try
       {
-        return run(inFile, inNub, reader);
+        return run(inFile, inNub, reader, options);
       }
       finally
       {
@@ -108,11 +109,11 @@ public class JPortal
       database = null;
   }
 
-  public static Database run(String inFile, Reader reader)
+  public static Database run(String inFile, Reader reader, JPortalTemplateOutputOptions options)
   {
-    return run(inFile, "", reader);
+    return run(inFile, "", reader, options);
   }
-  public static Database run(String inFile, String inNub, Reader reader)
+  public static Database run(String inFile, String inNub, Reader reader, JPortalTemplateOutputOptions options)
   {
     setupNub(inNub);
     try
@@ -143,6 +144,7 @@ public class JPortal
       if (database == null) {
         database = new Database();
       }
+      database.templateOutputOptions = options;
       JPortal.jInput();
       return database;
     }
@@ -244,7 +246,7 @@ public class JPortal
     {
       if (dB > 0)
       {
-        line = new Line(s.substring(0, dB)+" ");
+        line = new Line(database.templateOutputOptions, new SQLProcStringToken(s.substring(0, dB)),new SQLProcStringToken(" "));
         proc.lines.addElement(line);
         s = s.substring(dB);
       }
@@ -291,7 +293,7 @@ public class JPortal
         s = dVar.substring(sE) + s;
         dVar = dVar.substring(0, sE);
       }
-      line = new Line(dVar, true);
+      line = new Line(database.templateOutputOptions, new SQLProcDynamicSQLVariableToken(dVar), true);
       proc.lines.addElement(line);
       if (!proc.hasDynamic(dVar))
       {
@@ -2153,7 +2155,7 @@ void jNewProc() :
       )?
       ( jOldCode() | jNewCode() )
       {
-        table.buildSelectFrom(proc, table);
+        //table.buildSelectFrom(proc, table);
         proc.useStd = true;
         isStdProc = true;
       }
@@ -2238,7 +2240,7 @@ void jOrderColumn() :
     else if (proc.hasOrders(s))
       logger.warn(proc.name+" field "+s+" already present");
     else
-      proc.orderFields.addElement(s);
+      proc.orderFields.addElement(table.getField(s));
   }
 }
 
@@ -2302,7 +2304,7 @@ void jUserProc() :
   {
     proc.name = s;
     proc.isBuiltIn = false;
-    Line l1 = new Line(Misc.generateProcNameComment(proc));
+    Line l1 = new Line(database.templateOutputOptions, Misc.generateProcNameComment(proc));
     proc.lines.addElement(l1);
   }
   (
@@ -2438,12 +2440,12 @@ void jOldCode() :
   <CODE>
   ( jLine()
     {
-      Line l1 = new Line(line);
+      Line l1 = new Line(database.templateOutputOptions, new SQLProcStringToken(line));
       proc.lines.addElement(l1);
     }
   | s = jIdent()  size = jOptSize()
     {
-      Line l2 = new Line(s, true);
+      Line l2 = new Line(database.templateOutputOptions, new SQLProcStringToken(s), true);
       proc.lines.addElement(l2);
       if (!proc.hasDynamic(s))
       {
@@ -2471,7 +2473,7 @@ void jNewCode() :
         s = parseDynamics(t.image.trim() + " ");
         if (s.length() > 0)
         {
-          line = new Line(s);
+          line = new Line(database.templateOutputOptions, new SQLProcStringToken(s));
           proc.lines.addElement(line);
         }
       }
@@ -2572,7 +2574,7 @@ void jOldData() :
   }
   ( jLine()
     {
-      Line l1 = new Line(line);
+      Line l1 = new Line(database.templateOutputOptions, new SQLProcStringToken(line));
       proc.lines.addElement(l1);
     }
   )*
@@ -2588,12 +2590,12 @@ void jNewData() :
   {
     proc = new Proc();
     proc.isData = true;
-    Line l1 = new Line(t.image.trim());
+    Line l1 = new Line(database.templateOutputOptions, new SQLProcStringToken(t.image.trim()));
     proc.lines.addElement(l1);
   }
   ( LOOKAHEAD(2) t = <DATALINE>
     {
-      Line l2 = new Line(t.image.trim());
+      Line l2 = new Line(database.templateOutputOptions, new SQLProcStringToken(t.image.trim()));
       proc.lines.addElement(l2);
     }
   )*
@@ -2608,12 +2610,12 @@ void jIdlCode() :
   {
     proc = new Proc();
     proc.isIdlCode = true;
-    Line l1 = new Line(t.image.trim());
+    Line l1 = new Line(database.templateOutputOptions, new SQLProcStringToken(t.image.trim()));
     proc.lines.addElement(l1);
   }
   ( LOOKAHEAD(2) t = <IDLLINE>
     {
-      Line l2 = new Line(t.image.trim());
+      Line l2 = new Line(database.templateOutputOptions, new SQLProcStringToken(t.image.trim()));
       proc.lines.addElement(l2);
     }
   )*

@@ -25,8 +25,10 @@ import org.slf4j.LoggerFactory;
 
 public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
 
+    JPortalTemplateOutputOptions CSNetCodeOutputOptions;
     public CSNetCode() {
         super(CSNetCode.class);
+        CSNetCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();
     }
 
     private static final Logger logger = LoggerFactory.getLogger(CSNetCode.class);
@@ -766,7 +768,7 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
     }
 
     void generateStoredProcCommand(Proc proc, PrintWriter outData) {
-        placeHolder = new PlaceHolder(proc, PlaceHolder.AT, "");
+        placeHolder = new PlaceHolder(proc, CSNetCodeOutputOptions, PlaceHolder.AT, "");
         String storedProcName = proc.table.useName() + proc.upperFirst();
         Vector<?> lines = placeHolder.getLines();
         generateStoredProc(proc, storedProcName, lines);
@@ -782,10 +784,10 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
 
     void generateCommand(Proc proc, PrintWriter outData) {
         if (proc.hasReturning) {
-            placeHolder = new PlaceHolder(proc, PlaceHolder.CURLY, "");
+            placeHolder = new PlaceHolder(proc, CSNetCodeOutputOptions, PlaceHolder.CURLY, "");
             outData.println(indent(2) + "public string Command" + proc.upperFirst() + "(JConnect aConnect, string aTable, string aField)");
         } else {
-            placeHolder = new PlaceHolder(proc, PlaceHolder.CURLY, "Rec.");
+            placeHolder = new PlaceHolder(proc, CSNetCodeOutputOptions, PlaceHolder.CURLY, "Rec.");
             outData.println(indent(2) + "public string Command" + proc.upperFirst() + "()");
         }
         Vector<?> lines = placeHolder.getLines();

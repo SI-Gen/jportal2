@@ -28,6 +28,8 @@ public class ProjectCompilerBuilder {
         pj.addTemplateLocations(allArguments.getTemplateLocations());
         pj.addBuiltinPostProcessors(allArguments.getBuiltinPostProcessors());
         pj.addTemplateBasedPostProcessors(allArguments.getTemplatePostProcessors());
+        pj.overrideWithPropertiesFile(allArguments.getPropertiesFileName());
+
 
         return pj;
 
