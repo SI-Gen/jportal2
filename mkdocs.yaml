@@ -59,13 +59,15 @@ nav:
   - Home: 'README.md'
   - 'Overview':
       - 'Installing JPortal2': 'Overview/installing-jportal2.md'
-      - 'Quickstarts':
-          - 'Quickstart with PostgreSQL': ''
-          - 'Quickstart with SQLServer': ''
-          - 'Quickstart with Oracle': ''
-          - 'Quickstart with DB2': ''
+#      - 'Quickstarts':
+#          - 'Quickstart with PostgreSQL': ''
+#          - 'Quickstart with SQLServer': ''
+#          - 'Quickstart with Oracle': ''
+#          - 'Quickstart with DB2': ''
   - Tutorials:
-      - 'Getting Started': 'Tutorials/getting-started-in-postgres.md'
+      - 'Getting Started - installing prerequisites': 'Tutorials/getting-started-in-postgres.md'
+      - 'Setting up our project directory': 'Tutorials/setting-up-the-project-directory.md'
+      - 'Creating our first table': 'Tutorials/creating-our-first-table.md'
       - 'Adding an additional table and foreign keys': 'Tutorials/adding-an-additional-table.md'
       - 'Additional Built-In Queries': 'Tutorials/additional-built-in-queries.md'
       - 'Custom Queries and Advanced functionality': 'Tutorials/custom-queries.md'
@@ -84,3 +86,4 @@ markdown_extensions:
 
 plugins:
   - search # necessary for search to work
+  #- glightbox # To allow zooming of images
