@@ -17,6 +17,8 @@ theme:
   features:
     - tabs
     - instant
+    - content.code.annotate
+
   palette:
     primary: red
     accent: reds
@@ -30,14 +32,14 @@ theme:
   logo: assest/metisiconsmall.png
 
 # Extras
-extra:
-  social:
-    - icon: fontawesome/brands/github-alt
-      link: https://github.com/ramitsurana
-    - icon: fontawesome/brands/twitter
-      link: https://twitter.com/ramitsurana
-    - icon: fontawesome/brands/linkedin
-      link: https://linkedin.com/in/ramitsurana
+#extra:
+#  social:
+#    - icon: fontawesome/brands/github-alt
+#      link: https://github.com/ramitsurana
+#    - icon: fontawesome/brands/twitter
+#      link: https://twitter.com/ramitsurana
+#    - icon: fontawesome/brands/linkedin
+#      link: https://linkedin.com/in/ramitsurana
 
 ## Google Analytics
 #google_analytics:
@@ -52,11 +54,36 @@ extra:
 #    - Chart Modules: charts/modules/main.md
 #    - Chart Boostrap: charts/bootstrap/main.md
 #  - Releases: releases.md
+
+nav:
+  - Home: 'README.md'
+  - 'Overview':
+      - 'Installing JPortal2': 'Overview/installing-jportal2.md'
+#      - 'Quickstarts':
+#          - 'Quickstart with PostgreSQL': ''
+#          - 'Quickstart with SQLServer': ''
+#          - 'Quickstart with Oracle': ''
+#          - 'Quickstart with DB2': ''
+  - Tutorials:
+      - 'Getting Started - installing prerequisites': 'Tutorials/getting-started-in-postgres.md'
+      - 'Setting up our project directory': 'Tutorials/setting-up-the-project-directory.md'
+      - 'Creating our first table': 'Tutorials/creating-our-first-table.md'
+      - 'Adding an additional table and foreign keys': 'Tutorials/adding-an-additional-table.md'
+      - 'Additional Built-In Queries': 'Tutorials/additional-built-in-queries.md'
+      - 'Custom Queries and Advanced functionality': 'Tutorials/custom-queries.md'
+
 # Extensions
 markdown_extensions:
   - admonition
   - toc:
       permalink: true
+  - pymdownx.highlight:
+      linenums: true
+      #- anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
 
 plugins:
   - search # necessary for search to work
+  #- glightbox # To allow zooming of images

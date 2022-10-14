@@ -38,6 +38,8 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
         logger.info("DDL: {}", fileName);
 
         try (PrintWriter outData = openOutputFileForGeneration("sql", fileName)) {
+            outData.println("CREATE SCHEMA IF NOT EXISTS " + database.schema + ";");
+
             for (int i = 0; i < database.tables.size(); i++)
                 generateTable(database, database.tables.elementAt(i), outData);
             outData.flush();
