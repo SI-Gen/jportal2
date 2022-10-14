@@ -21,6 +21,7 @@ public class JavaJCCodeGeneratorTest {
         Path outputPath = Paths.get(OUTPUT_DIR, "JavaJCCode", "JavaJCCodeWithEnum");
         pj.addBuiltinSIProcessor("JavaJCCode:" + outputPath);
         pj.addInputDir(SI_DIR);
+        pj.overrideWithPropertiesFile("");
         pj.compileAll();
     }
 
@@ -32,6 +33,7 @@ public class JavaJCCodeGeneratorTest {
         Path outputPath = Paths.get(OUTPUT_DIR, "JavaJCCode", "JavaJCCodeWithLombok");
         pj.addBuiltinSIProcessor("JavaJCCode:" + outputPath);
         pj.addInputDir(SI_DIR);
+        pj.overrideWithPropertiesFile("");
         pj.compileAll();
     }
 

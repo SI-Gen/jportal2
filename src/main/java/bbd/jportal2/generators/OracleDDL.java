@@ -404,7 +404,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
     private void generate(Proc proc, PrintWriter outData) {
 
         for (Line line : proc.getLines()) {
-            outData.println(line);
+            outData.println(line.getDecoratedLine());
         }
 
         outData.println();

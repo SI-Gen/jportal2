@@ -17,6 +17,9 @@ public class JPortal2Arguments {
     @Parameter(names = {"--projectCompile", "-pc"}, description = "Enable project-level compilation")
     public boolean projectCompile = false;
 
+    @Parameter(names = {"--properties-file", "-pf"}, description = "A properties file with JPortal properties i.e. --propertiesfile=postgres.properties")
+    private String propertiesFileName = null;
+
     @Parameter(names = {"--log", "-l"}, description = "Logfile name i.e. --log=jportal2.log")
     private String logFileName = null;
 
@@ -68,13 +71,15 @@ public class JPortal2Arguments {
     private List<String> templatePostProcessors = new ArrayList<>();
 
     @Parameter(names = {"--template-location", "-tl"}, description = "Freemarker template location. Default is <current_working_directory>/jportal2_templates")
-    private List<String> templateLocations = Arrays.asList(Paths.get(System.getProperty("user.dir"), "jportal2_templates").toString());
+    private List<String> templateLocations = Arrays.asList(Paths.get(System.getProperty("user.dir"), "jportal2_downloaded_templates").toString());
 
     @Parameter(names = {"--flag", "-F"}, description = "Flags to pass to the generator")
     private List<String> flags = new ArrayList<>();
 
     @Parameter(names = {"--help", "-h", "-?"}, help = true)
     private boolean help;
+
+    public String getPropertiesFileName() { return propertiesFileName;}
 
     public String getLogFileName() {
         return logFileName;
@@ -126,6 +131,8 @@ public class JPortal2Arguments {
         return debug;
     }
 
+    public void setPropertiesFileName(String pf) { this.propertiesFileName = pf; }
+
     public void setLogFileName(String logFileName) {
         this.logFileName = logFileName;
     }
@@ -170,6 +177,7 @@ public class JPortal2Arguments {
     public String toString() {
         return "JPortal2Arguments{" +
                 "logFileName='" + logFileName + '\'' +
+                "propertiesfilename='" + propertiesFileName + '\'' +
                 ", inputDirs=" + inputDirs +
                 ", inputFiles=" + inputFiles +
                 ", builtinSIProcessors=" + builtinSIProcessors +

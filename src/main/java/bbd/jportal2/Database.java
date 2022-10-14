@@ -94,6 +94,7 @@ public class Database implements Serializable
   public Vector<Sequence> sequences;
   public Vector<View> views;
   public Vector<String> imports;
+  public JPortalTemplateOutputOptions templateOutputOptions;
 
 
   public ArrayList<GeneratedFiles> generatedOutputFiles;

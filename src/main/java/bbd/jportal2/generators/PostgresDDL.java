@@ -18,7 +18,6 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
     public String documentation() {
         return "Generate PostgreSQL DDL.";
     }
-
     public PostgresDDL() {
         super(PostgresDDL.class);
     }
@@ -39,6 +38,8 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
         logger.info("DDL: {}", fileName);
 
         try (PrintWriter outData = openOutputFileForGeneration("sql", fileName)) {
+            outData.println("CREATE SCHEMA IF NOT EXISTS " + database.schema + ";");
+
             for (int i = 0; i < database.tables.size(); i++)
                 generateTable(database, database.tables.elementAt(i), outData);
             outData.flush();
@@ -155,7 +156,7 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
      */
     private void generateProc(Proc proc, PrintWriter outData) {
         for (int i = 0; i < proc.lines.size(); i++) {
-            String l = proc.lines.elementAt(i).line;
+            String l = proc.lines.elementAt(i).getDecoratedLine().toString();
             outData.println(l);
         }
         outData.println();

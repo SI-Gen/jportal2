@@ -37,6 +37,7 @@ public class AllTemplateBasedPostProcessorsBasicTest extends TestTemplateBasedPr
 
         //In order to test post processors, we need to add some SI processors to the project.
         ProjectCompiler pj = getProjectCompiler(POST_PROCESSOR_TEMPLATE_DIR);
+        pj.overrideWithPropertiesFile("");
 
         BuiltInGeneratorHelpers helper = new BuiltInGeneratorHelpers();
 

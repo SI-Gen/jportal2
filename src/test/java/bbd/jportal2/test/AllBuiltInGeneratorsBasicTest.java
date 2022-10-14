@@ -30,6 +30,7 @@ public class AllBuiltInGeneratorsBasicTest {
     public <TYPE_TO_TEST> void testBuiltInProcessorsOfType(Class<TYPE_TO_TEST> classType) throws Exception {
         ProjectCompiler pj = new ProjectCompiler(false);
         pj.addTemplateLocation(SI_PROCESSOR_TEMPLATE_DIR);
+        pj.overrideWithPropertiesFile("");
         BuiltInGeneratorHelpers helper = new BuiltInGeneratorHelpers();
 
         List<String> builtinGenerators = new ArrayList<>();

@@ -15,7 +15,6 @@ package bbd.jportal2.generators;
 import bbd.jportal2.*;
 import bbd.jportal2.Enum;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Vector;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,6 +24,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
 {
     public MSSqlCCode() {
         super(MSSqlCCode.class);
+        MSSqlCCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();
     }
 
     /**
@@ -40,6 +40,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     return "Generate MSSql C++ Code ODBC";
   }
   static PlaceHolder placeHolder;
+  static JPortalTemplateOutputOptions MSSqlCCodeOutputOptions;
   /**
    * Generates the procedure classes for each table present.
    */
@@ -706,15 +707,15 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
       return ", " + field.useName() + "IsNull);";
     return ");";
   }
-  static void generateMultipleImplementation(Table table, Proc proc, PrintWriter outData)
+  static void  generateMultipleImplementation(Table table, Proc proc, PrintWriter outData)
   {
-    placeHolder = new PlaceHolder(proc, PlaceHolder.QUESTION, "");
+    placeHolder = new PlaceHolder(proc, MSSqlCCodeOutputOptions, PlaceHolder.QUESTION, "");
     String dataStruct;
     if (proc.isStdExtended() || proc.isStd)
       dataStruct = "D" + table.useName();
     else
       dataStruct = "D" + table.useName() + proc.upperFirst();
-    placeHolder = new PlaceHolder(proc, PlaceHolder.QUESTION, "");
+    placeHolder = new PlaceHolder(proc, MSSqlCCodeOutputOptions, PlaceHolder.QUESTION, "");
     String fullName = table.useName() + proc.upperFirst();
     outData.println("void T" + fullName + "::Exec(int32 noOf, " + dataStruct + " *Recs)");
     outData.println("{");
@@ -822,7 +823,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
   }
   static void generateImplementation(Table table, Proc proc, PrintWriter outData)
   {
-    placeHolder = new PlaceHolder(proc, PlaceHolder.QUESTION, "");
+    placeHolder = new PlaceHolder(proc, MSSqlCCodeOutputOptions, PlaceHolder.QUESTION, "");
     String fullName = table.useName() + proc.upperFirst();
     outData.println("void T" + fullName + "::Exec()");
     outData.println("{");
@@ -843,7 +844,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     {
       PlaceHolderPairs pair = (PlaceHolderPairs)placeHolder.pairs.elementAt(j);
       Field field = pair.field;
-      String tablename = table.tableName();
+      String tablename = table.tableNameWithSchema();
       String bind = "Bind";
       if (field.type == Field.BLOB) bind += "Blob";
       //else if (field.type == Field.BIGXML) bind += "BigXML";
@@ -953,7 +954,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
     if (proc.isMultipleInput == true && proc.isInsert == true)
     {
       isBulkSequence = true;
-      sequencer = "nextval for " + proc.table.tableName() + "seq";
+      sequencer = "nextval for " + proc.table.tableNameWithSchema() + "seq";
       size += sequencer.length();
     }
     for (int i = 0; i < lines.size(); i++)
@@ -1072,7 +1073,7 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
   static void generateInterface(Table table, Proc proc, String dataStruct,
       PrintWriter outData)
   {
-    placeHolder = new PlaceHolder(proc, PlaceHolder.QUESTION, "");
+    placeHolder = new PlaceHolder(proc, MSSqlCCodeOutputOptions, PlaceHolder.QUESTION, "");
     String front = "  { ";
     boolean standardExec = true;
     if (proc.outputs.size() > 0)

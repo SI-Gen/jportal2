@@ -26,7 +26,6 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
 {
 
   private static final Logger logger = LoggerFactory.getLogger(MSSqlDDL.class);
-
     public MSSqlDDL() {
         super(MSSqlDDL.class);
     }
@@ -599,10 +598,10 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
     for (int i = 0; i < proc.lines.size(); i++)
     {
       Line l = proc.lines.elementAt(i);
-      if (l.line.startsWith("--start"))
+      if (l.getDecoratedLine().startsWith("--start"))
         outData.println("BEGIN TRANSACTION;");
       else
-        outData.println(l.line);
+        outData.println(l.getDecoratedLine());
     }
     outData.println();
   }

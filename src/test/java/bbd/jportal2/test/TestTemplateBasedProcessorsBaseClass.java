@@ -34,7 +34,7 @@ public class TestTemplateBasedProcessorsBaseClass<TYPE_TO_TEST extends ITemplate
 
     public int testAllTemplateBasedProcessorsOfType(String templateLocation, String outputLocation) throws Exception {
         ProjectCompiler pj = getProjectCompiler(templateLocation);
-
+        pj.overrideWithPropertiesFile("");
         return testAllTemplateBasedProcessorsOfType(pj, outputLocation);
     }
 
