@@ -18,7 +18,7 @@ public class JPortal2Arguments {
     public boolean projectCompile = false;
 
     @Parameter(names = {"--properties-file", "-pf"}, description = "A properties file with JPortal properties i.e. --propertiesfile=postgres.properties")
-    private String propertiesFileName = null;
+    private String propertiesFileName = "";
 
     @Parameter(names = {"--log", "-l"}, description = "Logfile name i.e. --log=jportal2.log")
     private String logFileName = null;
