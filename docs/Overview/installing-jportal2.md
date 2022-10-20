@@ -5,6 +5,10 @@ We recommend using the docker image for most projects.
 
 ### Docker
 
+#### Installing docker
+Install docker using the instructions [here](https://docs.docker.com/get-docker/)
+
+#### Installing JPortal2 docker image
 ```shell
 docker pull ghcr.io/si-gen/jportal2:1.8.14
 ```

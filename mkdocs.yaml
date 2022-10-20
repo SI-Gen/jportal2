@@ -66,7 +66,7 @@ nav:
 #          - 'Quickstart with DB2': ''
   - Tutorials:
       - 'Getting Started - installing prerequisites': 'Tutorials/getting-started-in-postgres.md'
-      - 'Setting up our project directory': 'Tutorials/setting-up-the-project-directory.md'
+      - 'Setting up our project directory': 'Tutorials/setting-up-the-project-directory-and-database.md'
       - 'Creating our first table': 'Tutorials/creating-our-first-table.md'
       - 'Adding an additional table and foreign keys': 'Tutorials/adding-an-additional-table.md'
       - 'Additional Built-In Queries': 'Tutorials/additional-built-in-queries.md'

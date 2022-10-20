@@ -6,7 +6,7 @@ This tutorial assumes that the latest version of JPortal2 is [installed](../Over
 
 #### Installing VS Code and the JPortal plugin
 
-For this tutorial, we recommend using VSCode (https://code.visualstudio.com/. You can use any editor, but VSCode is a free, platform-independent editor 
+For this tutorial, we recommend using VSCode. You can use any editor, but VSCode is a free, platform-independent editor 
 with a rich ecosystem of plugins and functionality, specifically a JPortal2 plugin which gives code completion 
 and syntax highlighting. We will be installing the VS Code plugin now.
 
@@ -50,8 +50,45 @@ Below is an example tasks.json file that will work for this demo:
 }
 ```
 
-To easily test our JPortal project against different databases, we will use docker-compose to start up some test databases. You can install a database 
-directly on your OS, but we are big fans of containers for local testing, so this tutorial assumes you are using docker-compose.
+#### Installing the SQLTools extension
 
-#### Installing docker-compose
-Install docker-compose using the instructions [here](https://docs.docker.com/compose/install/)  
+To interact with our test databases, we need an admin tool. There are many available and you can use any one you like, 
+but to keep this tutorial simple and standard, we're going to install a VSCode extension called SQLTools.
+
+To install the SQLTools extension, choose the the Extensions tab on the left (Or press Ctrl-P and type "install extensions"). 
+Type "SQLTools" into the search field, choose the `SQLTools` extension (the one by Mattheus Teixeira), and install it.
+Also install the `SQLTools PostgreSQL/Cockroach/Redshift Driver`
+See the video below:
+
+![Installing the SQLTools extensions](../img/installing-sqltools.gif)
+
+Now, let's set up a file which contains the connection info to a local postgres database. Create a directory called .vscode 
+and in there, create a file called settings.json
+
+**.vscode/settings.json**
+```json
+{
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "jportal_postgres",
+      "database": "postgres",
+      "username": "postgres",
+      "password": "magic_password"
+    }
+  ]
+}
+```
+
+Your directory structure should now look like this:
+```
+jportal2-demo
+└───.vscode
+    └── settings.json
+└───sql
+    └───si
+
+```

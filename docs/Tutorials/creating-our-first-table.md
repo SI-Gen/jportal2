@@ -1,11 +1,14 @@
 
-### Creating our first simple table definition: *ToDoList*
+## Creating our first simple table definition: *ToDoList*
 
+### Create the SI file  
 Create a file called todolist.si in the ${rootDir}/sql/si directory created above. SI files are the input files to JPortal2.
 
 Your structure should now look like this:
 ```
 jportal2-demo
+└───.vscode
+    └── settings.json
 └───sql
     └───si
         └── todolist.si
@@ -47,7 +50,7 @@ ENDDATA
 ```
 The above file does quite a lot, in a small amount of code:  
 
-* **Line 1** tells JPortal2 that you want to create a database called ExampleDatabase.      
+* **Line 1** tells JPortal2 that you want to create a database called ExampleDatabase. Depending on the generator, this line may or may not be used.      
 * **Line 2** tells JPortal2 to put the code generated from this file, into a namespace/package called com.example.db  
 * **Line 3** tells JPortal2 that this code will be running in a microservice called ExampleServer. For the majority of your use cases, this is not important - this is really used for other private-source generators (not available to the public) that build off of JPortal2  
 * **Line 5-11** tells JPortal2 we want to create a database table called TodoList, with 5 fields, as well as the types of the fields. See <TODO> for a full list of field types supported. The only interesting thing to note here, is that we are defining the ListType field as a SHORT, but we are also specifying that we want an Enum for the field, which contains two values, "Private" and "Public". More on this later.  
@@ -63,7 +66,7 @@ Indenting and spacing generally doesn't matter, but try to indent to keep your c
 
 **!!!NOTE!!!:** There is unfortunately one gotcha (bug) in JPortal2, you do need to have an empty line at the end of your SI file. This is a side-effect of how our parser works, and seems to be an elusive bug to fix. So for now, just remember to leave an empty line at the end of your SI file. 
 
-### Create PostgreSQL DDL from our SI file
+### Generate PostgreSQL DDL from our SI file
 Now, run the JPortal2 docker command, to generate a PostgreSQL DDL file:
 
 ```shell
@@ -183,6 +186,21 @@ INSERT INTO ToDoList_App.ToDoList(ListName,ListType,Description,LastUpdated) VAL
 The above file should be completely self-explanatory, however we will add a few comments here:  
 1. The above DDL file is meant to facilitate easy creation of a local test database for developers. You will most likely use it to create an initial test database to play with, but once you start getting into the proper SDLC, and start creating DEV, QA and PROD database, you will use the file as an example or helper to write your own Flyway or Liquibase scripts. It isn't meant to just use as-is in one of these tools.  
 2. Notice **line 23**, which contains the take-on data that we specified at the bottom of the **todolist.si** file above. As mentioned previously, this can be a quick and easy way to get test data into your database.
+
+### Create our tables in the database  
+To run our DDL, we will use the VSCode SQLTools extension we installed [here](getting-started-in-postgres.md).  
+Open the `generated_sources/generated_sql/ExampleDatabase.sql` file by double-clicking on it.  
+
+Now press `Ctrl-P` to open the command palette, and type `SQLTools Run`, choose the `SQLTools Connection: Run this file` option:
+![Run the DDL](../img/run-query.gif)
+
+Finally, to check that our table was created, go to the SQLTools extension on the left, open the postgres connection, 
+and navigate to the right schema and table:
+
+![Query the table](../img/query-table.gif)
+
+Works like magic, doesn't it? :)
+
 
 *"OK, so we can generate DDL using the above mechanism,"* I hear you say, *"But what about the type-safe code you promised me? Where is all my Python, C#, or Java goodness? What is the point of this?".* 
 
@@ -685,10 +703,11 @@ Let's move on the the rest of the file.
 
 Finally, we get to **line 103-125**. This is a method called execute(), which does exactly what it says, it executes the quert defined above in get_statement, and reads back the inserted ID field that was returned.
 
+We aren't going to go through the the remainder of the generated code, because it is all essentially a repetition of **lines 46-122**, albeit for the other built-in queries we wanted, i.e. Update, SelectOne and DeleteOne.
+### Query our database using Python
 
+### Summary 
 At this point, take a step back and consider the power of JPortal2. If you look at our initial SI file, you will see that in 17 lines, we defined a database, a schema, a table with 5 fields, and a complex insert statement.
 Using these 17 lines we generated nearly 20 lines of Postgres Specific DDL, and over a 100 lines of Python code. That is a huge amount of code you didn't need to write or think about.
-
-We aren't going to go through the the remainder of the generated code, because it is all essentially a repetition of **lines 46-122**, albeit for the other built-in queries we wanted, i.e. Update, SelectOne and DeleteOne.
 
 
