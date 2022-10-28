@@ -1963,39 +1963,42 @@ void jStdProc() :
         proc.name = s;
         proc.isBuiltIn = true;
       })?
-      ( <OUTPUT> (jOutputType())?
-        ( jField()
-          {
-            if (proc.isSProc == true)
-            {
-              if (proc.hasInput(field.name))
-                field = proc.getInput(field.name);
-              else
-                proc.inputs.addElement(field);
-              field.isOut = true;
-            }
-            else
-            {
-              if (proc.hasOutput(field.name))
+      (
+          <RETURNING> (jProcReturningColumn())+ |
+          ( <OUTPUT> (jOutputType())?
+            ( jField()
               {
-                if (proc.extendsStd == false)
-                  logger.warn(proc.name+" field "+field.name+" already present as output");
-              }
-              else
-              {
-                if (proc.extendsStd == true)
+                if (proc.isSProc == true)
                 {
-                  proc.useStd = false;
-                  isStdProc = false;
+                  if (proc.hasInput(field.name))
+                    field = proc.getInput(field.name);
+                  else
+                    proc.inputs.addElement(field);
+                  field.isOut = true;
                 }
-                if (!field.isNull)
-                  field.isNull = (table.hasFieldAsNull(field.name));
-                proc.outputs.addElement(field);
+                else
+                {
+                  if (proc.hasOutput(field.name))
+                  {
+                    if (proc.extendsStd == false)
+                      logger.warn(proc.name+" field "+field.name+" already present as output");
+                  }
+                  else
+                  {
+                    if (proc.extendsStd == true)
+                    {
+                      proc.useStd = false;
+                      isStdProc = false;
+                    }
+                    if (!field.isNull)
+                      field.isNull = (table.hasFieldAsNull(field.name));
+                    proc.outputs.addElement(field);
+                  }
+                }
               }
-            }
-          }
-        )*
-      )?
+            )*
+          )?
+      )
       {
         //proc.name is set by <AS> clause above
         if(proc.name == null || proc.name.trim().isEmpty())
@@ -2223,6 +2226,25 @@ void jProcColumn() :
       logger.warn(proc.name+" field "+s+" cannot be set as well, already present as input");
     else
       proc.fields.addElement(s);
+  }
+}
+
+void jProcReturningColumn() :
+{
+  String s;
+}
+{
+  s = jIdent()
+  {
+    if (!table.hasField(s))
+      logger.warn(proc.name+" field "+s+" not present in table");
+    else if (proc.hasOutput(s))
+      logger.warn(proc.name+" output "+s+" already present");
+//    else if (proc.hasUpdateFields(s))
+//      logger.warn(proc.name+" field "+s+" cannot be set as well, already present as input");
+    else {
+        proc.outputs.addElement(table.getField(s));
+      }
   }
 }
 

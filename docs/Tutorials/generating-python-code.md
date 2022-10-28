@@ -374,10 +374,10 @@ class DB_ToDoListStaticData:
         res = session.execute(cls.get_statement())
         res.close()
 ```
-**Line 1-16** basically just sets up a bunch of imports required. Nothing fancy here  
+**Line 1-16** basically just sets up a bunch of imports required. Nothing fancy here.  
 **Line 20-75** is a bit more interesting. Let's have a look.
 
-### Insert Returning
+#### Insert Returning
 
 ```python linenums="20"
 @dataclass
@@ -543,6 +543,9 @@ Then we import sqlalchemy. SQLAlchemy is a popular ORM for Python. We actually d
 unnecessary complications to development. We feel that plain old SQL is far easier to read/write/debug and understand.  
 That said, SQLAlchmey does some useful things, like connection pooling. So as a result, we use the SQLAlchemy session 
 management as a base library, and build our generated classes on top of it.
+
+**Line 7** simply opens a SQLAlchemy connection to our postgres database. The username
+and password are created when we start the docker container inside `start_postgres.sql`.  
 
 **Line 11-20** we create a simple function that calls our generated `SelectAll` function. `SelectAll` simply returns all
 the records in a table. In reality, you almost never want to return all the records in a table unless it is a small
