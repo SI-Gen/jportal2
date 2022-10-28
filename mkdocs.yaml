@@ -14,22 +14,37 @@ copyright: Copyright &copy; 2021
 theme:
   name: material
   language: en
-  features:
-    - tabs
-    - instant
-    - content.code.annotate
-
-  palette:
-    primary: red
-    accent: reds
-  font:
-    text: Roboto
-    code: Roboto Mono
+  logo: img/vanguard-logo-whiteonly.svg
   icon:
-    logo: assest/metisiconsmall.png
-    repo: material/ship-wheel
-  favicon: assest/metisiconsmall.png
-  logo: assest/metisiconsmall.png
+    repo: fontawesome/brands/gitlab
+  features:
+    - content.code.annotate
+    - content.tabs.link
+    - navigation.top
+    # - header.autohide
+    # - navigation.expand
+    - navigation.indexes
+    - navigation.instant
+    - navigation.sections
+    - navigation.tabs
+    # - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    # - toc.integrate
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
 
 # Extras
 #extra:
@@ -57,20 +72,28 @@ theme:
 
 nav:
   - Home: 'README.md'
-  - 'Overview':
+  - 'Installation':
       - 'Installing JPortal2': 'Overview/installing-jportal2.md'
+      - 'Installing the JPortal2 VSCode extension': 'Overview/installing-vscode-jportal2-extension.md'
 #      - 'Quickstarts':
 #          - 'Quickstart with PostgreSQL': ''
 #          - 'Quickstart with SQLServer': ''
 #          - 'Quickstart with Oracle': ''
 #          - 'Quickstart with DB2': ''
   - Tutorials:
-      - 'Getting Started - installing prerequisites': 'Tutorials/getting-started-in-postgres.md'
-      - 'Setting up our project directory': 'Tutorials/setting-up-the-project-directory.md'
-      - 'Creating our first table': 'Tutorials/creating-our-first-table.md'
+      - 'Getting Started - installing prerequisites': 'Tutorials/getting-started.md'
+      - 'Setting up our project directory & installing the SQLTools extension': 'Tutorials/setting-up-the-project-directory-and-sqltools-extension.md'
+      - 'Creating our first table definition': 'Tutorials/creating-our-first-table-definition.md'
+      - 'Generating PostgreSQL DDL': 'Tutorials/generating-postgres-ddl.md'
+      - 'Generating Python code': 'Tutorials/generating-python-code.md'
       - 'Adding an additional table and foreign keys': 'Tutorials/adding-an-additional-table.md'
       - 'Additional Built-In Queries': 'Tutorials/additional-built-in-queries.md'
       - 'Custom Queries and Advanced functionality': 'Tutorials/custom-queries.md'
+
+  - Quickstarts:
+      - 'Quickstart with PostgreSQL': 'Quickstarts/Quickstart with Postgres.md'
+  - "How-tos":
+      - 'How to use built-in CRUD functions (SELECT, INSERT, UPDATE, DELETE)': 'Quickstarts/Quickstart with Postgres.md'
 
 # Extensions
 markdown_extensions:
