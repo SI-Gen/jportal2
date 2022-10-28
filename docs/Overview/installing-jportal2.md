@@ -5,11 +5,18 @@ We recommend using the docker image for most projects.
 
 ### Docker
 
+#### Installing docker
+Install docker using the instructions [here](https://docs.docker.com/get-docker/)
+
+#### Installing JPortal2 docker image
+First pull the docker image for the version of JPortal you want to use.
+You can browse to [https://github.com/si-gen/jportal2](https://github.com/si-gen/jportal2) to look at the available versions.
+
 ```shell
 docker pull ghcr.io/si-gen/jportal2:1.8.14
 ```
 
-Run JPortal using `docker run`
+Next run JPortal using `docker run`
 ```shell
 echo Running JPortal2 from ${PWD}...
 
