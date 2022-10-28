@@ -1,4 +1,4 @@
-## Setup the project directory
+# Setup the project directory
 
 Now we are ready to create our project.   
 
