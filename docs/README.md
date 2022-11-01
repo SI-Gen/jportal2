@@ -1,5 +1,10 @@
-# <b>Overview</b>
-## ** Compile SQL to type-safe code, in any language **
+# <b>JPortal2</b>
+
+[**And lo, the Great One looked down upon the people and proclaimed:**  
+*“SQL is actually pretty great”*](https://docs.sqlc.dev/en/latest/index.html)
+
+
+## **Compile SQL to type-safe code, in any language**
 
 [![GitHub release](https://img.shields.io/github/release/SI-Gen/jportal2.svg)](https://github.com/SI-Gen/jportal2/releases)
 [![Documentation Site](https://img.shields.io/badge/DOCS_SITE-YES-GREEN.svg)](https://si-gen.github.io/jportal2/)

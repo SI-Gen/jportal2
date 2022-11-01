@@ -92,8 +92,8 @@ nav:
 
   - Quickstarts:
       - 'Quickstart with PostgreSQL': 'Quickstarts/Quickstart with Postgres.md'
-  - "How-tos":
-      - 'How to use built-in CRUD functions (SELECT, INSERT, UPDATE, DELETE)': 'Quickstarts/Quickstart with Postgres.md'
+  - "How-to guides":
+      - 'Retrieving rows': 'Howto/retrieving-rows.md'
 
 # Extensions
 markdown_extensions:
@@ -106,6 +106,8 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
 
 plugins:
   - search # necessary for search to work
