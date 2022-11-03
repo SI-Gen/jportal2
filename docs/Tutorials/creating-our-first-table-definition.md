@@ -18,8 +18,8 @@ jportal2-demo
 
 The todolist.si file should contain the following code:
 
-**todolist.si**
-```sql
+
+```sql title="todolist.si" hl_lines="28"
 DATABASE ExampleDatabase
 PACKAGE com.example.db
 SERVER ExampleServer
@@ -43,7 +43,8 @@ PROC DeleteOne
 
 //You can put take-on or test data in this section
 SQLDATA
-INSERT INTO ToDoList_App.ToDoList(ListName,ListType,Description,LastUpdated) VALUES ('Takeon Test List 1', 1, 'Take on test list description', CURRENT_DATE )
+INSERT INTO ToDoList_App.ToDoList(ListName,ListType,Description,LastUpdated) 
+  VALUES ('Takeon Test List 1', 1, 'Take on test list description', CURRENT_DATE );
 ENDDATA
                                                                                
 <Need to leave an empty line at the end>**
@@ -64,4 +65,7 @@ The above file does quite a lot, in a small amount of code:
 
 Indenting and spacing generally doesn't matter, but try to indent to keep your code readable.
 
-**!!!NOTE!!!:** There is unfortunately one gotcha (bug) in JPortal2, you do need to have an empty line at the end of your SI file. This is a side-effect of how our parser works, and seems to be an elusive bug to fix. So for now, just remember to leave an empty line at the end of your SI file. 
+!!! warning 
+    There is unfortunately one gotcha (bug) in JPortal2, you do need to have an empty line at the end 
+    of your SI file. This is a side-effect of how our parser works, and seems to be an elusive bug to fix. So for now,
+    just remember to leave an empty line at the end of your SI file. 

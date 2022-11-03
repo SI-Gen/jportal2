@@ -12,6 +12,9 @@
 
 JPortal2 is the newest version of the JPortal SI-file based generator.
 
+## Full Documentation
+For full Documentation see [here](https://si-gen.github.io/jportal2/).
+
 ## What is JPortal2?
 JPortal2 generates fully type-safe idiomatic code from SQL.
 
@@ -41,8 +44,6 @@ JPortal2 can generate:
 JPortal2 has a number of built-in code generators written in Java, but also has built-in Freemarker support to allow you to easily add your own generators.
 
 
-## Documentation  
-For full Documentation see [here](https://si-gen.github.io/jportal2/).  
 
 ## Quickstart
 
@@ -66,14 +67,14 @@ The Java JAR is hosted at https://ossindex.sonatype.org/component/pkg:maven/za.c
 
 To use JPortal2 in your Maven based Java project, simply add the following to your POM:
 properties:
-```
+``` xml
 <properties>    
     <jportal2.version>1.3.0</jportal2.version>
     <jportal2maven.version>1.2.0</jportal2maven.version>
 </properties>
 ```
 dependencies:
-```
+``` xml
         <dependency>
             <groupId>za.co.bbd</groupId>
             <artifactId>jportal2</artifactId>
@@ -82,7 +83,7 @@ dependencies:
         </dependency>
 ``` 
 and plugins:
-```
+``` xml
             <plugin>
             <groupId>za.co.bbd</groupId>
             <artifactId>jportal2-maven-plugin</artifactId>

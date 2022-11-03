@@ -43,6 +43,22 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
             for (int i = 0; i < database.tables.size(); i++)
                 generateTable(database, database.tables.elementAt(i), outData);
+            // Do Foreign keys last, so that all tables will have been created already
+            for (int x = 0; x < database.tables.size(); x++) {
+                Table table = database.tables.elementAt(x);
+                if (table.links.size() > 0) {
+                    for (int i = 0; i < table.links.size(); i++) {
+                        Link link = table.links.elementAt(i);
+                        outData.println("ALTER TABLE " + tableOwner + table.name);
+                        if (link.linkName.length() == 0)
+                            link.linkName = table.name.toUpperCase() + "_FK" + bSO(i);
+                        generateLink(link, tableOwner, outData);
+                        outData.println(";");
+                    }
+                    outData.println();
+                }
+            }
+
             outData.flush();
         } catch (IOException e1) {
             logger.error("Generate PosgreSQL IO Error", e1);
@@ -130,17 +146,6 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
                     generateUnique(table, key, outData);
                     outData.println(";");
                 }
-            }
-            outData.println();
-        }
-        if (table.links.size() > 0) {
-            for (int i = 0; i < table.links.size(); i++) {
-                Link link = table.links.elementAt(i);
-                outData.println("ALTER TABLE " + tableOwner + table.name);
-                if (link.linkName.length() == 0)
-                    link.linkName = table.name.toUpperCase() + "_FK" + bSO(i);
-                generateLink(link, tableOwner, outData);
-                outData.println(";");
             }
             outData.println();
         }

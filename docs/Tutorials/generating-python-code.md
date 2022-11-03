@@ -6,7 +6,7 @@ To generate Python code, we will make use of a JPortal *template-generator* name
 Generators, specifically template generators, are a topic all on their own. You can read more about generators (including the difference between built-in and template generators) in < TODO >, but for now, just continue reading below, and follow the instructions. 
 
 Type the following command:
-```shell
+```shell linenums="0" title="generate_jportal.sh"
 docker run --rm -v ${SCRIPT_DIR}:/local ghcr.io/si-gen/jportal2:latest \
                       --inputdir=/local/sql/si \
                       --builtin-generator PostgresDDL:/local/generated_sources/generated_sql \
@@ -27,8 +27,7 @@ Now, navigate to the directory `generated_sources/python/jportal/sqlalchemy`. Yo
 
 ### The generated python code
 
-**db_ToDoList.py**
-```python
+```python title="db_ToDoList.py"
 ########################################################################################################################
 ################## Generated Code. DO NOT CHANGE THIS CODE. Change it in the generator and regenerate ##################
 ########################################################################################################################
@@ -496,7 +495,7 @@ SelectAll.
 Now that we have our Data Access Layer (DAL) defined, let's write a quick python program to use is.
 
 Create a file called `python/jportal_example.py`. Your folder structure should now look like this:
-```
+``` linenums="0"
 jportal2-demo
 └───.vscode
     └── settings.json
@@ -561,7 +560,7 @@ PYTHONPATH, and also install the requirements defined in `python/requirements.tx
 that in this tutorial.
 
 Once you run the example program, you should see the following output:
-```shell
+```shell linenums="0"
 ID: 1
 ListName: Takeon Test List 1
 ListType: ListTypeEnum.Private
@@ -634,7 +633,7 @@ On **line 29** we insert a new record into the ToDoList table:
 Once we have done the insert, we call our select_all function again, to see the record we added.
 
 Run the program again. Now the output should look something like this:
-```shell
+```shell linenums="0"
 ID: 1
 ListName: Takeon Test List 1
 ListType: ListTypeEnum.Private
@@ -730,7 +729,7 @@ session.rollback() #For the demo, normally you'd call session.commit() here
 Run it again. The output should look something like this now (the ID's might be slightly different depending on how 
 many times you ran it, because of the behaviour of the SEQUENCE datatype):
 
-```shell
+```shell linenums="0"
 ListName: Takeon Test List 1
 ListType: ListTypeEnum.Private
 Description: Take on test list description

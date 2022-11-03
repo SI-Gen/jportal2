@@ -38,28 +38,17 @@ PROC DeleteOne
 //The SelectBy function automatically creates
 //a SELECT query using the given fields as the
 //WHERE clause
-PROC SelectBy TodoList_ID
-OUTPUT
-    ID                  =
-    ItemName            =
-    ItemDescription     =
-    LastUpdated         =
-
+PROC SelectBy TodoList_ID Returning ID ItenName ItemDescription LastUpdated
 
 PROC UpdateBy ItemName SET ItemName ItemDescription
 ```
 
-Most of the file should be familiar to you now, but have a look at **lines 24-32**:
-```sql
+Most of the file should be familiar to you now, but have a look at **line 27**:
+```sql linenums="24"
 //The SelectBy function automatically creates
 //a SELECT query using the given fields as the
 //WHERE clause
-PROC SelectBy TodoList_ID
-OUTPUT
-    ID                  =
-    ItemName            =
-    ItemDescription     =
-    LastUpdated         =
+PROC SelectBy TodoList_ID Returning ID ItenName ItemDescription LastUpdated
 ```
 
 This might look very weird, but it is actually really simple to understand. This simply creates a function that
