@@ -5,7 +5,8 @@ JPortal ships with a number of built-in procs to allow easy querying of a databa
 
 Let assume the following table structure in our SI, with various procs defined to retrieve records:
 
-```sql
+<pre>
+<code>
 DATABASE ExampleDatabase
 PACKAGE com.example.db
 SERVER ExampleServer
@@ -15,29 +16,33 @@ TABLE Authors
    ID               SEQUENCE
    Bio              CHAR
    BirthDate        DATE
-   LAstUpdated      TIMESTAMP
+   LastUpdated      TIMESTAMP
 
 KEY PKEY PRIMARY
     ID
 
+
 //Simple CRUD queries are available out of the box with JPortal2
-PROC SelectOne
-PROC SelectAll
-PROC SelectOneBy Bio
-PROC SelectBy BirthDate Returning Bio
-PROC SelectBy BirthDate As FancySelectByBirthDate
+<p style="background-color: yellow">
+<a href="#selectone">PROC SelectOne</a>
+<a href="#selectall">PROC SelectAll</a>
+<a href="#selectoneby">PROC SelectOneBy</a> Bio
+<a href="#selectby">PROC SelectBy</a> BirthDate Returning Bio
+<a href="#selectby">PROC SelectBy</a> BirthDate As FancySelectByBirthDate
 OUTPUT
     ID          =
     Bio         =
     BirthDate   =
-```
+</p>
+</code>
+</pre>
 
 Let's work through the above.  
 
 ### **SelectOne**
 Selects a record by its primary key.
 
-```
+``` linenums="0"
 SelectOne  
 [ FOR <UPDATE | READONLY> ]
 ```
