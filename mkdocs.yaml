@@ -102,11 +102,19 @@ nav:
       - 'Adding an additional table and foreign keys': 'Tutorials/adding-an-additional-table.md'
       - 'Additional Built-In Queries': 'Tutorials/additional-built-in-queries.md'
       - 'Custom Queries and Advanced functionality': 'Tutorials/custom-queries.md'
-
+      - 'Summary': 'Tutorials/summary.md'
   - Quickstarts:
       - 'Quickstart with PostgreSQL': 'Quickstarts/Quickstart with Postgres.md'
   - "How-to guides":
       - 'Retrieving rows': 'Howto/retrieving-rows.md'
+      - 'Inserting rows': "Howto/inserting-rows.md"
+      - 'Updating rows': "Howto/updating-rows.md"
+      - 'Deleting rows': "Howto/deleting-rows.md"
+      - 'Counting rows': "Howto/counting-rows.md"
+      - 'Checking if a record exists': "Howto/checking-if-rows-exist.md"
+      - 'Custom procs': 'Howto/custom-procs.md'
+      - 'Dynamic SQL': 'Howto/dynamic-sql.md'
+      - 'Using enums': 'Howto/using-enums.md'
 
 # Extensions
 markdown_extensions:

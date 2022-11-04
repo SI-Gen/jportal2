@@ -1,7 +1,8 @@
 # <b>JPortal2</b>
 
-[**And lo, the Great One looked down upon the people and proclaimed:**  
-*“SQL is actually pretty great”*](https://docs.sqlc.dev/en/latest/index.html)
+!!! quote "From the docs of sqlc"
+    [**And lo, the Great One looked down upon the people and proclaimed:**  
+    *“SQL is actually pretty great”*](https://docs.sqlc.dev/en/latest/index.html)
 
 
 ## **Compile SQL to type-safe code, in any language**
