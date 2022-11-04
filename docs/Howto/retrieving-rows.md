@@ -1,5 +1,3 @@
-# Retrieving rows
-
 ## Built-In Procs
 JPortal ships with a number of built-in procs to allow easy querying of a database.
 
@@ -23,7 +21,6 @@ KEY PKEY PRIMARY
 
 
 //Simple CRUD queries are available out of the box with JPortal2
-<p style="background-color: yellow">
 <a href="#selectone">PROC SelectOne</a>
 <a href="#selectall">PROC SelectAll</a>
 <a href="#selectoneby">PROC SelectOneBy</a> Bio
@@ -33,7 +30,6 @@ OUTPUT
     ID          =
     Bio         =
     BirthDate   =
-</p>
 </code>
 </pre>
 
@@ -462,11 +458,11 @@ SelectOneBy <SelectColumns>+
 [ FOR <UPDATE | READONLY> ]
 ```
 
-SelectOneBy will select all the fields of a table, by the keys specified by `SelectColumns`.
+SelectOneBy will select all the fields of a table, by the keys specified by `SelectColumns`.  
 Adding the FOR UPDATE clause will cause JPortal2 to add the text `FOR UPDATE` to the query. Use this to lock a record
-for when you want to select it, change on or more fields, and then update it.
+for when you want to select it, change on or more fields, and then update it.  
 Adding the FOR READONLY clause will cause JPortal2 to add the text "FOR READONLY" to the query. Use this to 
-put a READONLY lock on a record. See [SelectOne](#selectone) for an example of `FOR <UPDATE | READONLY>`.
+put a READONLY lock on a record. See [SelectOne](#selectone) for an example of `FOR <UPDATE | READONLY>`.  
 
 === "--template-generator SQLAlchemy"
     === "SelectOneBy" 
@@ -567,4 +563,98 @@ put a READONLY lock on a record. See [SelectOne](#selectone) for an example of `
              return true;
         }
         ```
+
+### **SelectBy**
+Selects record by user specified keys,columns returning columns specified by user
+
+```
+SelectBy <SelectColumns>+
+[ [IN] ORDER <OrderColumnName>* [DESC]]   
+[ FOR UPDATE | READONLY ]
+[AS <alias>]
+[RETURNING <columns to return>]
+```
+
+SelectBy will select the fields of a table that are specified by the `RETURNING` clause, by the keys specified 
+by `SelectColumns`.  
+Adding the FOR UPDATE clause will cause JPortal2 to add the text `FOR UPDATE` to the query. Use this to lock a record
+for when you want to select it, change on or more fields, and then update it.  
+Adding the FOR READONLY clause will cause JPortal2 to add the text "FOR READONLY" to the query. Use this to
+put a READONLY lock on a record. See [SelectOne](#selectone) for an example of `FOR <UPDATE | READONLY>`.  
+the `AS` clause specifies a custom name for the proc. If `AS` is omitted, the name will default to
+`SelectBy<SelectColumns>`.  
+The `RETURNING` clause specifies the fields that must be returned, If it is omitted, all the fields in the table
+will be returned.  
+
+=== "--template-generator SQLAlchemy"
+    === "SelectBy"
+        ```python 
+                @dataclass
+                class DB_AuthorsSelectByBirthDate:
+                #Outputs
+                Bio: str
+        
+                @classmethod
+                def get_statement(cls
+                                 , BirthDate: datetime
+                                 ) -> TextAsFrom:
+                    class _ret:
+                        sequence = "default," #postgres uses default for sequences
+                        output = " OUTPUT (Bio)"
+                        tail = " RETURNING Bio"
+                        #session.bind.dialect.name
+            
+                    statement = sa.text(
+                                    f"/* PROC BooksAndAuthors.Authors.SelectByBirthDate */"
+                                    f"select"
+                                    f"  Bio"
+                                    f" from BooksAndAuthors.Authors"
+                                    f" where BirthDate = :BirthDate")
+            
+                    text_statement = statement.columns(Bio=db_types.NonNullableString,
+                                                  )
+                    text_statement = text_statement.bindparams(BirthDate=BirthDate,
+                                                     )
+                    return text_statement
+            
+                @classmethod
+                def execute(cls, session: Session, BirthDate: datetime
+                                 ) -> List['DB_AuthorsSelectByBirthDate']:
+                    params = process_bind_params(session, [sa.types.DateTime,
+                                                    ], [BirthDate,
+                                                    ])
+                    res = session.execute(cls.get_statement(*params))
+                    recs = res.fetchall()
+                    return process_result_recs(DB_AuthorsSelectByBirthDate, session, [db_types.NonNullableString,
+                                                    ], recs)
+        ```
+=== "--builtin-generator JavaJCCode"
+    === "SelectOneBy"
+        ```java
+            /**
+            * Returns any number of records.
+            * @return result set of records found
+            * @exception SQLException is passed through
+            */
+            public Query selectByBirthDate() throws SQLException
+            {
+                String statement =
+                "/* PROC ToDoList_App.Authors.SelectByBirthDate */"
+              + "select"
+              + "  Bio"
+              + " from ToDoList_App.Authors"
+              + " where BirthDate = ?"
+              ;
+              PreparedStatement prep = connector.prepareStatement(statement);
+              prep.setDate(1, birthDate);
+              ResultSet result = prep.executeQuery();
+              Query query = new Query(prep, result);
+              return query;
+           }
+        ```
+
+## Custom Procs
+If the built-in select functions don't give you the power and flexibility you need, you can write your own 
+select function using a [Custom Proc](custom-procs.md), which is covered in the next section.
+
 
