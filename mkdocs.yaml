@@ -115,6 +115,17 @@ nav:
       - 'Custom procs': 'Howto/custom-procs.md'
       - 'Dynamic SQL': 'Howto/dynamic-sql.md'
       - 'Using enums': 'Howto/using-enums.md'
+      - 'Using literals': 'Howto/using-literals.md'
+      - 'Using keys, indexes and foreign keys': 'Howto/using-keys-indexes-and-foreign-keys.md'
+      - 'Using Grants': 'Howto/using-grants.md'
+
+  - 'Reference':
+      - 'Column types' : 'Reference/column-types.md'
+      - 'Command-Line Interface': 'Reference/cli.md'
+      - 'Configuration file' : 'Reference/configuration-file.md'
+      - 'Freemarker template' : 'Reference/Freemarker template.md'
+
+  - 'F.A.Q.': 'faq.md'
 
 # Extensions
 markdown_extensions:
