@@ -16,7 +16,7 @@ theme:
   language: en
   logo: img/vanguard-logo-whiteonly.svg
   icon:
-    repo: fontawesome/brands/gitlab
+    repo: fontawesome/brands/github
     admonition:
       note: fontawesome/solid/note-sticky
       abstract: fontawesome/solid/book
