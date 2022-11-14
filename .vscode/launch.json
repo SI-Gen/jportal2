@@ -1,0 +1,21 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Debug (Launch) - Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch) - JPortal",
+            "request": "launch",
+            "mainClass": "${workspaceFolder}/src/main/java/bbd/jportal2/Main.java",
+            "args": "--inputdir ${workspaceFolder}/src/main/resources/example_si_files --template-location ${workspaceFolder}/src/main/resources/si_processor_templates --template-generator DumpDB:${workspaceFolder}/tmp"
+        }
+    ]
+}
