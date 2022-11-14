@@ -85,6 +85,17 @@
             </roles>
             <timezone>GMT +2</timezone>
         </developer>
+        <developer>
+            <id>VenoMpie</id>
+            <email>dieter.rosch@gmail.com</email>
+            <name>Gerardt Gräter</name>
+            <organization>SI-Gen</organization>
+            <organizationUrl>https://github.com/SI-Gen</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>GMT +2</timezone>
+        </developer>
     </developers>
 
     <name>JPortal2</name>
