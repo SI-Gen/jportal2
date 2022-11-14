@@ -5,6 +5,8 @@ RUN apk --no-cache add --update bash openssl
 RUN addgroup jportal2 && adduser -S -h /jportal2 -D -G jportal2 jportal2
 WORKDIR /local
 
+RUN chown jportal2:jportal2 /local
+
 USER jportal2
 
 ARG jportal2_version
