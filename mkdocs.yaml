@@ -16,24 +16,37 @@ theme:
   language: en
   logo: img/vanguard-logo-whiteonly.svg
   icon:
-    repo: fontawesome/brands/gitlab
+    repo: fontawesome/brands/github
+    admonition:
+      note: fontawesome/solid/note-sticky
+      abstract: fontawesome/solid/book
+      info: fontawesome/solid/circle-info
+      tip: fontawesome/solid/bullhorn
+      success: fontawesome/solid/check
+      question: fontawesome/solid/circle-question
+      warning: fontawesome/solid/triangle-exclamation
+      failure: fontawesome/solid/bomb
+      danger: fontawesome/solid/skull
+      bug: fontawesome/solid/robot
+      example: fontawesome/solid/flask
+      quote: fontawesome/solid/quote-left
+
   features:
     - content.code.annotate
     - content.tabs.link
     - navigation.top
     # - header.autohide
-    # - navigation.expand
+    #- navigation.expand
     - navigation.indexes
     - navigation.instant
-    - navigation.sections
-    - navigation.tabs
-    # - navigation.tabs.sticky
-    - navigation.top
-    - navigation.tracking
+    #- navigation.sections
+    #- navigation.tabs
+    #- navigation.tabs.sticky
+    #- navigation.tracking
     - search.highlight
     - search.share
     - search.suggest
-    # - toc.integrate
+    - toc.integrate
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -89,11 +102,30 @@ nav:
       - 'Adding an additional table and foreign keys': 'Tutorials/adding-an-additional-table.md'
       - 'Additional Built-In Queries': 'Tutorials/additional-built-in-queries.md'
       - 'Custom Queries and Advanced functionality': 'Tutorials/custom-queries.md'
-
+      - 'Summary': 'Tutorials/summary.md'
   - Quickstarts:
       - 'Quickstart with PostgreSQL': 'Quickstarts/Quickstart with Postgres.md'
-  - "How-tos":
-      - 'How to use built-in CRUD functions (SELECT, INSERT, UPDATE, DELETE)': 'Quickstarts/Quickstart with Postgres.md'
+  - "How-to guides":
+      - 'Retrieving rows': 'Howto/retrieving-rows.md'
+      - 'Inserting rows': "Howto/inserting-rows.md"
+      - 'Updating rows': "Howto/updating-rows.md"
+      - 'Deleting rows': "Howto/deleting-rows.md"
+      - 'Counting rows': "Howto/counting-rows.md"
+      - 'Checking if a record exists': "Howto/checking-if-rows-exist.md"
+      - 'Custom procs': 'Howto/custom-procs.md'
+      - 'Dynamic SQL': 'Howto/dynamic-sql.md'
+      - 'Using enums': 'Howto/using-enums.md'
+      - 'Using literals': 'Howto/using-literals.md'
+      - 'Using keys, indexes and foreign keys': 'Howto/using-keys-indexes-and-foreign-keys.md'
+      - 'Using Grants': 'Howto/using-grants.md'
+
+  - 'Reference':
+      - 'Column types' : 'Reference/column-types.md'
+      - 'Command-Line Interface': 'Reference/cli.md'
+      - 'Configuration file' : 'Reference/configuration-file.md'
+      - 'Freemarker template' : 'Reference/Freemarker template.md'
+
+  - 'F.A.Q.': 'faq.md'
 
 # Extensions
 markdown_extensions:
@@ -106,6 +138,9 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.keys
 
 plugins:
   - search # necessary for search to work

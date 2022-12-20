@@ -10,8 +10,7 @@ jportal2-demo
         └──todo_item.si
 ```
 
-**todo_items.si**
-```sql
+```sql title="todo_items.si"
 DATABASE ExampleDatabase
 PACKAGE com.example.db
 SERVER ExampleServer
@@ -28,53 +27,22 @@ TABLE ToDo_Item
 KEY PKEY PRIMARY
     ID
 
+LINK ToDoList TodoList_ID
+
 //We do a normal Insert and Update without a Returning here, to test the regular generaion
 //We do an InsertReturning and UpdateReturning in the ToDoList table to test that generation there
 PROC Insert
 PROC Update
 PROC SelectOne
 PROC DeleteOne
-
-//The SelectBy function automatically creates
-//a SELECT query using the given fields as the
-//WHERE clause
-PROC SelectBy TodoList_ID
-OUTPUT
-    ID                  =
-    ItemName            =
-    ItemDescription     =
-    LastUpdated         =
-
-
-PROC UpdateBy ItemName SET ItemName ItemDescription
 ```
 
-Most of the file should be familiar to you now, but have a look at **lines 24-32**:
-```sql
-//The SelectBy function automatically creates
-//a SELECT query using the given fields as the
-//WHERE clause
-PROC SelectBy TodoList_ID
-OUTPUT
-    ID                  =
-    ItemName            =
-    ItemDescription     =
-    LastUpdated         =
+Most of the file should be familiar to you now, but have a look at **line 17**:
+```sql linenums="17"
+LINK ToDoList TodoList_ID```
 ```
 
-This might look very weird, but it is actually really simple to understand. This simply creates a function that
-selects all the records from the Todo_Item table, for a specified TodoList_ID. In other words, this function will 
-generate SQL similar to  
-```sql
-SELECT 
-        ID,
-        ItenName,
-        ItemDescription,
-        LastUpdated
-FROM
-        TodoList_Item
-WHERE
-        TodoList_ID = <SOME ID>
-```
+The `LINK` keyword creates a foreign key. The syntax is `LINK <parent_table> <my_column_name>`.
+The line above instructs JPortal that there is a foreign key from `ToDoItem.TodeList_ID` to the
+primary key of `ToDoList`.
 
-run `./generate_jportal.sh` again. Remember to run it from the terminal inside VSCode!

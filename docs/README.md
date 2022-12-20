@@ -1,11 +1,20 @@
-# <b>Overview</b>
-## ** Compile SQL to type-safe code, in any language **
+# <b>JPortal2</b>
+
+!!! quote "From the docs of sqlc"
+    [**And lo, the Great One looked down upon the people and proclaimed:**  
+    *“SQL is actually pretty great”*](https://docs.sqlc.dev/en/latest/index.html)
+
+
+## **Compile SQL to type-safe code, in any language**
 
 [![GitHub release](https://img.shields.io/github/release/SI-Gen/jportal2.svg)](https://github.com/SI-Gen/jportal2/releases)
 [![Documentation Site](https://img.shields.io/badge/DOCS_SITE-YES-GREEN.svg)](https://si-gen.github.io/jportal2/)
 [![GitHub forks](https://img.shields.io/github/forks/SI-Gen/jportal2.svg?style=social&label=Fork&maxAge=2592000)](https://github.com/SI-Gen/jportal2/network/)
 
 JPortal2 is the newest version of the JPortal SI-file based generator.
+
+## Full Documentation
+For full Documentation see [here](https://si-gen.github.io/jportal2/).
 
 ## What is JPortal2?
 JPortal2 generates fully type-safe idiomatic code from SQL.
@@ -36,57 +45,84 @@ JPortal2 can generate:
 JPortal2 has a number of built-in code generators written in Java, but also has built-in Freemarker support to allow you to easily add your own generators.
 
 
-## Documentation  
-For full Documentation see [here](https://si-gen.github.io/jportal2/).  
 
 ## Quickstart
 
-### Freemarker
-To use a Freemarker Template. Create a folder anywhere: \$HOME/templates/Example
-Inside that folder create the freemarker template file: ExampleDB.py.ftl
+### Docker
+First pull the docker image for the version of JPortal you want to use.
+You can browse to [https://github.com/si-gen/jportal2](https://github.com/si-gen/jportal2) to look at the available versions.
 
-JPortal2 supports freemarker file name substitution. For example ExampleDB${table.name}.py.ftl will generate a ExampleDB{tablename}.py file for all the SI files you gen for. 
+```shell
+echo Running JPortal2 from ${PWD}...
 
-Inside your template file:
-```
-<#list database.tables as table>
-table name: ${table.name}:
-    table Fields:
-    <#list table.fields as field>${field.name}
-    </#list>
-</#list>
+docker run --rm -v ${PWD}:/local ghcr.io/si-gen/jportal2:latest \
+                      --inputdir=/local/sql/si \
+                      --builtin-generator PostgresDDL:/local/generated_sources/generated_sql \
+                      --template-generator SQLAlchemy:/local/generated_sources/python/jportal \
+                      --download-template "SQLAlchemy:https://github.com/SI-Gen/jportal2-generator-vanguard-sqlalchemy/archive/refs/tags/1.8.zip|stripBaseDir"                      
 ```
 
-JPortal2 takes 2 arguments to run freemarker. The template location where all the templates folders are, and what templates you want to run.
+### Java
 
-Run jportal with the argument:
+The Java JAR is hosted at https://ossindex.sonatype.org/component/pkg:maven/za.co.bbd/jportal2
+
+To use JPortal2 in your Maven based Java project, simply add the following to your POM:
+properties:
+``` xml
+<properties>    
+    <jportal2.version>1.3.0</jportal2.version>
+    <jportal2maven.version>1.2.0</jportal2maven.version>
+</properties>
 ```
---template-location $HOME/templates/
---template-generator ExampleDB:$HOME/output
+dependencies:
+``` xml
+        <dependency>
+            <groupId>za.co.bbd</groupId>
+            <artifactId>jportal2</artifactId>
+            <version>1.3.0</version>
+            <scope>compile</scope>
+        </dependency>
+``` 
+and plugins:
+``` xml
+            <plugin>
+            <groupId>za.co.bbd</groupId>
+            <artifactId>jportal2-maven-plugin</artifactId>
+            <version>${jportal2maven.version}</version>
+            <configuration>
+                <sourcePath>${basedir}/src/main/sql/</sourcePath>
+                <generators>
+                    <generator>JavaJCCode:${basedir}/target/generated-sources/java/com/example/db</generator>
+                    <generator>PostgresDDL:${basedir}/target/generated-sources/scripts/sql</generator>
+                </generators>
+                <compilerFlags>
+                    <compilerFlag>utilizeEnums</compilerFlag>
+                </compilerFlags>
+<!--                    <additionalArguments>&#45;&#45;template-generator JdbiSqlObjects:${basedir}/target/generated-sources/java/</additionalArguments>-->
+            </configuration>
+            <dependencies>
+                <dependency>
+                    <groupId>za.co.bbd</groupId>
+                    <artifactId>jportal2</artifactId>
+                    <version>${jportal2.version}</version>
+                </dependency>
+            </dependencies>
+            <executions>
+               <execution>
+                 <phase>generate-sources</phase>
+                     <goals>
+                        <goal>jportal</goal>
+                    </goals>
+            </execution>
+            </executions>
+        </plugin>
+
 ```
 
-When JPortal2 is done. You will have the generated files in the output directory and it will look like this:
-```
-table name: ExampleTable
-    table fields:
-    id
-    name
-    surname
-```
-
-### Freemarker Variables
-There are a few variables available to you in the freemarker template language for generation:
-- __Database__
-- __Table__
-- __Proc__
-
-The above variables match the hierarchy that is built into the SI structure. A database is a collection of SI files, and each SI file represents a table. Furthermore, each SI table has a collection of procs attached to it.
-
-The above variables are also available in the name component of the free-marker template file. That way one can create a generated file down to the level of each individual proc.
+JPortal2 is the actual Data Access Layer (DAL) generator. jportal2-maven-plugin is a plugin for maven that will run the generator at build time.
 
 
-## Using Literals
-Occasionally you will want to use a word that is a reserved word, as the name of a table or a column. For example, consider the following SI file:
+Create a file called todolist.si in the ${basedir}/src/main/sql/ directory (this is defined above in sourcePath tag)
 
 todolist.si
 ```sql
@@ -99,7 +135,7 @@ TABLE ToDoList
    ID               SEQUENCE
    ListName         CHAR(255)
    ListType         SHORT (Private=1, Public=2)
-   L'Desc'          CHAR   //DESC is a reserved keyword!
+   Description      CHAR
    LastUpdated      TIMESTAMP
 
 KEY PKEY PRIMARY
@@ -110,17 +146,94 @@ PROC Insert Returning
 PROC Update
 PROC SelectOne
 PROC DeleteOne
+
+//More complex custom queries can be defined using standard SQL
+PROC SelectListNameAndListTypeAsString
+INPUT
+    ID          =
+OUTPUT
+    ListName    =
+    ListType    CHAR
+SQLCODE
+SELECT
+    ListName,
+    CASE
+        WHEN ListType = 1 THEN 'Private'
+        WHEN ListType = 2 THEN 'Public'
+END
+FROM
+    TodoList
+WHERE
+    ID = :ID
+ENDCODE
+
+//Dynamic queries can be done with the ampersand below
+//REMEMBER!!! Dynamic SQL is open to SQL injection! So use with care and make sure to sanitize inputs!
+//Dynamic SQL is a last resort escape hatch, not the first tool to reach for!!
+//In the DAL class created for the below query, a property called MyDynamicWhereClause will be created
+//This will allow you to pass through the remainder of the where clause as a string.
+PROC SelectWithDynamicQuery
+INPUT
+    ListName    =
+OUTPUT
+   ID               SEQUENCE
+   ListName         CHAR(255)
+   ListType         SHORT (Private=1, Public=2)
+   Description      CHAR
+   LastUpdated      TIMESTAMP
+SQLCODE
+SELECT
+   ID
+   ,ListName
+   ,ListType
+   ,Description
+   ,LastUpdated
+FROM
+    ToDoList
+WHERE
+    ListName = :ListName
+    AND &MyDynamicWhereClause
+ENDCODE
+
 ```
 
+Now create a file called todo_items.si in the same directory (${basedir}/src/main/sql/)
+todo_items.si
+```sql
+DATABASE ExampleDatabase
+PACKAGE com.example.db
+SERVER ExampleServer
+SCHEMA ToDoList_App
+
+TABLE ToDo_Item
+   ID               SEQUENCE
+   TodoList_ID      INT     //This is a foreign key to the ToDoList table
+   ItemName         CHAR(255)
+   ItemDescription  CLOB
+   LastUpdated      TIMESTAMP
+
+//This define ID as the Primary Key
+KEY PKEY PRIMARY
+    ID
+
+PROC Insert Returning
+PROC Update
+PROC SelectOne
+PROC DeleteOne
+
+//The SelectBy function automatically creates
+//a SELECT query using the given fields as the
+//WHERE clause
+PROC SelectBy TodoList_ID
+OUTPUT
+    ID                  =
+    ItemName            =
+    ItemDescription     =
+    LastUpdated         =
 
 
 
-Notice that the Description column is named 'Desc', which is a reserved word (both in JPortal, as well as in SQL). This will cause a JPortal compilation issue. To work around this, we turn the column name into a *literal* by writing it as L'Desc'. This will allow the SI file to compile.
+```
 
-
-### Workflow
-A detailed description of the workflow process is mentioned in the [Contribution.md](/docs/Contributing/Contribution.md)
-Feel free to add any suggestions or any help in the 
-
-# Documentation
-For comprehensive documentation. Refer to the [docs](docs/index.md)
+Now compile your maven project. If all went well, you should see 2 files inside
+the directory ${basedir}/target/generated-sources/java/com/example/db.
