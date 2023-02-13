@@ -29,19 +29,32 @@ ENDCODE
 This time, we need a bit more code, but it's still pretty simple.
 In **line 1** we are defining the name for our custom proc. It will be called `GetItemsWithListNameForID`.  
 **Line 2-3** we are saying that our proc has a single input, called `ID`.  
-You might wonder what the `=` sign does. Essentially, the `=` sign means "use the column type specified in the table 
-definition". Because ID is specified in our table as a SEQUENCE, the type for input parameter ID in our proc, will also
-be SEQUENCE.
-**Line 4-7** specifies the outputs of our proc. Here we are saying our proc will return a `ListName`, `ItemName` and 
-`ItemDescription`. ItemName and ItemDescription are defined in our table defintion, so we can use the `=` sign trick 
-again. But `ListName` is not defined in this file. Instead it is defined in the `todo_list.si` file. JPortal2 only
-look at the current file, so it doesn't know what column type to use for ListName. Therefore we specify it by hand
-as CHAR(255), which is the same as in the `todo_list.si` file.
+
+### The `=` (equals sign)
+You might be wondering what the `=` sign means in the above SI file.  
+
+Essentially, the `=` sign means "use the column type specified in the table definition".   
+
+Because ID is specified in our table as a SEQUENCE, the type for input parameter ID in our proc, will also
+be SEQUENCE.  
+
+
+**Line 4-7** specifies the outputs of our proc.  
+Here we are saying our proc will return a `ListName`, `ItemName` and `ItemDescription`.  
+
+`ItemName` and `ItemDescription` are defined in our table defintion, so we can use the `=` sign trick 
+again.   
+
+But `ListName` is not defined in this file. Instead it is defined in the `todo_list.si` file.  
+
+JPortal2 only looks at the current SI file, so it doesn't know what column type to use for `ListName`. Therefore we specify it by hand as CHAR(255), which is the same as in the `todo_list.si` file.  
+
 **Line 8-18** specifies our query that we want to run.  
 Our code is specified between the keywords `SQLCODE` and `ENDCODE`. This indicates the start and end of our custom
 SQL to JPortal2.  
+
 Notice how we pass in the input parameter `ID`, using the syntax `:ID`. If you have more than one input
-parameter, you can refer to them by `:<INPUT_PARAMETER_NAME`.
+parameter, you can refer to them by `:<INPUT_PARAMETER_NAME>`.
 
 
 # Dynamic SQL
