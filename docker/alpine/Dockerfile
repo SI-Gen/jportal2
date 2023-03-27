@@ -4,9 +4,9 @@ RUN apk --no-cache add --update bash openssl
 
 ARG JPORTAL2_VERSION
 
-COPY ./target/jportal2-${JPORTAL2_VERSION}.jar /opt/jportal2/jportal2.jar
+COPY ./target/jportal2-${JPORTAL2_VERSION}.jar /jportal2/jportal2.jar
 
 WORKDIR /local
 
-ENTRYPOINT ["java", "-jar", "/opt/jportal2/jportal2.jar"]
+ENTRYPOINT ["java", "-jar", "/jportal2/jportal2.jar"]
 CMD ["-?"]
