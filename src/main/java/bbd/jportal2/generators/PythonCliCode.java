@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
-import java.lang.*;
 import java.util.Vector;
 
 /**
@@ -61,9 +60,9 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
             flagDefaults();
             flagsVector = new Vector<Flag>();
             flagsVector.addElement(new Flag("use pymod", new String(pymodName), "Use pymod"));
-            flagsVector.addElement(new Flag("dont qualify", new Boolean(dontQualify), "Dont Qualify"));
-            flagsVector.addElement(new Flag("utf-8", new Boolean(useUTF8), "use utf-8"));
-            flagsVector.addElement(new Flag("iso-8859-1", new Boolean(useLatin1), "use iso-8859-1"));
+            flagsVector.addElement(new Flag("dont qualify", Boolean.valueOf(dontQualify), "Dont Qualify"));
+            flagsVector.addElement(new Flag("utf-8", Boolean.valueOf(useUTF8), "use utf-8"));
+            flagsVector.addElement(new Flag("iso-8859-1", Boolean.valueOf(useLatin1), "use iso-8859-1"));
         }
         return flagsVector;
     }
@@ -142,49 +141,50 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
             if (pymodName.length() > 0)
                 outData.println("import " + pymodName);
             outData.println();
-            outData.println("_BLOB = 1;_BOOLEAN = 2;_BYTE = 3;_CHAR = 4;_DATE = 5;_DATETIME = 6");
-            outData.println("_DOUBLE = 7;_DYNAMIC = 8;_FLOAT = 9;_IDENTITY = 10;_INT = 11;_LONG = 12");
-            outData.println("_MONEY = 13;_SEQUENCE = 14;_SHORT = 15;_STATUS = 16;_TIME = 17");
-            outData.println("_TIMESTAMP = 18;_TLOB = 19;_USERSTAMP = 20;_ANSICHAR = 21;_UID = 22;_XML = 23");
-            outData.println("_BIGSEQUENCE = 24;_BIGIDENTITY = 25;_JSON = 26;_BIGJSON = 27");
-            outData.println();
-            outData.println("# =i=n=d=e=n=t=a=t=i=o=n===b=y===f=o=u=r======");
-            outData.println("# s    : value as a string");
-            outData.println("# attr : (type, length, scale, precision)");
-            outData.println("# name : name of field for reporting");
-            outData.println("# =i=s===a===p=a=i=n==========================");
-            outData.println();
-            outData.println("def _validate(s, attr, name):");
-            outData.println("    if attr[0] in (_CHAR, _ANSICHAR, _DATE, _DATETIME, _TIME, _TIMESTAMP, _USERSTAMP, _XML, _JSON):");
-            outData.println("        if len(s) > attr[1]: raise AssertionError('%s:Length exceeds %d' % (name, attr[1]))");
-            outData.println("    elif attr[0] in (_DOUBLE, _FLOAT) and attr[2] > 15:");
-            outData.println("        if len(s) > attr[2]+2: raise AssertionError('%s:Length exceeds %d' % (name, attr[2]+2))");
-            outData.println("    elif attr[0] == _MONEY:");
-            outData.println("        if len(s) > 20: raise AssertionError('%s:Length exceeds %d' % (name, 20))");
-            outData.println("    return s");
-            outData.println();
-            outData.println("def _str(s, attr, name):");
-            outData.println("    if s == None:");
-            outData.println("        return None");
-            if (useUTF8 == true) {
-                outData.println("    elif isinstance(s, unicode):");
-                outData.println("        fix = s.encode('utf-8')");
-                outData.println("        return _validate(str(fix), attr, name)");
-            } else if (useLatin1 == true) {
-                outData.println("    elif isinstance(s, unicode):");
-                outData.println("        fix = s.encode('iso-8859-1')");
-                outData.println("        return _validate(str(fix), attr, name)");
-            } else {
-                outData.println("    elif isinstance(s, unicode):");
-                outData.println("        fix = ''");
-                outData.println("        for c in s: fix += chr(ord(c)%256)");
-                outData.println("        return _validate(str(fix), attr, name)");
-            }
+            outData.println("from bbdcommon.idl.idl_misc import _str, _validate");
+            // outData.println("_BLOB = 1;_BOOLEAN = 2;_BYTE = 3;_CHAR = 4;_DATE = 5;_DATETIME = 6");
+            // outData.println("_DOUBLE = 7;_DYNAMIC = 8;_FLOAT = 9;_IDENTITY = 10;_INT = 11;_LONG = 12");
+            // outData.println("_MONEY = 13;_SEQUENCE = 14;_SHORT = 15;_STATUS = 16;_TIME = 17");
+            // outData.println("_TIMESTAMP = 18;_TLOB = 19;_USERSTAMP = 20;_ANSICHAR = 21;_UID = 22;_XML = 23");
+            // outData.println("_BIGSEQUENCE = 24;_BIGIDENTITY = 25");
+            // outData.println();
+            // outData.println("# =i=n=d=e=n=t=a=t=i=o=n===b=y===f=o=u=r======");
+            // outData.println("# s    : value as a string");
+            // outData.println("# attr : (type, length, scale, precision)");
+            // outData.println("# name : name of field for reporting");
+            // outData.println("# =i=s===a===p=a=i=n==========================");
+            // outData.println();
+            // outData.println("def _validate(s, attr, name):");
+            // outData.println("    if attr[0] in (_CHAR, _ANSICHAR, _DATE, _DATETIME, _TIME, _TIMESTAMP, _USERSTAMP, _XML):");
+            // outData.println("        if len(s) > attr[1]: raise AssertionError('%s:Length exceeds %d' % (name, attr[1]))");
+            // outData.println("    elif attr[0] in (_DOUBLE, _FLOAT) and attr[2] > 15:");
+            // outData.println("        if len(s) > attr[2]+2: raise AssertionError('%s:Length exceeds %d' % (name, attr[2]+2))");
+            // outData.println("    elif attr[0] == _MONEY:");
+            // outData.println("        if len(s) > 20: raise AssertionError('%s:Length exceeds %d' % (name, 20))");
+            // outData.println("    return s");
+            // outData.println();
+            // outData.println("def _str(s, attr, name):");
+            // outData.println("    if s == None:");
+            // outData.println("        return None");
+            // if (useUTF8 == true) {
+            //     outData.println("    elif isinstance(s, unicode):");
+            //     outData.println("        fix = s.encode('utf-8')");
+            //     outData.println("        return _validate(str(fix), attr, name)");
+            // } else if (useLatin1 == true) {
+            //     outData.println("    elif isinstance(s, unicode):");
+            //     outData.println("        fix = s.encode('iso-8859-1')");
+            //     outData.println("        return _validate(str(fix), attr, name)");
+            // } else {
+            //     outData.println("    elif isinstance(s, unicode):");
+            //     outData.println("        fix = ''");
+            //     outData.println("        for c in s: fix += chr(ord(c)%256)");
+            //     outData.println("        return _validate(str(fix), attr, name)");
+            // }
 
-            outData.println("    elif isinstance(s, float):");
-            outData.println("        return '%0.15g' % (s)");
-            outData.println("    return _validate(str(s), attr, name)");
-            outData.println();
+            // outData.println("    elif isinstance(s, float):");
+            // outData.println("        return '%0.15g' % (s)");
+            // outData.println("    return _validate(str(s), attr, name)");
+            // outData.println();
             generateEnums(table, outData);
             if (table.hasStdProcs)
                 generateStdOutputRec(table, outData);
@@ -607,7 +607,6 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
             case Field.ANSICHAR:
             case Field.TLOB:
             case Field.XML:
-            case Field.JSON:
             case Field.USERSTAMP:
                 return "char";
             case Field.BLOB:
@@ -644,7 +643,6 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
             case Field.ANSICHAR:
             case Field.TLOB:
             case Field.XML:
-            case Field.JSON:
             case Field.USERSTAMP:
                 return "''";
             case Field.BLOB:
