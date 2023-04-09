@@ -23,10 +23,10 @@ import java.util.Vector;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
+public class MySqlCCode extends BaseGenerator implements IBuiltInSIProcessor
 {
-    public MSSqlCCode() {
-        super(MSSqlCCode.class);
+    public MySqlCCode() {
+        super(MySqlCCode.class);
     }
 
     /**
@@ -36,11 +36,11 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
 
   public String description()
   {
-    return "Generate MSSql C++ Code ODBC";
+    return "Generate MySQL C++ Code ODBC";
   }
   public String documentation()
   {
-    return "Generate MSSql C++ Code ODBC";
+    return "Generate MySQL C++ Code ODBC";
   }
 
   private Vector<Flag> flagsVector;
@@ -72,7 +72,7 @@ void setFlags(Database database)
     setFlags(database);
     for (int i = 0; i < database.tables.size(); i++) {
       Table table = (Table) database.tables.elementAt(i);
-      table.useBrackets = true;
+      table.useBrackets = false;
       // This doesn't work as the insert is already generated at this point :/
       table.useReturningOutput = false;
       generate(table, output);
@@ -740,6 +740,43 @@ void setFlags(Database database)
   {
     placeHolder = new PlaceHolder(proc, PlaceHolder.QUESTION, "");
     String fullName = table.useName() + proc.upperFirst();
+
+    Field primaryKeyField = null;
+    for (int j = 0; j < proc.outputs.size(); j++)
+    {
+      Field tempfield = (Field)proc.outputs.elementAt(j);
+      if (tempfield.isPrimaryKey() && tempfield.isSequence())
+      {
+        primaryKeyField = tempfield;
+        break;
+      }
+    }
+
+    if (proc.isInsert && primaryKeyField != null)
+    {
+      outData.println("struct T" + fullName + "_LastInsertID");
+      outData.println("{");
+      outData.println("  " + CommonCCode.cppVar(primaryKeyField) + ";");
+      outData.println("  TJQuery q_;");
+      outData.println("  void Exec()");
+      outData.println("  {");
+      outData.println("    const char idcommand[] = \"select LAST_INSERT_ID();\";");
+      outData.println("    if (q_.command == 0)");
+      outData.println("      q_.command = new char[25];");
+      outData.println("    memset(q_.command, 0, 25);");
+      outData.println("    strcpy(q_.command, idcommand);");
+      outData.println("    q_.Open(q_.command, 0, 1, 1, " + CommonCCode.cppLength(primaryKeyField) + ");");
+      outData.println("    q_.Define(" + CommonCCode.padder("0,", 4) + CommonCCode.cppDefineType(primaryKeyField) + " (q_.data));");
+      outData.println("    q_.Exec();");
+      outData.println("    if (q_.Fetch() == false)");
+      outData.println("      return;");
+      outData.println("    q_.Get(" + primaryKeyField.useName()+ ", q_.data);");
+      outData.println("  }");
+      outData.println("  T" + fullName + "_LastInsertID(TJConnector& conn) : q_(conn) { " + primaryKeyField.name + " = 0; }");
+      outData.println("};");
+      outData.println();
+    }
+
     outData.println("void T" + fullName + "::Exec()");
     outData.println("{");
     generateCommand(proc, outData);
@@ -777,7 +814,9 @@ void setFlags(Database database)
       }
     }
 
-    if (proc.outputs.size() > 0)
+    if (proc.outputs.size() > 0 && proc.isInsert && primaryKeyField != null)
+      outData.println("  q_.Open(q_.command, NOBINDS, 0, 0, ROWSIZE);");
+    else if (proc.outputs.size() > 0)
       outData.println("  q_.Open(q_.command, NOBINDS, NODEFINES, NOROWS, ROWSIZE);");
     else if (proc.inputs.size() > 0)
       outData.println("  q_.Open(q_.command, " + inputProcSize + ");");
@@ -836,19 +875,29 @@ void setFlags(Database database)
       if (field.type == Field.BLOB)
         blobs.addElement(field);
     }
-    for (int j = 0; j < proc.outputs.size(); j++)
+    if (!proc.isInsert)
     {
-      Field field = (Field)proc.outputs.elementAt(j);
-      String define = "Define";
-      if (field.type == Field.BLOB) define += "Blob";
-      //else if (field.type == Field.BIGXML) define += "BigXML";
-      outData.println("  q_." + define +"(" + CommonCCode.padder("" + j + ",", 4) + CommonCCode.cppDefine(field) + ");");
+      for (int j = 0; j < proc.outputs.size(); j++)
+      {
+        Field field = (Field)proc.outputs.elementAt(j);
+        String define = "Define";
+        if (field.type == Field.BLOB) define += "Blob";
+        //else if (field.type == Field.BIGXML) define += "BigXML";
+        outData.println("  q_." + define +"(" + CommonCCode.padder("" + j + ",", 4) + CommonCCode.cppDefine(field) + ");");
+      }
     }
     outData.println("  q_.Exec();");
     for (int j = 0; j < blobs.size(); j++)
     {
       Field field = (Field)blobs.elementAt(j);
       outData.println("  SwapBytes(" + field.useName() + ".len); // fixup len in data on intel type boxes");
+    }
+    if (proc.isInsert && primaryKeyField != null)
+    {
+      outData.println();
+      outData.println("  T" + fullName + "_LastInsertID lastID(q_.conn);");
+      outData.println("  lastID.Exec();");
+      outData.println("  this->" + primaryKeyField.useName() + " = lastID." + primaryKeyField.useName() + ";");
     }
     outData.println("}");
     outData.println();
@@ -886,8 +935,6 @@ void setFlags(Database database)
           outData.println("  strncpy(" + s + ", a" + s + ", sizeof(" + s + ")-1);");
         }
         outData.println("  Exec();");
-        if (proc.outputs.size() > 0 && proc.isInsert)
-            outData.println("  Fetch();");
         outData.println("}");
         outData.println();
       }
@@ -912,8 +959,7 @@ void setFlags(Database database)
   static void generateCommand(Proc proc, PrintWriter outData)
   {
     boolean isReturning = false;
-    boolean isBulkSequence = false;
-    String front = "", back = "", sequencer = "", output = "";
+    String front = "", back = "", sequencer = "";
     Vector<String> lines = placeHolder.getLines();
     int size = 1;
     if (proc.isInsert == true && proc.hasReturning == true && proc.outputs.size() == 1)
@@ -923,17 +969,10 @@ void setFlags(Database database)
       {
         isReturning = true;
 
-        output = field.useName();
         size += front.length();
         size += back.length();
         size += sequencer.length();
       }
-    }
-    if (proc.isMultipleInput == true && proc.isInsert == true)
-    {
-      isBulkSequence = true;
-      sequencer = "next value for " + proc.table.tableName() + "seq";
-      size += sequencer.length();
     }
     for (int i = 0; i < lines.size(); i++)
     {
@@ -955,8 +994,8 @@ void setFlags(Database database)
       }
     }
     outData.println("  if (q_.command == 0)");
-    outData.println("    q_.command = new char [" + (size + 15) + "];");
-    outData.println("  memset(q_.command, 0, " + (size + 15) + ");");
+    outData.println("    q_.command = new char [" + size + "];");
+    outData.println("  memset(q_.command, 0, " + size + ");");
     if (isReturning == true)
     {
       outData.println("  struct cpp_ret {const char* head; const char *output; const char *sequence; const char* tail; cpp_ret(){head = output = sequence = tail = \"\";}} _ret;");
@@ -966,13 +1005,6 @@ void setFlags(Database database)
         outData.println("  _ret.head = \"" + front + "\";");
       if (!back.isEmpty())
         outData.println("  _ret.tail = \"" + back + "\";");
-      if (!output.isEmpty())
-        outData.println("  _ret.output = \"OUTPUT Inserted." + output + "\";\n");
-    }
-    if (isBulkSequence == true)
-    {
-      outData.println("  struct cpp_ret {const char* head; const char *output; const char *sequence; const char* tail; cpp_ret(){head = output = sequence = tail = \"\";}} _ret;");
-      outData.println("  _ret.sequence = \"" + sequencer + ",\";");
     }
     String strcat = "  strcat(q_.command, ";
     String terminate = "";
@@ -984,6 +1016,9 @@ void setFlags(Database database)
       for (int i = 0; i < lines.size(); i++)
       {
         String l = (String)lines.elementAt(i);
+        // What a fucking hack ... See above why this is here
+        if (l.contains("output inserted"))
+          continue;
 
         if (l.charAt(0) != '"')
         {
@@ -1112,10 +1147,7 @@ void setFlags(Database database)
           outData.println("  bool Fetch();");
 
       outData.println("  void Exec();");
-      if (proc.outputs.size() > 0 && proc.isInsert)
-        outData.println("  void Exec(" + dataStruct + "& Rec) {*DRec() = Rec;Exec();Fetch();}");
-      else
-        outData.println("  void Exec(" + dataStruct + "& Rec) {*DRec() = Rec;Exec();}");
+      outData.println("  void Exec(" + dataStruct + "& Rec) {*DRec() = Rec;Exec();}");
 
       boolean skipExecWithParms = false;
       for (int j = 0; j < proc.inputs.size(); j++)
