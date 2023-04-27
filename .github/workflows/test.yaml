@@ -1,0 +1,14 @@
+name: Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: test1
+        run: |
+          echo ${{ secrets.OSSRH_USERNAME }} > ossrh_username.txt
+          curl -v -u ${{ secrets.TEST_USERNAME }}:${{ secrets.TEST_PASSWORD }} --upload-file ossrh_username.txt https://nexus.bbdsoftware.com/repository/software-deps/deps/test/ossrh_username.txt
