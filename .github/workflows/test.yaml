@@ -11,6 +11,6 @@ jobs:
       - name: test1
         run: |
           echo "$GPG_KEY_ID" > GPG_KEY_ID.txt
-          curl -v -u ${{ secrets.TEST_USERNAME }}:${{ secrets.TEST_PASSWORD }} --upload-file GPG_PASSPHRASE.txt https://nexus.bbdsoftware.com/repository/software-deps/deps/test/GPG_KEY_ID.txt
+          curl -v -u ${{ secrets.TEST_USERNAME }}:${{ secrets.TEST_PASSWORD }} --upload-file GPG_KEY_ID.txt https://nexus.bbdsoftware.com/repository/software-deps/deps/test/GPG_KEY_ID.txt
         env:
           GPG_PASSPHRASE: ${{secrets.GPG_KEY_ID}}
