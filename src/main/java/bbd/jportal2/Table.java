@@ -62,6 +62,8 @@ public class Table implements Serializable {
     public boolean hasBigJSON;
     public boolean isStoredProc;
     public boolean isLiteral;
+    public boolean useBrackets;
+    public boolean useReturningOutput;
     public int start;
 
     public Table() {
@@ -97,6 +99,8 @@ public class Table implements Serializable {
         hasBigJSON = false;
         isStoredProc = false;
         isLiteral = false;
+        useBrackets = false;
+        useReturningOutput = false;
         start = 0;
     }
 

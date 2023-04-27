@@ -23,11 +23,12 @@ import java.util.Vector;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
+
+public class DB2CCode extends BaseGenerator implements IBuiltInSIProcessor
 {
-    public MSSqlCCode() {
-        super(MSSqlCCode.class);
-        MSSqlCCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();
+    public DB2CCode() {
+        super(DB2CCode.class);
+        DB2CCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();
     }
 
     /**
@@ -37,11 +38,11 @@ public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
 
   public String description()
   {
-    return "Generate MSSql C++ Code ODBC";
+    return "Generate DB2 C++ Code ODBC";
   }
   public String documentation()
   {
-    return "Generate MSSql C++ Code ODBC";
+    return "Generate DB2 C++ Code ODBC";
   }
 
   private Vector<Flag> flagsVector;
@@ -66,7 +67,7 @@ void setFlags(Database database)
 }
 
   static PlaceHolder placeHolder;
-  static JPortalTemplateOutputOptions MSSqlCCodeOutputOptions;
+  static JPortalTemplateOutputOptions DB2CCodeOutputOptions;
   /**
    * Generates the procedure classes for each table present.
    */
@@ -74,7 +75,7 @@ void setFlags(Database database)
     setFlags(database);
     for (int i = 0; i < database.tables.size(); i++) {
       Table table = (Table) database.tables.elementAt(i);
-      table.useBrackets = true;
+      table.useBrackets = false;
       // This doesn't work as the insert is already generated at this point :/
       table.useReturningOutput = false;
       generate(table, output);
@@ -635,13 +636,13 @@ void setFlags(Database database)
   }
   static void generateMultipleImplementation(Table table, Proc proc, PrintWriter outData)
   {
-    placeHolder = new PlaceHolder(proc, MSSqlCCodeOutputOptions, PlaceHolder.QUESTION, "");
+    placeHolder = new PlaceHolder(proc, DB2CCodeOutputOptions, PlaceHolder.QUESTION, "");
     String dataStruct;
     if (proc.isStdExtended() || proc.isStd)
       dataStruct = "D" + table.useName();
     else
       dataStruct = "D" + table.useName() + proc.upperFirst();
-    placeHolder = new PlaceHolder(proc, MSSqlCCodeOutputOptions, PlaceHolder.QUESTION, "");
+    placeHolder = new PlaceHolder(proc, DB2CCodeOutputOptions, PlaceHolder.QUESTION, "");
     String fullName = table.useName() + proc.upperFirst();
     outData.println("void T" + fullName + "::Exec(int32 noOf, " + dataStruct + " *Recs)");
     outData.println("{");
@@ -740,7 +741,7 @@ void setFlags(Database database)
    */
   static void generateImplementation(Table table, Proc proc, PrintWriter outData)
   {
-    placeHolder = new PlaceHolder(proc, MSSqlCCodeOutputOptions, PlaceHolder.QUESTION, "");
+    placeHolder = new PlaceHolder(proc, DB2CCodeOutputOptions, PlaceHolder.QUESTION, "");
     String fullName = table.useName() + proc.upperFirst();
     outData.println("void T" + fullName + "::Exec()");
     outData.println("{");
@@ -915,7 +916,7 @@ void setFlags(Database database)
   {
     boolean isReturning = false;
     boolean isBulkSequence = false;
-    String front = "", back = "", sequencer = "", output = "";
+    String front = "", back = "", sequencer = "";
     Vector<String> lines = placeHolder.getLines();
     int size = 1;
     if (proc.isInsert == true && proc.hasReturning == true && proc.outputs.size() == 1)
@@ -925,7 +926,9 @@ void setFlags(Database database)
       {
         isReturning = true;
 
-        output = field.useName();
+        front = "select " + field.useName() + " from new table(";
+        back = ")";
+        sequencer = "nextval for " + proc.table.tableNameWithSchema() + "seq";
         size += front.length();
         size += back.length();
         size += sequencer.length();
@@ -934,7 +937,7 @@ void setFlags(Database database)
     if (proc.isMultipleInput == true && proc.isInsert == true)
     {
       isBulkSequence = true;
-      sequencer = "next value for " + proc.table.tableNameWithSchema() + "seq";
+      sequencer = "nextval for " + proc.table.tableNameWithSchema() + "seq";
       size += sequencer.length();
     }
     for (int i = 0; i < lines.size(); i++)
@@ -957,8 +960,8 @@ void setFlags(Database database)
       }
     }
     outData.println("  if (q_.command == 0)");
-    outData.println("    q_.command = new char [" + (size + 15) + "];");
-    outData.println("  memset(q_.command, 0, " + (size + 15) + ");");
+    outData.println("    q_.command = new char [" + size + "];");
+    outData.println("  memset(q_.command, 0, " + size + ");");
     if (isReturning == true)
     {
       outData.println("  struct cpp_ret {const char* head; const char *output; const char *sequence; const char* tail; cpp_ret(){head = output = sequence = tail = \"\";}} _ret;");
@@ -968,8 +971,6 @@ void setFlags(Database database)
         outData.println("  _ret.head = \"" + front + "\";");
       if (!back.isEmpty())
         outData.println("  _ret.tail = \"" + back + "\";");
-      if (!output.isEmpty())
-        outData.println("  _ret.output = \"OUTPUT Inserted." + output + "\";\n");
     }
     if (isBulkSequence == true)
     {
@@ -1034,7 +1035,7 @@ void setFlags(Database database)
   static void generateInterface(Table table, Proc proc, String dataStruct,
       PrintWriter outData)
   {
-    placeHolder = new PlaceHolder(proc, MSSqlCCodeOutputOptions, PlaceHolder.QUESTION, "");
+    placeHolder = new PlaceHolder(proc, DB2CCodeOutputOptions, PlaceHolder.QUESTION, "");
     String front = "  { ";
     boolean standardExec = true;
     if (proc.outputs.size() > 0)
