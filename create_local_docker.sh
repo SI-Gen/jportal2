@@ -1,1 +1,1 @@
-docker build -t bbdsoftware/jportal2-testnew --build-arg jportal2_version=1.9.2-SNAPSHOT  -f docker/alpine/Dockerfile .
+docker build -t bbdsoftware/jportal2-testnew --build-arg JPORTAL2_VERSION=1.10.3-SNAPSHOT  -f docker/alpine/Dockerfile .
