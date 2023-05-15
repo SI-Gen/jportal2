@@ -1270,7 +1270,7 @@ public class Table implements Serializable {
             }
         }
         proc.lines.addElement(new Line(database.templateOutputOptions, new SQLProcStringToken(" from "), new SQLProcTableNameToken(this)));
-        selectFor(proc, forUpdate, forReadOnly);
+        
         for (i = 0, j = 0; i < proc.fields.size(); i++) {
             String fieldName = (String) proc.fields.elementAt(i);
             for (k = 0; k < fields.size(); k++) {
@@ -1290,6 +1290,7 @@ public class Table implements Serializable {
             throw new Error("Error in SelectBy");
         }
         selectOrderBy(proc, inOrder, descending);
+        selectFor(proc, forUpdate, forReadOnly);
     }
 
 //    public void buildSelectFrom(Proc proc, Table table) {
