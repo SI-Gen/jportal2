@@ -51,7 +51,7 @@ public class Enum implements Serializable
     return value;
   }
 
-  publc char getChar() {
+  public char getChar() {
     return (char) value;
   }
 }
