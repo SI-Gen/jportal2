@@ -50,6 +50,10 @@ public class Enum implements Serializable
   public int getValue() {
     return value;
   }
+
+  publc char getChar() {
+    return (char) value;
+  }
 }
 
 
