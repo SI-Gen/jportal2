@@ -145,7 +145,7 @@ public class SingleFileCompiler {
 
         try {
             c = Class.forName("bbd.jportal2.generators." + generatorName);
-            instanceOfC = (IBuiltInGenerator) c.newInstance();
+            instanceOfC = (IBuiltInGenerator) c.getDeclaredConstructor().newInstance();
         } catch (ClassNotFoundException cnf) {
             logger.error("Could not find generator {}. Make sure there is a class bbd.jportal2.generators.{}", generatorName);
             return false;
@@ -214,4 +214,6 @@ public class SingleFileCompiler {
 //
 //        return false;
     }
+
+
 }

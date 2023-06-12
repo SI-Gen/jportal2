@@ -23,8 +23,10 @@ import java.io.PrintWriter;
 
 public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
     private static final Logger logger = LoggerFactory.getLogger(Db2DDL.class);
+    private static boolean first = true;
+    private static final boolean multiGeneration = false;
     public Db2DDL() {
-        super(Db2DDL.class);
+        super(Db2DDL.class, multiGeneration, first);
     }
 
     /**
@@ -41,6 +43,7 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
     public boolean hasData;
 
     public void generate(Database database, String output) {
+        if (!canGenerate) return;
         try {
             String fileName;
             if (database.output.length() > 0)
@@ -66,6 +69,7 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
         } catch (IOException e1) {
             logger.error("Generate DB2 SQL IO Error");
         }
+        first = false;
     }
 
     String bSO(int i) {

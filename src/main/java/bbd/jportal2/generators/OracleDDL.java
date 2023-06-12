@@ -11,9 +11,10 @@ import java.io.PrintWriter;
 public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(OracleDDL.class);
-
+    private static boolean first = true;
+    private static final boolean multiGeneration = false;
     public OracleDDL() {
-        super(OracleDDL.class);
+        super(OracleDDL.class, multiGeneration, first);
     }
 
     @Override
@@ -28,6 +29,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
     @Override
     public void generate(Database database, String output) {
+        if (!canGenerate) return;
         try {
             String tableOwner = "";
             String fileName;
@@ -72,7 +74,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
         } catch (IOException ex) {
             logger.error("Generate Oracle SQL IO Error", ex);
         }
-
+        first = false;
     }
 
     private String bSO(int i) {

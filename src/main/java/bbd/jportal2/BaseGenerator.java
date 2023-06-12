@@ -1,5 +1,6 @@
 package bbd.jportal2;
 
+import org.apache.commons.logging.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +21,16 @@ public class BaseGenerator {
         return generatedOutputFiles;
     }
 
-    public BaseGenerator(Class inheritedGeneratorClass) {
-        generatedOutputFiles = new GeneratedFiles(inheritedGeneratorClass.getSimpleName());
+    protected boolean canGenerate = true;
 
+    //multiGeneration: True if the generator generates all tables in one iteration and false if it needs to be looped over
+    //first: True if first iteration, otherwise false and skip generation
+    public BaseGenerator(Class inheritedGeneratorClass, boolean multiGeneration, boolean first) {
+        String className = inheritedGeneratorClass.getSimpleName();
+        generatedOutputFiles = new GeneratedFiles(className);
+        if (multiGeneration && !first) {
+            canGenerate = false;
+        }
     }
 
     public Vector<Flag> getFlags() {

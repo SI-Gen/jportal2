@@ -20,16 +20,17 @@ public class YamlOutput extends BaseGenerator implements IBuiltInSIProcessor {
     public String documentation() {
         return "Generate a YAML representation of the database definition.";
     }
-
+    private static boolean first = true;
+    private static final boolean multiGeneration = false;
     public YamlOutput() {
-        super(YamlOutput.class);
+        super(YamlOutput.class, multiGeneration, first);
     }
 
     /**
      * Generates a YAML file that contains the database definition
      */
     public void generate(Database database, String output) {
-
+        if (!canGenerate) return;
         String fileName;
         if (database.output.length() > 0)
             fileName = database.output;
@@ -50,6 +51,7 @@ public class YamlOutput extends BaseGenerator implements IBuiltInSIProcessor {
         } catch (IOException e1) {
             logger.error("Generate YamlOutput IO Error", e1);
         }
+        first = false;
     }
 
 }

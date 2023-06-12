@@ -26,9 +26,10 @@ import java.util.Vector;
  */
 public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor {
     private static final Logger logger = LoggerFactory.getLogger(PythonCliCode.class);
-
+    private static boolean first = true;
+    private static final boolean multiGeneration = true;
     public PythonCliCode() {
-        super(PythonCliCode.class);
+        super(PythonCliCode.class, multiGeneration, first);
     }
 
 
@@ -119,11 +120,13 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
      * Generates the procedure classes for each table present.
      */
     public void generate(Database database, String output) throws Exception {
+        if (!canGenerate) return;
         setFlags(database);
         for (int i = 0; i < database.tables.size(); i++) {
             Table table = (Table) database.tables.elementAt(i);
             generateTable(table, output);
         }
+        first = false;
     }
 
     /**

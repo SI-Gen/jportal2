@@ -22,9 +22,11 @@ import java.util.Vector;
 
 public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
     private static final Logger logger = LoggerFactory.getLogger(CliCCode2.class);
+    private static boolean first = true;
+    private static final boolean multiGeneration = true;
 
     public CliCCode2() {
-        super(CliCCode2.class);
+        super(CliCCode2.class, multiGeneration, first);
         CliCCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();
     }
 
@@ -44,10 +46,12 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
      * Generates the procedure classes for each table present.
      */
     public void generate(Database database, String output) throws Exception {
+        if (!canGenerate) return;
         for (int i = 0; i < database.tables.size(); i++) {
             Table table = (Table) database.tables.elementAt(i);
             generate(table, output);
         }
+        first = false;
     }
 
     /**

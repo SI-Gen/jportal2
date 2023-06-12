@@ -18,15 +18,19 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
     public String documentation() {
         return "Generate PostgreSQL DDL.";
     }
+
+    private static boolean first = true;
+    private static final boolean multiGeneration = false;
+
     public PostgresDDL() {
-        super(PostgresDDL.class);
+        super(PostgresDDL.class, multiGeneration, first);
     }
 
     /**
      * Generates the SQL for PostgreSQL Table creation.
      */
     public void generate(Database database, String output) {
-
+        if (!canGenerate) return;
         String fileName;
         if (database.output.length() > 0)
             fileName = database.output;
@@ -62,6 +66,7 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
         } catch (IOException e1) {
             logger.error("Generate PosgreSQL IO Error", e1);
         }
+        first = false;
     }
 
     /**

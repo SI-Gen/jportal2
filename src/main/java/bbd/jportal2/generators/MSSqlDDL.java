@@ -26,8 +26,10 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
 {
 
   private static final Logger logger = LoggerFactory.getLogger(MSSqlDDL.class);
+  private static boolean first = true;
+  private static final boolean multiGeneration = false;
     public MSSqlDDL() {
-        super(MSSqlDDL.class);
+        super(MSSqlDDL.class, multiGeneration, first);
     }
 
 
@@ -132,6 +134,7 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
    */
   public void generate(Database database, String output) throws Exception
   {
+      if (!canGenerate) return;
       setFlags(database);
       String fileName;
       if (database.output.length() > 0)
@@ -157,6 +160,7 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
               generateView((View) database.views.elementAt(i), outputFile, "");
           outputFile.flush();
       }
+      first = false;
     }
 
     void generateAuditTable(Table table, PrintWriter outData)
