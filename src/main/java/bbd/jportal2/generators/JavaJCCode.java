@@ -56,6 +56,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     public JavaJCCode() {
         super(JavaJCCode.class, multiGeneration, first);
         JavaJCCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();
+        first = false;
     }
 
     /**
@@ -78,7 +79,6 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
             generateStructs(table, output);
             generate(table, output);
         }
-        first = false;
     }
 
     /**

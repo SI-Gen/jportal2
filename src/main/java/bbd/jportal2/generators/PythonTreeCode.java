@@ -29,6 +29,7 @@ public class PythonTreeCode extends BaseGenerator implements IBuiltInSIProcessor
     private static final boolean multiGeneration = true;
     public PythonTreeCode() {
         super(PythonTreeCode.class, multiGeneration, first);
+        first = false;
     }
 
     public String description() {
@@ -126,7 +127,6 @@ public class PythonTreeCode extends BaseGenerator implements IBuiltInSIProcessor
                 outData.println("_db.sequences.append(_sq)");
             }
         }
-        first = false;
     }
 
     void generateTable(Table table, PrintWriter outData) {

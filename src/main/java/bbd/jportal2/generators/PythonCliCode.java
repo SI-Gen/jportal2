@@ -30,6 +30,7 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
     private static final boolean multiGeneration = true;
     public PythonCliCode() {
         super(PythonCliCode.class, multiGeneration, first);
+        first = false;
     }
 
 
@@ -126,7 +127,6 @@ public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor 
             Table table = (Table) database.tables.elementAt(i);
             generateTable(table, output);
         }
-        first = false;
     }
 
     /**

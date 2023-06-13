@@ -14,8 +14,11 @@ package bbd.jportal2.generators;
 import bbd.jportal2.Flag;
 import bbd.jportal2.*;
 
+import bbd.jportal2.generators.Common.Flags;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.io.IOException;
+import java.util.Objects;
 import java.util.Vector;
 import java.io.PrintWriter;
 
@@ -27,9 +30,10 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
 
   private static final Logger logger = LoggerFactory.getLogger(MSSqlDDL.class);
   private static boolean first = true;
-  private static final boolean multiGeneration = false;
+  private static boolean multiGeneration = false;
     public MSSqlDDL() {
         super(MSSqlDDL.class, multiGeneration, first);
+        first = false;
     }
 
 
@@ -135,9 +139,16 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
   public void generate(Database database, String output) throws Exception
   {
       if (!canGenerate) return;
-      setFlags(database);
+      boolean legacyGen = database.flags.contains(Flags.LEGACY_DDL_GENERATION);
+      boolean singleFile = database.flags.contains(Flags.SINGLE_FILE_DDL_GENERATION);
+      if (singleFile) {
+        multiGeneration = true;
+        if (legacyGen) {
+          logger.warn("Legacy DDL Generation and Single File DLL Generation on, Single File gen taking precendence!");
+        }
+      }
       String fileName;
-      if (database.output.length() > 0)
+      if (database.output.length() > 0 && !singleFile)
         fileName = database.output;
       else
         fileName = database.name;
@@ -151,16 +162,43 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
         tableOwner = "";
         tableSchema = "";
       }
-      try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + fileName + ".sql")) {
-          outputFile.println("USE " + database.name);
-          outputFile.println();
-          for (int i = 0; i < database.tables.size(); i++)
+      try {
+        if (legacyGen || singleFile) {
+          try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + fileName + ".sql")) {
+            outputFile.println("USE " + database.name);
+            outputFile.println();
+            for (int i = 0; i < database.tables.size(); i++)
               generateTable((Table) database.tables.elementAt(i), outputFile);
-          for (int i = 0; i < database.views.size(); i++)
+            for (int i = 0; i < database.views.size(); i++)
               generateView((View) database.views.elementAt(i), outputFile, "");
-          outputFile.flush();
+            outputFile.flush();
+          }
+        } else {
+          for (int i = 0; i < database.tables.size(); i++) {
+            Table table = (Table) database.tables.elementAt(i);
+            if (Objects.equals(table.name, database.output)) {
+              if (i == 0 && database.views.size() > 0) { //gen views on first iteration
+                try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + "Views.sql")) {
+                  outputFile.println("USE " + database.name);
+                  outputFile.println();
+                  for (int j = 0; j < database.views.size(); j++)
+                    generateView((View) database.views.elementAt(j), outputFile, "");
+                  outputFile.flush();
+                }
+              }
+              try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + fileName + ".sql")) {
+                outputFile.println("USE " + database.name);
+                outputFile.println();
+                generateTable(table, outputFile);
+                outputFile.flush();
+              }
+              return;
+            }
+          }
+        }
+      } catch (IOException e1) {
+        logger.error("Generate MSSQL IO Error");
       }
-      first = false;
     }
 
     void generateAuditTable(Table table, PrintWriter outData)

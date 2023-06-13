@@ -30,6 +30,7 @@ public class IdlCode extends BaseGenerator implements IBuiltInSIProcessor {
 
     public IdlCode() {
         super(IdlCode.class, multiGeneration, first);
+        first = false;
     }
 
     public String description() {
@@ -80,7 +81,6 @@ public class IdlCode extends BaseGenerator implements IBuiltInSIProcessor {
             generateStructs(table, output);
 
         }
-        first = false;
     }
 
     Vector<String> enumsGenerated;

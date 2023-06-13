@@ -31,6 +31,7 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
     public CSNetCode() {
         super(CSNetCode.class, multiGeneration, first);
         CSNetCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();
+        first = false;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(CSNetCode.class);
@@ -168,7 +169,6 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
             Table table = (Table) database.tables.elementAt(i);
             generate(table, output);
         }
-        first = false;
     }
 
     OutputStream procFile;

@@ -24,6 +24,7 @@ public class YamlOutput extends BaseGenerator implements IBuiltInSIProcessor {
     private static final boolean multiGeneration = false;
     public YamlOutput() {
         super(YamlOutput.class, multiGeneration, first);
+        first = false;
     }
 
     /**
@@ -51,7 +52,6 @@ public class YamlOutput extends BaseGenerator implements IBuiltInSIProcessor {
         } catch (IOException e1) {
             logger.error("Generate YamlOutput IO Error", e1);
         }
-        first = false;
     }
 
 }

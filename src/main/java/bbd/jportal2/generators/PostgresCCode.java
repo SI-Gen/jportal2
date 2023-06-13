@@ -31,6 +31,7 @@ public class PostgresCCode extends BaseGenerator implements IBuiltInSIProcessor
     public PostgresCCode() {
         super(PostgresCCode.class, multiGeneration, first);
         PostgresCCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();
+        first = false;
     }
 
     /**
@@ -83,7 +84,6 @@ void setFlags(Database database)
       table.useReturningOutput = true;
       generate(table, output);
     }
-    first = false;
   }
   void generate(Table table, String output) throws Exception {
     try (PrintWriter outData = this.openOutputFileForGeneration("sh", fileName(output, table.useName().toLowerCase(), ".sh"))) {

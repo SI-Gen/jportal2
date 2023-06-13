@@ -1,11 +1,13 @@
 package bbd.jportal2.generators;
 
 import bbd.jportal2.*;
+import bbd.jportal2.generators.Common.Flags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Objects;
 
 public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
@@ -20,10 +22,11 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
     }
 
     private static boolean first = true;
-    private static final boolean multiGeneration = false;
+    private static boolean multiGeneration = false;
 
     public PostgresDDL() {
         super(PostgresDDL.class, multiGeneration, first);
+        first = false;
     }
 
     /**
@@ -31,8 +34,16 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
      */
     public void generate(Database database, String output) {
         if (!canGenerate) return;
+        boolean legacyGen = database.flags.contains(Flags.LEGACY_DDL_GENERATION);
+        boolean singleFile = database.flags.contains(Flags.SINGLE_FILE_DDL_GENERATION);
+        if (singleFile) {
+            multiGeneration = true;
+            if (legacyGen) {
+                logger.warn("Legacy DDL Generation and Single File DLL Generation on, Single File gen taking precendence!");
+            }
+        }
         String fileName;
-        if (database.output.length() > 0)
+        if (database.output.length() > 0 && !singleFile)
             fileName = database.output;
         else
             fileName = database.name;
@@ -40,33 +51,66 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
         fileName = output + fileName + ".sql";
 
         logger.info("DDL: {}", fileName);
+        try {
+            if (legacyGen || singleFile) {
+                try (PrintWriter outData = openOutputFileForGeneration("sql", fileName)) {
+                    outData.println("CREATE SCHEMA IF NOT EXISTS " + database.schema + ";");
 
-        try (PrintWriter outData = openOutputFileForGeneration("sql", fileName)) {
-            outData.println("CREATE SCHEMA IF NOT EXISTS " + database.schema + ";");
-
-            for (int i = 0; i < database.tables.size(); i++)
-                generateTable(database, database.tables.elementAt(i), outData);
-            // Do Foreign keys last, so that all tables will have been created already
-            for (int x = 0; x < database.tables.size(); x++) {
-                Table table = database.tables.elementAt(x);
-                if (table.links.size() > 0) {
-                    for (int i = 0; i < table.links.size(); i++) {
-                        Link link = table.links.elementAt(i);
-                        outData.println("ALTER TABLE " + tableOwner + table.name);
-                        if (link.linkName.length() == 0)
-                            link.linkName = table.name.toUpperCase() + "_FK" + bSO(i);
-                        generateLink(link, tableOwner, outData);
-                        outData.println(";");
+                    for (int i = 0; i < database.tables.size(); i++)
+                        generateTable(database, database.tables.elementAt(i), outData);
+                    // Do Foreign keys last, so that all tables will have been created already
+                    for (int x = 0; x < database.tables.size(); x++) {
+                        Table table = database.tables.elementAt(x);
+                        if (table.links.size() > 0) {
+                            for (int i = 0; i < table.links.size(); i++) {
+                                Link link = table.links.elementAt(i);
+                                outData.println("ALTER TABLE " + tableOwner + table.name);
+                                if (link.linkName.length() == 0)
+                                    link.linkName = table.name.toUpperCase() + "_FK" + bSO(i);
+                                generateLink(link, tableOwner, outData);
+                                outData.println(";");
+                            }
+                            outData.println();
+                        }
                     }
-                    outData.println();
+
+                    outData.flush();
+                }
+            } else {
+                for (int i = 0; i < database.tables.size(); i++) {
+                    Table table = database.tables.elementAt(i);
+                    if (Objects.equals(table.name, database.output)) {
+                        try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", fileName)) {
+                            outputFile.println("USE " + database.name);
+                            outputFile.println();
+                            generateTable(database, table, outputFile);
+                            outputFile.flush();
+                        }
+                        if (i == database.tables.size()-1) { //Do links all at once at the end
+                            try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + "Links.sql")) {
+                                for (int x = 0; x < database.tables.size(); x++) {
+                                    Table tableInner = database.tables.elementAt(x);
+                                    if (tableInner.links.size() > 0) {
+                                        for (int j = 0; j < tableInner.links.size(); j++) {
+                                            Link link = tableInner.links.elementAt(j);
+                                            outputFile.println("ALTER TABLE " + tableOwner + tableInner.name);
+                                            if (link.linkName.length() == 0)
+                                                link.linkName = tableInner.name.toUpperCase() + "_FK" + bSO(j);
+                                            generateLink(link, tableOwner, outputFile);
+                                            outputFile.println(";");
+                                        }
+                                        outputFile.println();
+                                    }
+                                }
+                            }
+                        }
+                     }
+
                 }
             }
-
-            outData.flush();
         } catch (IOException e1) {
             logger.error("Generate PosgreSQL IO Error", e1);
         }
-        first = false;
     }
 
     /**

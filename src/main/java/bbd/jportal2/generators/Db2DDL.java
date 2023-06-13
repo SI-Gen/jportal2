@@ -15,18 +15,21 @@ package bbd.jportal2.generators;
 import bbd.jportal2.*;
 
 
+import bbd.jportal2.generators.Common.Flags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Objects;
 
 public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
     private static final Logger logger = LoggerFactory.getLogger(Db2DDL.class);
     private static boolean first = true;
-    private static final boolean multiGeneration = false;
+    private static boolean multiGeneration = false;
     public Db2DDL() {
         super(Db2DDL.class, multiGeneration, first);
+        first = false;
     }
 
     /**
@@ -44,32 +47,59 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
 
     public void generate(Database database, String output) {
         if (!canGenerate) return;
+        boolean legacyGen = database.flags.contains(Flags.LEGACY_DDL_GENERATION);
+        boolean singleFile = database.flags.contains(Flags.SINGLE_FILE_DDL_GENERATION);
+        if (singleFile) {
+            multiGeneration = true;
+            if (legacyGen) {
+                logger.warn("Legacy DDL Generation and Single File DLL Generation on, Single File gen taking precendence!");
+            }
+        }
         try {
             String fileName;
-            if (database.output.length() > 0)
+            if (database.output.length() > 0 && !singleFile)
                 fileName = database.output;
             else
                 fileName = database.name;
             hasData = false;
-
-            try (PrintWriter outData = this.openOutputFileForGeneration("sql", output + fileName + ".sql")) {
-                for (int i = 0; i < database.tables.size(); i++)
-                    generate((Table) database.tables.elementAt(i), outData);
-                outData.flush();
-            }
-            if (hasData == true) {
-
-
-                try (PrintWriter outData = this.openOutputFileForGeneration("_data.sql", output + fileName + "_data_.sql")) {
+            if (legacyGen || singleFile) {
+                try (PrintWriter outData = this.openOutputFileForGeneration("sql", output + fileName + ".sql")) {
                     for (int i = 0; i < database.tables.size(); i++)
-                        generateData((Table) database.tables.elementAt(i), outData);
+                        generate((Table) database.tables.elementAt(i), outData);
                     outData.flush();
+                }
+                if (hasData == true) {
+
+
+                    try (PrintWriter outData = this.openOutputFileForGeneration("_data.sql", output + fileName + "_data_.sql")) {
+                        for (int i = 0; i < database.tables.size(); i++)
+                            generateData((Table) database.tables.elementAt(i), outData);
+                        outData.flush();
+                    }
+                }
+            } else {
+                for (int i = 0; i < database.tables.size(); i++) {
+                    Table table = (Table) database.tables.elementAt(i);
+                    if (Objects.equals(table.name, database.output)) {
+                        try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + fileName + ".sql")) {
+                            outputFile.println("USE " + database.name);
+                            outputFile.println();
+                            generate(table, outputFile);
+                            outputFile.flush();
+                        }
+                        if (hasData) {
+                            try (PrintWriter outData = this.openOutputFileForGeneration("_data.sql", output + fileName + "_data_.sql")) {
+                                generateData((Table) table, outData);
+                                outData.flush();
+                            }
+                        }
+                        return;
+                    }
                 }
             }
         } catch (IOException e1) {
             logger.error("Generate DB2 SQL IO Error");
         }
-        first = false;
     }
 
     String bSO(int i) {

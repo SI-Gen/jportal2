@@ -29,6 +29,7 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
   public OciCCode()
   {
     super(OciCCode.class, multiGeneration, first);
+    first = false;
   }
 
   public String description()
@@ -108,7 +109,6 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
       generate(table, output);
       generateSnips(table, output, true);
     }
-    first = false;
   }
 
   String fileName(String output, String node, String ext)

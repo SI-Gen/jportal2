@@ -28,6 +28,7 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
     public CliCCode2() {
         super(CliCCode2.class, multiGeneration, first);
         CliCCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();
+        first = false;
     }
 
     public String description() {
@@ -51,7 +52,6 @@ public class CliCCode2 extends BaseGenerator implements IBuiltInSIProcessor {
             Table table = (Table) database.tables.elementAt(i);
             generate(table, output);
         }
-        first = false;
     }
 
     /**
