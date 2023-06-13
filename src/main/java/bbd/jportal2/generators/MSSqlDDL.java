@@ -144,7 +144,7 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
       if (singleFile) {
         multiGeneration = true;
         if (legacyGen) {
-          logger.warn("Legacy DDL Generation and Single File DLL Generation on, Single File gen taking precendence!");
+          logger.warn("Legacy DDL Generation and Single File DLL Generation on, Single File gen taking precedence!");
         }
       }
       String fileName;
@@ -178,7 +178,7 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
             Table table = (Table) database.tables.elementAt(i);
             if (Objects.equals(table.name, database.output)) {
               if (i == 0 && database.views.size() > 0) { //gen views on first iteration
-                try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + "Views.sql")) {
+                try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + "views.sql")) {
                   outputFile.println("USE " + database.name);
                   outputFile.println();
                   for (int j = 0; j < database.views.size(); j++)

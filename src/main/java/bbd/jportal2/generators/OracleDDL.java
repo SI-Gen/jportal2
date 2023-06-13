@@ -38,7 +38,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
         if (singleFile) {
             multiGeneration = true;
             if (legacyGen) {
-                logger.warn("Legacy DDL Generation and Single File DLL Generation on, Single File gen taking precendence!");
+                logger.warn("Legacy DDL Generation and Single File DLL Generation on, Single File gen taking precedence!");
             }
         }
         try {
@@ -85,7 +85,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
                     Table table = (Table) database.tables.elementAt(i);
                     if (Objects.equals(table.name, database.output)) {
                         if (i == 0 && database.views.size() > 0) { //gen views on first iteration
-                            try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + "Views.sql")) {
+                            try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + "views.sql")) {
                                 if (database.password.length() > 0) {
                                     outputFile.println("CONNECT " + database.userid + "/" + database.password + "@" + database.server);
                                     outputFile.println();
@@ -96,7 +96,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
                             }
                         }
                         if (i == 0 && database.sequences.size() > 0) { //gen views on first iteration
-                            try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + "Sequences.sql")) {
+                            try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + "sequences.sql")) {
                                 if (database.password.length() > 0) {
                                     outputFile.println("CONNECT " + database.userid + "/" + database.password + "@" + database.server);
                                     outputFile.println();

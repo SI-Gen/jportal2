@@ -52,7 +52,7 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
         if (singleFile) {
             multiGeneration = true;
             if (legacyGen) {
-                logger.warn("Legacy DDL Generation and Single File DLL Generation on, Single File gen taking precendence!");
+                logger.warn("Legacy DDL Generation and Single File DLL Generation on, Single File gen taking precedence!");
             }
         }
         try {

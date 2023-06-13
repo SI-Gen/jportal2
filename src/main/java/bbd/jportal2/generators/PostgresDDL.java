@@ -39,7 +39,7 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
         if (singleFile) {
             multiGeneration = true;
             if (legacyGen) {
-                logger.warn("Legacy DDL Generation and Single File DLL Generation on, Single File gen taking precendence!");
+                logger.warn("Legacy DDL Generation and Single File DLL Generation on, Single File gen taking precedence!");
             }
         }
         String fileName;
@@ -87,7 +87,7 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
                             outputFile.flush();
                         }
                         if (i == database.tables.size()-1) { //Do links all at once at the end
-                            try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + "Links.sql")) {
+                            try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + "foreign_keys.sql")) {
                                 for (int x = 0; x < database.tables.size(); x++) {
                                     Table tableInner = database.tables.elementAt(x);
                                     if (tableInner.links.size() > 0) {
