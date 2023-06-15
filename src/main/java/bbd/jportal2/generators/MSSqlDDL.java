@@ -139,13 +139,9 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
   public void generate(Database database, String output) throws Exception
   {
       if (!canGenerate) return;
-      boolean legacyGen = database.flags.contains(Flags.LEGACY_DDL_GENERATION);
       boolean singleFile = database.flags.contains(Flags.SINGLE_FILE_DDL_GENERATION);
       if (singleFile) {
         multiGeneration = true;
-        if (legacyGen) {
-          logger.warn("Legacy DDL Generation and Single File DLL Generation on, Single File gen taking precedence!");
-        }
       }
       String fileName;
       if (database.output.length() > 0 && !singleFile)
@@ -163,7 +159,7 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
         tableSchema = "";
       }
       try {
-        if (legacyGen || singleFile) {
+        if (singleFile) {
           try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + fileName + ".sql")) {
             outputFile.println("USE " + database.name);
             outputFile.println();

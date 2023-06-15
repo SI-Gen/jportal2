@@ -34,13 +34,9 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
      */
     public void generate(Database database, String output) {
         if (!canGenerate) return;
-        boolean legacyGen = database.flags.contains(Flags.LEGACY_DDL_GENERATION);
         boolean singleFile = database.flags.contains(Flags.SINGLE_FILE_DDL_GENERATION);
         if (singleFile) {
             multiGeneration = true;
-            if (legacyGen) {
-                logger.warn("Legacy DDL Generation and Single File DLL Generation on, Single File gen taking precedence!");
-            }
         }
         String fileName;
         if (database.output.length() > 0 && !singleFile)
@@ -52,7 +48,7 @@ public class PostgresDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
         logger.info("DDL: {}", fileName);
         try {
-            if (legacyGen || singleFile) {
+            if (singleFile) {
                 try (PrintWriter outData = openOutputFileForGeneration("sql", fileName)) {
                     outData.println("CREATE SCHEMA IF NOT EXISTS " + database.schema + ";");
 

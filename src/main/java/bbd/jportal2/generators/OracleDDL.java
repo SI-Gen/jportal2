@@ -33,13 +33,9 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
     @Override
     public void generate(Database database, String output) {
         if (!canGenerate) return;
-        boolean legacyGen = database.flags.contains(Flags.LEGACY_DDL_GENERATION);
         boolean singleFile = database.flags.contains(Flags.SINGLE_FILE_DDL_GENERATION);
         if (singleFile) {
             multiGeneration = true;
-            if (legacyGen) {
-                logger.warn("Legacy DDL Generation and Single File DLL Generation on, Single File gen taking precedence!");
-            }
         }
         try {
             String tableOwner = "";
@@ -56,7 +52,7 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
             } else if (database.userid.length() > 0) {
                 tableOwner = database.userid + ".";
             }
-            if (legacyGen || singleFile) {
+            if (singleFile) {
                 FileOutputStream outFile = new FileOutputStream(output + fileName + ".sql");
 
                 try (PrintWriter outData = new PrintWriter(outFile)) {

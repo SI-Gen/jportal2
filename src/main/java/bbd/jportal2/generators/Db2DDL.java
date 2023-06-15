@@ -47,13 +47,9 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
 
     public void generate(Database database, String output) {
         if (!canGenerate) return;
-        boolean legacyGen = database.flags.contains(Flags.LEGACY_DDL_GENERATION);
         boolean singleFile = database.flags.contains(Flags.SINGLE_FILE_DDL_GENERATION);
         if (singleFile) {
             multiGeneration = true;
-            if (legacyGen) {
-                logger.warn("Legacy DDL Generation and Single File DLL Generation on, Single File gen taking precedence!");
-            }
         }
         try {
             String fileName;
@@ -62,7 +58,7 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
             else
                 fileName = database.name;
             hasData = false;
-            if (legacyGen || singleFile) {
+            if (singleFile) {
                 try (PrintWriter outData = this.openOutputFileForGeneration("sql", output + fileName + ".sql")) {
                     for (int i = 0; i < database.tables.size(); i++)
                         generate((Table) database.tables.elementAt(i), outData);
