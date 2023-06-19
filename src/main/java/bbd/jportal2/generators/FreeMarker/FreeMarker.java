@@ -31,10 +31,8 @@ import java.util.*;
 
 
 public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcessor, ITemplateBasedPostProcessor {
-    private static boolean first = true;
-    private static final boolean multiGeneration = false;
     public FreeMarker() {
-        super(FreeMarker.class, multiGeneration, first);
+        super(FreeMarker.class);
     }
 
 

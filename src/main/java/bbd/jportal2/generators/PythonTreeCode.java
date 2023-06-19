@@ -25,11 +25,8 @@ import java.util.Vector;
 public class PythonTreeCode extends BaseGenerator implements IBuiltInSIProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(PythonTreeCode.class);
-    private static boolean first = true;
-    private static final boolean multiGeneration = true;
     public PythonTreeCode() {
-        super(PythonTreeCode.class, multiGeneration, first);
-        first = false;
+        super(PythonTreeCode.class);
     }
 
     public String description() {
@@ -74,7 +71,6 @@ public class PythonTreeCode extends BaseGenerator implements IBuiltInSIProcessor
     }
 
     public void generate(Database database, String output) throws Exception {
-        if (!canGenerate) return;
         database = database.doImports();
 
         try (PrintWriter outData = this.openOutputFileForGeneration("py", output + database.output + ".py")) {

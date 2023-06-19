@@ -18,7 +18,6 @@ import bbd.jportal2.generators.Common.Flags;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.Vector;
 import java.io.PrintWriter;
 
@@ -29,11 +28,8 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
 {
 
   private static final Logger logger = LoggerFactory.getLogger(MSSqlDDL.class);
-  private static boolean first = true;
-  private static boolean multiGeneration = false;
     public MSSqlDDL() {
-        super(MSSqlDDL.class, multiGeneration, first);
-        first = false;
+        super(MSSqlDDL.class);
     }
 
 
@@ -138,16 +134,7 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
    */
   public void generate(Database database, String output) throws Exception
   {
-      if (!canGenerate) return;
       boolean singleFile = database.flags.contains(Flags.SINGLE_FILE_DDL_GENERATION);
-      if (singleFile) {
-        multiGeneration = true;
-      }
-      String fileName;
-      if (database.output.length() > 0 && !singleFile)
-        fileName = database.output;
-      else
-        fileName = database.name;
       if (database.schema.length() > 0)
       {
         tableOwner = database.schema + "";
@@ -160,7 +147,8 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
       }
       try {
         if (singleFile) {
-          try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + fileName + ".sql")) {
+          String fileName = output + database.name + ".sql";
+          try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", fileName)) {
             outputFile.println("USE " + database.name);
             outputFile.println();
             for (int i = 0; i < database.tables.size(); i++)
@@ -170,25 +158,23 @@ public class MSSqlDDL extends BaseGenerator implements IBuiltInSIProcessor
             outputFile.flush();
           }
         } else {
+          if (database.views.size() > 0) {
+            try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + "views.sql")) {
+              outputFile.println("USE " + database.name);
+              outputFile.println();
+              for (int j = 0; j < database.views.size(); j++)
+                generateView((View) database.views.elementAt(j), outputFile, "");
+              outputFile.flush();
+            }
+          }
           for (int i = 0; i < database.tables.size(); i++) {
             Table table = (Table) database.tables.elementAt(i);
-            if (Objects.equals(table.name, database.output)) {
-              if (i == 0 && database.views.size() > 0) { //gen views on first iteration
-                try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + "views.sql")) {
-                  outputFile.println("USE " + database.name);
-                  outputFile.println();
-                  for (int j = 0; j < database.views.size(); j++)
-                    generateView((View) database.views.elementAt(j), outputFile, "");
-                  outputFile.flush();
-                }
-              }
-              try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + fileName + ".sql")) {
-                outputFile.println("USE " + database.name);
-                outputFile.println();
-                generateTable(table, outputFile);
-                outputFile.flush();
-              }
-              return;
+            String fileName = output + table.name + ".sql";
+            try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", fileName)) {
+              outputFile.println("USE " + database.name);
+              outputFile.println();
+              generateTable(table, outputFile);
+              outputFile.flush();
             }
           }
         }

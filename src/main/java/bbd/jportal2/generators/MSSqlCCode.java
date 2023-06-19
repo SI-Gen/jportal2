@@ -25,12 +25,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 public class MSSqlCCode extends BaseGenerator implements IBuiltInSIProcessor
 {
-    private static boolean first = true;
-    private static final boolean multiGeneration = true;
     public MSSqlCCode() {
-        super(MSSqlCCode.class, multiGeneration, first);
+        super(MSSqlCCode.class);
         MSSqlCCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();
-        first = false;
     }
 
     /**
@@ -74,7 +71,6 @@ void setFlags(Database database)
    * Generates the procedure classes for each table present.
    */
   public void generate(Database database, String output) throws Exception {
-    if (!canGenerate) return;
     setFlags(database);
     for (int i = 0; i < database.tables.size(); i++) {
       Table table = (Table) database.tables.elementAt(i);

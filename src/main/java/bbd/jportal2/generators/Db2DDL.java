@@ -25,11 +25,8 @@ import java.util.Objects;
 
 public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
     private static final Logger logger = LoggerFactory.getLogger(Db2DDL.class);
-    private static boolean first = true;
-    private static boolean multiGeneration = false;
     public Db2DDL() {
-        super(Db2DDL.class, multiGeneration, first);
-        first = false;
+        super(Db2DDL.class);
     }
 
     /**
@@ -46,28 +43,19 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
     public boolean hasData;
 
     public void generate(Database database, String output) {
-        if (!canGenerate) return;
         boolean singleFile = database.flags.contains(Flags.SINGLE_FILE_DDL_GENERATION);
-        if (singleFile) {
-            multiGeneration = true;
-        }
         try {
-            String fileName;
-            if (database.output.length() > 0 && !singleFile)
-                fileName = database.output;
-            else
-                fileName = database.name;
-            hasData = false;
             if (singleFile) {
-                try (PrintWriter outData = this.openOutputFileForGeneration("sql", output + fileName + ".sql")) {
+                hasData = false;
+                String fileName = output + database.name + ".sql";
+                try (PrintWriter outData = this.openOutputFileForGeneration("sql", fileName)) {
                     for (int i = 0; i < database.tables.size(); i++)
                         generate((Table) database.tables.elementAt(i), outData);
                     outData.flush();
                 }
-                if (hasData == true) {
-
-
-                    try (PrintWriter outData = this.openOutputFileForGeneration("_data.sql", output + fileName + "_data_.sql")) {
+                if (hasData) {
+                    String dataFileName = output + database.name + "_data.sql";
+                    try (PrintWriter outData = this.openOutputFileForGeneration("_data.sql", dataFileName)) {
                         for (int i = 0; i < database.tables.size(); i++)
                             generateData((Table) database.tables.elementAt(i), outData);
                         outData.flush();
@@ -75,21 +63,21 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
                 }
             } else {
                 for (int i = 0; i < database.tables.size(); i++) {
+                    hasData = false;
                     Table table = (Table) database.tables.elementAt(i);
-                    if (Objects.equals(table.name, database.output)) {
-                        try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + fileName + ".sql")) {
-                            outputFile.println("USE " + database.name);
-                            outputFile.println();
-                            generate(table, outputFile);
-                            outputFile.flush();
+                    String fileName = output + table.name + ".sql";
+                    try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", fileName)) {
+                        outputFile.println("USE " + database.name);
+                        outputFile.println();
+                        generate(table, outputFile);
+                        outputFile.flush();
+                    }
+                    if (hasData) {
+                        String dataFileName = output + table.name + "_data.sql";
+                        try (PrintWriter outData = this.openOutputFileForGeneration("data.sql", dataFileName)) {
+                            generateData((Table) table, outData);
+                            outData.flush();
                         }
-                        if (hasData) {
-                            try (PrintWriter outData = this.openOutputFileForGeneration("_data.sql", output + fileName + "_data_.sql")) {
-                                generateData((Table) table, outData);
-                                outData.flush();
-                            }
-                        }
-                        return;
                     }
                 }
             }

@@ -26,12 +26,9 @@ import java.io.OutputStream;
 
 public class DB2CCode extends BaseGenerator implements IBuiltInSIProcessor
 {
-    private static boolean first = true;
-    private static final boolean multiGeneration = true;
     public DB2CCode() {
-        super(DB2CCode.class, multiGeneration, first);
+        super(DB2CCode.class);
         DB2CCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();
-        first = false;
     }
 
     /**
@@ -75,7 +72,6 @@ void setFlags(Database database)
    * Generates the procedure classes for each table present.
    */
   public void generate(Database database, String output) throws Exception {
-    if (!canGenerate) return;
     setFlags(database);
     for (int i = 0; i < database.tables.size(); i++) {
       Table table = (Table) database.tables.elementAt(i);

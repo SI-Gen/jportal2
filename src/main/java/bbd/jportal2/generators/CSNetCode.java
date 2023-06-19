@@ -26,12 +26,9 @@ import org.slf4j.LoggerFactory;
 public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
 
     JPortalTemplateOutputOptions CSNetCodeOutputOptions;
-    private static boolean first = true;
-    private static final boolean multiGeneration = true;
     public CSNetCode() {
-        super(CSNetCode.class, multiGeneration, first);
+        super(CSNetCode.class);
         CSNetCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();
-        first = false;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(CSNetCode.class);
@@ -163,7 +160,6 @@ public class CSNetCode extends BaseGenerator implements IBuiltInSIProcessor {
     }
 
     public void generate(Database database, String output) throws Exception {
-        if (!canGenerate) return;
         setFlags(database);
         for (int i = 0; i < database.tables.size(); i++) {
             Table table = (Table) database.tables.elementAt(i);

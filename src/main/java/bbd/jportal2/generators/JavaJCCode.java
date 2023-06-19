@@ -48,15 +48,12 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     public static final String FLAG_GEN_LOMBOK = "generatelombok";
     public static final String ENTITY_CLASS_SUFFIX = "Struct";
 
-    private static boolean first = true;
-    private static final boolean multiGeneration = true;
 
     private Set<String> flags = new HashSet<>();
     JPortalTemplateOutputOptions JavaJCCodeOutputOptions;
     public JavaJCCode() {
-        super(JavaJCCode.class, multiGeneration, first);
+        super(JavaJCCode.class);
         JavaJCCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();
-        first = false;
     }
 
     /**
@@ -71,7 +68,6 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     }
 
     public void generate(Database database, String output) {
-        if (!canGenerate) return;
         flags = database.getFlags().stream().map(String::toLowerCase).collect(Collectors.toSet());
 
         for (int i = 0; i < database.tables.size(); i++) {

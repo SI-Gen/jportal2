@@ -25,12 +25,9 @@ import java.util.Vector;
 
 public class IdlCode extends BaseGenerator implements IBuiltInSIProcessor {
     private static final Logger logger = LoggerFactory.getLogger(IdlCode.class);
-    private static boolean first = true;
-    private static final boolean multiGeneration = true;
 
     public IdlCode() {
-        super(IdlCode.class, multiGeneration, first);
-        first = false;
+        super(IdlCode.class);
     }
 
     public String description() {
@@ -73,7 +70,6 @@ public class IdlCode extends BaseGenerator implements IBuiltInSIProcessor {
      * Generates the procedure classes for each table present.
      */
     public void generate(Database database, String output) throws Exception {
-        if (!canGenerate) return;
         setFlags(database);
         for (int i = 0; i < database.tables.size(); i++) {
             Table table = (Table) database.tables.elementAt(i);

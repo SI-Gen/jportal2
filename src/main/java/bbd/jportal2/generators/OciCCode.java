@@ -23,13 +23,10 @@ import java.util.Vector;
 public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
 {
   private static final Logger logger = LoggerFactory.getLogger(OciCCode.class);
-  private static boolean first = true;
-  private static final boolean multiGeneration = true;
 
   public OciCCode()
   {
-    super(OciCCode.class, multiGeneration, first);
-    first = false;
+    super(OciCCode.class);
   }
 
   public String description()
@@ -101,7 +98,6 @@ public class OciCCode extends BaseGenerator implements IBuiltInSIProcessor
    */
   public void generate(Database database, String output) throws Exception
   {
-    if (!canGenerate) return;
     setFlags(database);
     for (int i = 0; i < database.tables.size(); i++)
     {
