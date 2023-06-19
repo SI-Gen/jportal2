@@ -31,6 +31,8 @@ import java.util.*;
 
 
 public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcessor, ITemplateBasedPostProcessor {
+
+    private List<String> common_files;
     public FreeMarker() {
         super(FreeMarker.class);
     }
@@ -179,10 +181,24 @@ public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcess
 
             destFileName = fileNameOut.toString();
 
-            if (doneFiles.contains(destFileName))
-                continue; //File template is less specific than proc/table level, already generated.
-
             Path fullDestinationFile = Paths.get(outputDir.toString(), destFileName);
+
+            //checks for file in generated files and does not redo common files
+            boolean fileDone = false;
+            for (GeneratedFiles gf : database.generatedOutputFiles) {
+                Optional<GeneratedFileGroup> gfg = gf.getFileGroups().stream()
+                        .filter(fg -> fg.getFileGroupName().equalsIgnoreCase(generatorName))
+                        .findFirst();
+                if (gfg.isPresent()) {
+                    if (gfg.get().getFiles().contains(fullDestinationFile)) {
+                        fileDone = true;
+                        break;
+                    }
+                }
+            }
+
+            if (doneFiles.contains(destFileName) || fileDone)
+                continue; //File template is less specific than proc/table level, already generated.
 
             fullDestinationFile.getParent().toFile().mkdirs();
 

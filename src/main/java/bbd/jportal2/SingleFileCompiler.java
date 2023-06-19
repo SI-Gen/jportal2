@@ -64,26 +64,21 @@ public class SingleFileCompiler {
         return 0;
     }
 
-    public int compileFreemarker(String source,
-                                 List<String> templateBasedSIProcessors,
-                                 List<String> templateBasedPostProcessors,
-                                 JPortalTemplateOutputOptions templateOutputOptions
+    public int compileFreemarker(List<String> templateBasedSIProcessors,
+                                 List<String> templateBasedPostProcessors
     )
             throws Exception {
-        List<String> pieces = List.of(source.split("\\+"));
-        String TableName = pieces.get(pieces.size() - 1);
-        JPortal.run(TableName, "", templateOutputOptions);
         for (String templateGenerator : templateBasedSIProcessors) {
-            if (!ExecuteTemplateGenerator(JPortal.database, JPortal.table, templateGenerator)) return 1;
+            if (!ExecuteTemplateGenerator(JPortal.database, templateGenerator)) return 1;
         }
 
         for (String templateGenerator : templateBasedPostProcessors) {
-            if (!ExecuteTemplateGenerator(JPortal.database, JPortal.table, templateGenerator)) return 1;
+            if (!ExecuteTemplateGenerator(JPortal.database, templateGenerator)) return 1;
         }
         return 0;
     }
 
-    private boolean ExecuteTemplateGenerator(Database database, Table table, String templateGenerator) throws Exception {
+    private boolean ExecuteTemplateGenerator(Database database, String templateGenerator) throws Exception {
         if (!templateGenerator.contains(":") || templateGenerator.split(":").length < 2) {
             logger.error("Error in template-generator parameter. The correct format is --template-generator=<name>:<output_directory>, but --template-generator='{}' was specified instead.", templateGenerator);
             return false;
@@ -126,8 +121,10 @@ public class SingleFileCompiler {
 
         try {
             FreeMarker fm = new FreeMarker();
-            fm.generateTemplate(database, table, templateLocationFile.getAbsolutePath(), generatorName, new File(generatorDirectory));
-            database.addGeneratedOutputFiles(fm.getGeneratedOutputFiles());
+            for (Table table : database.tables) {
+                fm.generateTemplate(database, table, templateLocationFile.getAbsolutePath(), generatorName, new File(generatorDirectory));
+                database.addGeneratedOutputFiles(fm.getGeneratedOutputFiles());
+            }
         } catch (Exception e) {
             logger.error("Error executing {}", generatorName, e);
             return false;
