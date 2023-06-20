@@ -31,6 +31,8 @@ import java.util.*;
 
 
 public class FreeMarker extends BaseGenerator implements ITemplateBasedSIProcessor, ITemplateBasedPostProcessor {
+
+    private List<String> common_files;
     public FreeMarker() {
         super(FreeMarker.class);
     }
