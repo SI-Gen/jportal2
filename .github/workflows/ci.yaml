@@ -20,6 +20,10 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
       - name: 'Build with Maven'
         run: mvn --batch-mode --update-snapshots verify
+      - uses: actions/checkout@v3
+      - name: Setup tmate debug session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
 
 #  pre-release:
 #    name: 'Pre-Release'
