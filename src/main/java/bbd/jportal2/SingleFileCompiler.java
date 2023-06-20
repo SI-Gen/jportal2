@@ -120,8 +120,8 @@ public class SingleFileCompiler {
         File templateLocationFile = Paths.get(templateBaseDir).toFile();
 
         try {
-            FreeMarker fm = new FreeMarker();
             for (Table table : database.tables) {
+                FreeMarker fm = new FreeMarker();
                 fm.generateTemplate(database, table, templateLocationFile.getAbsolutePath(), generatorName, new File(generatorDirectory));
                 database.addGeneratedOutputFiles(fm.getGeneratedOutputFiles());
             }
