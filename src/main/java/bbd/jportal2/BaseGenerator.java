@@ -38,12 +38,17 @@ public class BaseGenerator {
 
 
     protected void addFileToOutputtedFilesList(String fileType, Path generatedFile) {
-        GeneratedFileGroup fg = generatedOutputFiles.getFileGroups().stream()
+        Optional<GeneratedFileGroup> ofg = generatedOutputFiles.getFileGroups().stream()
                 .filter(f -> f.getFileGroupName().equalsIgnoreCase(fileType))
-                .findFirst()
-                .orElse(new GeneratedFileGroup(fileType));
+                .findFirst();
 
-        generatedOutputFiles.getFileGroups().add(fg);
+        GeneratedFileGroup fg;
+        if (ofg.isEmpty()) {
+            fg = new GeneratedFileGroup(fileType);
+            generatedOutputFiles.getFileGroups().add(fg);
+        } else {
+            fg = ofg.get();
+        }
         fg.getFiles().add(generatedFile);
     }
 
