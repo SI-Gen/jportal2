@@ -46,7 +46,7 @@ public class ProjectCompilerTest {
         ProjectCompiler pj = new ProjectCompiler(false);
         setupSimpleListsParameters(pj);
         pj.addTemplateBasedSIProcessor("NON_EXISTENT_GENERATOR:NON_EXISTENT_PATH");
-        pj.compileAll();
+        assertEquals(0, pj.compileAll());
     }
 
     private void setupSimpleListsParameters(ProjectCompiler pj) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
