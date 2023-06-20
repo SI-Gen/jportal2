@@ -91,7 +91,7 @@ public class SingleFileCompiler {
         logger.info("Executing: " + generatorName);
         String templateBaseDir = null;
         for (String dirToSearch : this.templateLocations) {
-            //get rid of the extension in a generator name
+            //git rid of the extension in a generator name
             if (generatorName.indexOf(".") > 0)
                 generatorName = generatorName.substring(0, generatorName.lastIndexOf("."));
             Path fullGeneratorPath = Paths.get(dirToSearch, generatorName);
