@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 public class MySqlCCode extends BaseGenerator implements IBuiltInSIProcessor
 {
+
     public MySqlCCode() {
         super(MySqlCCode.class);
         MySqlCCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();

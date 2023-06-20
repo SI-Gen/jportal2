@@ -1,17 +1,18 @@
 package bbd.jportal2.generators;
 
 import bbd.jportal2.*;
+import bbd.jportal2.generators.Common.Flags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Objects;
 
 public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(OracleDDL.class);
-
     public OracleDDL() {
         super(OracleDDL.class);
     }
@@ -28,51 +29,78 @@ public class OracleDDL extends BaseGenerator implements IBuiltInSIProcessor {
 
     @Override
     public void generate(Database database, String output) {
+        boolean singleFile = database.flags.contains(Flags.SINGLE_FILE_DDL_GENERATION);
         try {
             String tableOwner = "";
-            String fileName;
-            if (database.output.length() > 0) {
-                fileName = database.output;
+
+            if (database.schema.length() > 0) {
+                tableOwner = database.schema + ".";
+            } else if (database.userid.length() > 0) {
+                tableOwner = database.userid + ".";
+            }
+            if (singleFile) {
+                String fileName = output + database.name + ".sql";
+
+                try (PrintWriter outData = this.openOutputFileForGeneration("sql", fileName)) {
+                    if (database.password.length() > 0) {
+                        outData.println("CONNECT " + database.userid + "/" + database.password + "@" + database.server);
+                        outData.println();
+                    }
+
+                    int i;
+                    for (i = 0; i < database.tables.size(); ++i) {
+                        generate(database.tables.elementAt(i), outData);
+                    }
+
+                    for (i = 0; i < database.views.size(); ++i) {
+                        generate(database.views.elementAt(i), outData, "", tableOwner);
+                    }
+
+                    for (i = 0; i < database.sequences.size(); ++i) {
+                        generate(database.sequences.elementAt(i), outData, tableOwner);
+                    }
+
+                    outData.flush();
+                }
             } else {
-                fileName = database.name;
+                if (database.views.size() > 0) {
+                    try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + "views.sql")) {
+                        if (database.password.length() > 0) {
+                            outputFile.println("CONNECT " + database.userid + "/" + database.password + "@" + database.server);
+                            outputFile.println();
+                        }
+                        for (int j = 0; j < database.views.size(); j++)
+                            generate((View) database.views.elementAt(j), outputFile, "", tableOwner);
+                        outputFile.flush();
+                    }
+                }
+                if (database.sequences.size() > 0) {
+                    try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", output + "sequences.sql")) {
+                        if (database.password.length() > 0) {
+                            outputFile.println("CONNECT " + database.userid + "/" + database.password + "@" + database.server);
+                            outputFile.println();
+                        }
+                        for (int j = 0; j < database.sequences.size(); j++)
+                            generate((Sequence) database.sequences.elementAt(j), outputFile, tableOwner);
+                        outputFile.flush();
+                    }
+                }
+                for (int i = 0; i < database.tables.size(); i++) {
+                    Table table = (Table) database.tables.elementAt(i);
+                    String fileName = output + table.name + ".sql";
+                    try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", fileName)) {
+                        if (database.password.length() > 0) {
+                            outputFile.println("CONNECT " + database.userid + "/" + database.password + "@" + database.server);
+                            outputFile.println();
+                        }
+                        generate(table, outputFile);
+                        outputFile.flush();
+                    }
+                }
             }
-
-            logger.info("DDL: {}{} .sql", output, fileName);
-            FileOutputStream outFile = new FileOutputStream(output + fileName + ".sql");
-
-            try (PrintWriter outData = new PrintWriter(outFile)) {
-
-                if (database.schema.length() > 0) {
-                    tableOwner = database.schema + ".";
-                } else if (database.userid.length() > 0) {
-                    tableOwner = database.userid + ".";
-                }
-
-                if (database.password.length() > 0) {
-                    outData.println("CONNECT " + database.userid + "/" + database.password + "@" + database.server);
-                    outData.println();
-                }
-
-                int i;
-                for (i = 0; i < database.tables.size(); ++i) {
-                    generate(database.tables.elementAt(i), outData);
-                }
-
-                for (i = 0; i < database.views.size(); ++i) {
-                    generate(database.views.elementAt(i), outData, "", tableOwner);
-                }
-
-                for (i = 0; i < database.sequences.size(); ++i) {
-                    generate(database.sequences.elementAt(i), outData, tableOwner);
-                }
-
-                outData.flush();
-            }
-
         } catch (IOException ex) {
             logger.error("Generate Oracle SQL IO Error", ex);
         }
-
     }
 
     private String bSO(int i) {

@@ -26,7 +26,6 @@ import java.util.Vector;
  */
 public class PythonCliCode extends BaseGenerator implements IBuiltInSIProcessor {
     private static final Logger logger = LoggerFactory.getLogger(PythonCliCode.class);
-
     public PythonCliCode() {
         super(PythonCliCode.class);
     }

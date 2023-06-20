@@ -48,6 +48,7 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     public static final String FLAG_GEN_LOMBOK = "generatelombok";
     public static final String ENTITY_CLASS_SUFFIX = "Struct";
 
+
     private Set<String> flags = new HashSet<>();
     JPortalTemplateOutputOptions JavaJCCodeOutputOptions;
     public JavaJCCode() {
@@ -67,7 +68,6 @@ public class JavaJCCode extends BaseGenerator implements IBuiltInSIProcessor {
     }
 
     public void generate(Database database, String output) {
-
         flags = database.getFlags().stream().map(String::toLowerCase).collect(Collectors.toSet());
 
         for (int i = 0; i < database.tables.size(); i++) {

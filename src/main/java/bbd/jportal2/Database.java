@@ -331,6 +331,7 @@ public class Database implements Serializable
     }
 
     public void addGeneratedOutputFiles(GeneratedFiles generatedOutputFiles) {
+        if (generatedOutputFiles.getFileGroups().size() == 0) return;
         this.generatedOutputFiles.add(generatedOutputFiles);
     }
 }

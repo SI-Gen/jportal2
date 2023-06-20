@@ -66,11 +66,7 @@ SQLCODE
     WHERE UniqueInt = :UniqueInt
 ENDCODE
 
-PROC SelectBy UniqueInt FOR UPDATE AS XXSelectByUniqueInt
-OUTPUT
-ID      =
-
-PROC SelectBy UniqueInt FOR UPDATE AS XXSelectByUniqueInt returning ID
+PROC SelectBy UniqueInt FOR UPDATE AS SelectByUniqueInt returning ID
 
 SQLDATA
 -- Takeons come here

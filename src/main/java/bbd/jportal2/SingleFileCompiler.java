@@ -16,28 +16,24 @@ public class SingleFileCompiler {
     private static final Logger logger = LoggerFactory.getLogger(SingleFileCompiler.class);
     private List<String> templateLocations;
 
-    public int compile(String source,
-                       List<String> compilerFlags,
-                       List<String> builtinSIProcessors,
-                       List<String> templateBasedSIProcessors,
-                       List<String> builtinPostProcessors,
-                       List<String> templateBasedPostProcessors,
-                       List<String> templateLocations,
-                       JPortalTemplateOutputOptions templateOutputOptions,
-                       Boolean preCompile
+    public int preCompile(List<String> inputFiles,
+                              List<String> compilerFlags,
+                              List<String> templateLocations,
+                              JPortalTemplateOutputOptions templateOutputOptions
     )
             throws Exception {
         this.templateLocations = templateLocations;
-
-        String[] pieces = source.split("\\+");
         Database database = JPortal.database;
         boolean hasErrors = false;
-        for (String piece : pieces) {
-            String nubDir = "";
-            database = JPortal.run(piece, nubDir, templateOutputOptions);
-            if (database == null) {
-                logger.error("::>" + piece + "<:: compile has errors");
-                hasErrors = true;
+        for (String source : inputFiles) {
+            String[] pieces = source.split("\\+");
+            for (String piece : pieces) {
+                String nubDir = "";
+                database = JPortal.run(piece, nubDir, templateOutputOptions);
+                if (database == null) {
+                    logger.error("::>" + piece + "<:: compile has errors");
+                    hasErrors = true;
+                }
             }
         }
 
@@ -50,31 +46,40 @@ public class SingleFileCompiler {
             if (!database.flags.contains(flag))
                 database.flags.addElement(flag);
         }
+        return 0;
+    }
 
-        if (preCompile)
-        {
-            //Precompile does not generate.
-            return 0;
-        }
-
+    public int compileBuiltIn(List<String> builtinSIProcessors,
+                              List<String> builtinPostProcessors
+    )
+            throws Exception {
         for (String generator : builtinSIProcessors) {
-            if (!ExecuteBuiltinGenerator(database, JPortal.table, generator)) return 1;
-        }
-
-
-        for (String templateGenerator : templateBasedSIProcessors) {
-            if (!ExecuteTemplateGenerator(database, JPortal.table, templateGenerator)) return 1;
+            if (!ExecuteBuiltinGenerator(JPortal.database, generator)) return 1;
         }
 
         for (String generator : builtinPostProcessors) {
-            if (!ExecuteBuiltinGenerator(database, JPortal.table, generator)) return 1;
+            if (!ExecuteBuiltinGenerator(JPortal.database, generator)) return 1;
         }
 
+        return 0;
+    }
+
+    public int compileFreemarker(String source,
+                                 List<String> templateBasedSIProcessors,
+                                 List<String> templateBasedPostProcessors,
+                                 JPortalTemplateOutputOptions templateOutputOptions
+    )
+            throws Exception {
+        List<String> pieces = List.of(source.split("\\+"));
+        String TableName = pieces.get(pieces.size() - 1);
+        JPortal.run(TableName, "", templateOutputOptions);
+        for (String templateGenerator : templateBasedSIProcessors) {
+            if (!ExecuteTemplateGenerator(JPortal.database, JPortal.table, templateGenerator)) return 1;
+        }
 
         for (String templateGenerator : templateBasedPostProcessors) {
-            if (!ExecuteTemplateGenerator(database, JPortal.table, templateGenerator)) return 1;
+            if (!ExecuteTemplateGenerator(JPortal.database, JPortal.table, templateGenerator)) return 1;
         }
-
         return 0;
     }
 
@@ -130,7 +135,7 @@ public class SingleFileCompiler {
         return true;
     }
 
-    private boolean ExecuteBuiltinGenerator(Database database, Table table, String generator) throws Exception {
+    private boolean ExecuteBuiltinGenerator(Database database, String generator) throws Exception {
         GeneratorParameters generatorParameters = new GeneratorParameters(generator).extractParametersFromOption();
         String generatorName = generatorParameters.getGeneratorName();
         String generatorDirectory = generatorParameters.getGeneratorDirectory();
@@ -145,7 +150,7 @@ public class SingleFileCompiler {
 
         try {
             c = Class.forName("bbd.jportal2.generators." + generatorName);
-            instanceOfC = (IBuiltInGenerator) c.newInstance();
+            instanceOfC = (IBuiltInGenerator) c.getDeclaredConstructor().newInstance();
         } catch (ClassNotFoundException cnf) {
             logger.error("Could not find generator {}. Make sure there is a class bbd.jportal2.generators.{}", generatorName);
             return false;
@@ -214,4 +219,6 @@ public class SingleFileCompiler {
 //
 //        return false;
     }
+
+
 }
