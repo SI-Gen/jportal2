@@ -15,11 +15,13 @@ package bbd.jportal2.generators;
 import bbd.jportal2.*;
 
 
+import bbd.jportal2.generators.Common.Flags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Objects;
 
 public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
     private static final Logger logger = LoggerFactory.getLogger(Db2DDL.class);
@@ -41,26 +43,42 @@ public class Db2DDL extends BaseGenerator implements IBuiltInSIProcessor {
     public boolean hasData;
 
     public void generate(Database database, String output) {
+        boolean singleFile = database.flags.contains(Flags.SINGLE_FILE_DDL_GENERATION);
         try {
-            String fileName;
-            if (database.output.length() > 0)
-                fileName = database.output;
-            else
-                fileName = database.name;
-            hasData = false;
-
-            try (PrintWriter outData = this.openOutputFileForGeneration("sql", output + fileName + ".sql")) {
-                for (int i = 0; i < database.tables.size(); i++)
-                    generate((Table) database.tables.elementAt(i), outData);
-                outData.flush();
-            }
-            if (hasData == true) {
-
-
-                try (PrintWriter outData = this.openOutputFileForGeneration("_data.sql", output + fileName + "_data_.sql")) {
+            if (singleFile) {
+                hasData = false;
+                String fileName = output + database.name + ".sql";
+                try (PrintWriter outData = this.openOutputFileForGeneration("sql", fileName)) {
                     for (int i = 0; i < database.tables.size(); i++)
-                        generateData((Table) database.tables.elementAt(i), outData);
+                        generate((Table) database.tables.elementAt(i), outData);
                     outData.flush();
+                }
+                if (hasData) {
+                    String dataFileName = output + database.name + "_data.sql";
+                    try (PrintWriter outData = this.openOutputFileForGeneration("_data.sql", dataFileName)) {
+                        for (int i = 0; i < database.tables.size(); i++)
+                            generateData((Table) database.tables.elementAt(i), outData);
+                        outData.flush();
+                    }
+                }
+            } else {
+                for (int i = 0; i < database.tables.size(); i++) {
+                    hasData = false;
+                    Table table = (Table) database.tables.elementAt(i);
+                    String fileName = output + table.name + ".sql";
+                    try (PrintWriter outputFile = this.openOutputFileForGeneration("sql", fileName)) {
+                        outputFile.println("USE " + database.name);
+                        outputFile.println();
+                        generate(table, outputFile);
+                        outputFile.flush();
+                    }
+                    if (hasData) {
+                        String dataFileName = output + table.name + "_data.sql";
+                        try (PrintWriter outData = this.openOutputFileForGeneration("data.sql", dataFileName)) {
+                            generateData((Table) table, outData);
+                            outData.flush();
+                        }
+                    }
                 }
             }
         } catch (IOException e1) {

@@ -20,9 +20,11 @@ public class BaseGenerator {
         return generatedOutputFiles;
     }
 
+    //multiGeneration: True if the generator generates all tables in one iteration and false if it needs to be looped over
+    //first: True if first iteration, otherwise false and skip generation
     public BaseGenerator(Class inheritedGeneratorClass) {
-        generatedOutputFiles = new GeneratedFiles(inheritedGeneratorClass.getSimpleName());
-
+        String className = inheritedGeneratorClass.getSimpleName();
+        generatedOutputFiles = new GeneratedFiles(className);
     }
 
     public Vector<Flag> getFlags() {
@@ -36,12 +38,17 @@ public class BaseGenerator {
 
 
     protected void addFileToOutputtedFilesList(String fileType, Path generatedFile) {
-        GeneratedFileGroup fg = generatedOutputFiles.getFileGroups().stream()
+        Optional<GeneratedFileGroup> ofg = generatedOutputFiles.getFileGroups().stream()
                 .filter(f -> f.getFileGroupName().equalsIgnoreCase(fileType))
-                .findFirst()
-                .orElse(new GeneratedFileGroup(fileType));
+                .findFirst();
 
-        generatedOutputFiles.getFileGroups().add(fg);
+        GeneratedFileGroup fg;
+        if (ofg.isEmpty()) {
+            fg = new GeneratedFileGroup(fileType);
+            generatedOutputFiles.getFileGroups().add(fg);
+        } else {
+            fg = ofg.get();
+        }
         fg.getFiles().add(generatedFile);
     }
 

@@ -96,6 +96,17 @@
             </roles>
             <timezone>GMT +2</timezone>
         </developer>
+        <developer>
+            <id>wesleys</id>
+            <email>wesleys@bbd.co.za</email>
+            <name>Wesley Stander</name>
+            <organization>BBD</organization>
+            <organizationUrl>https://bbdsoftware.com/</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>GMT +2</timezone>
+        </developer>
     </developers>
 
     <name>JPortal2</name>

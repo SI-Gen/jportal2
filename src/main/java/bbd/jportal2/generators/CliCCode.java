@@ -21,12 +21,10 @@ import java.util.Vector;
 
 public class CliCCode extends BaseGenerator implements IBuiltInSIProcessor {
     private static final Logger logger = LoggerFactory.getLogger(CliCCode.class);
-
     public CliCCode() {
         super(CliCCode.class);
         CliCCodeOutputOptions = JPortalTemplateOutputOptions.defaultBuiltInOptions();
     }
-
 
     public String description() {
         return "Generate CLI C++ Code for DB2";

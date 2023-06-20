@@ -63,36 +63,31 @@ public class ProjectCompiler {
         if (compilerFlags.size() == 0)
             logger.info("No compiler getFlags detected.");
 
-        int rc = 0;
         if (builtinSIProcessors.size() == 0 && templateBasedSIProcessors.size() == 0) {
             //\n does not get expanded. put the log and two calls to get formatting on the console right
             logger.error("No generators were specified!");
             logger.error("You need to specify at least one builtin generator (using --generator) or one template-based generator (using --template-generator).");
-            rc = 1;
+            return 1;
         }
-
-        if (rc != 0)
-            return rc;
 
         SingleFileCompiler sfCompiler = new SingleFileCompiler();
 
+        int preCompileRc = sfCompiler.preCompile(allInputFiles, compilerFlags, templateLocations, templateOutputOptions);
+        if (preCompileRc > 0)
+            return preCompileRc;
+
+        int resultRc = sfCompiler.compileBuiltIn(builtinSIProcessors, builtinPostProcessors);
+
+        if (resultRc > 0)
+            return resultRc;
+
         for (String filename : allInputFiles) {
-            int resultRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, templateOutputOptions,true);
+            resultRc = sfCompiler.compileFreemarker(filename, templateBasedSIProcessors, templateBasedPostProcessors, templateOutputOptions);
             if (resultRc > 0)
-                rc = resultRc;
+                return resultRc;
         }
 
-        if (rc != 0)
-            return rc;
-
-        for (String filename : allInputFiles) {
-            logger.info("Generating for SI File: " + filename);
-            int localRc = sfCompiler.compile(filename, compilerFlags, builtinSIProcessors, templateBasedSIProcessors, builtinPostProcessors, templateBasedPostProcessors, templateLocations, templateOutputOptions, false);
-            if (localRc > 0)
-                rc = 1;
-
-        }
-        return rc;
+        return 0;
     }
 
     private void addAllInputFilesToList(List<String> listToAddTo) {

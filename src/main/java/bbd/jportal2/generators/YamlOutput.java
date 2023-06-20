@@ -20,7 +20,6 @@ public class YamlOutput extends BaseGenerator implements IBuiltInSIProcessor {
     public String documentation() {
         return "Generate a YAML representation of the database definition.";
     }
-
     public YamlOutput() {
         super(YamlOutput.class);
     }
@@ -29,7 +28,6 @@ public class YamlOutput extends BaseGenerator implements IBuiltInSIProcessor {
      * Generates a YAML file that contains the database definition
      */
     public void generate(Database database, String output) {
-
         String fileName;
         if (database.output.length() > 0)
             fileName = database.output;
