@@ -76,16 +76,11 @@ public class ProjectCompiler {
         if (preCompileRc > 0)
             return preCompileRc;
 
-        int resultRc = sfCompiler.compileBuiltIn(builtinSIProcessors, builtinPostProcessors);
+        if (sfCompiler.compileBuiltIn(builtinSIProcessors, builtinPostProcessors) > 0)
+            return 1;
 
-        if (resultRc > 0)
-            return resultRc;
-
-        for (String filename : allInputFiles) {
-            resultRc = sfCompiler.compileFreemarker(filename, templateBasedSIProcessors, templateBasedPostProcessors, templateOutputOptions);
-            if (resultRc > 0)
-                return resultRc;
-        }
+        if (sfCompiler.compileFreemarker(templateBasedSIProcessors, templateBasedPostProcessors) > 0)
+            return 1;
 
         return 0;
     }
