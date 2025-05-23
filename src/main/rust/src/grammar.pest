@@ -34,9 +34,9 @@ BLOB = { ^"blob" }
 BOOLEAN = { ^"boolean" | ^"bit" }
 BYTE = { ^"byte" }
 CHAR = { ^"char" }
-ANSICHAR = { ^"ansi" | ^"ansichar" }
+ANSICHAR = { ^"ansichar" | ^"ansi" }
 WCHAR = { ^"wchar" }
-WANSICHAR = { ^"wansi" | ^"wansichar" }
+WANSICHAR = { ^"wansichar" | ^"wansi" }
 UTF8 = { ^"utf8" }
 SHORT = { ^"short" }
 INT = { ^"int" | ^"integer" }
@@ -177,6 +177,11 @@ alias_clause = {
     ALIAS ~ ident_or_string
 }
 
+// Enhanced alias with parentheses - matches jAlias()
+paren_alias_clause = {
+    LEFTPAREN ~ identifier ~ RIGHTPAREN
+}
+
 check_clause = {
     CHECK ~ string_literal
 }
@@ -241,51 +246,81 @@ package_field_def = {
     package_ident ~ field_type ~ alias_clause? ~ package_field_modifiers* ~ comment_clause*
 }
 
+// Enhanced field definition - matches jField()
 field_def = {
-    identifier ~ field_type ~ field_modifiers*
+    identifier ~ paren_alias_clause? ~ (field_type ~ field_modifiers* | lookup_type) ~ comment_clause*
 }
 
+// Enhanced field types with size specifications - matches jDatatype()
 field_type = {
     TIMESTAMP |
     AUTOTIMESTAMP |
-    BLOB |
+    BLOB ~ char_size? |
     BOOLEAN |
-    BYTE |
-    CHAR ~ size_spec? |
-    ANSICHAR ~ size_spec? |
-    WCHAR ~ size_spec? |
-    WANSICHAR ~ size_spec? |
-    UTF8 ~ size_spec? |
-    SHORT |
-    INT |
+    BYTE ~ (enum_value | char_list)? |
+    CHAR ~ char_size? ~ char_list? |
+    ANSICHAR ~ char_size? ~ char_list? |
+    WCHAR ~ char_size? ~ char_list? |
+    WANSICHAR ~ char_size? ~ char_list? |
+    UTF8 ~ char_size? ~ char_list? |
+    SHORT ~ (enum_value | char_list)? |
+    INT ~ (enum_value | char_list)? |
     LONG |
     UID |
-    DATE |
     DATETIME |
+    DATE |
     TIME |
-    TLOB |
-    XML |
-    BIGXML |
-    JSON |
-    BIGJSON |
+    TLOB ~ char_size? |
+    XML ~ char_size? |
+    BIGXML ~ char_size? |
+    JSON ~ char_size? |
+    BIGJSON ~ char_size? |
     USERSTAMP |
     SEQUENCE |
     BIGSEQUENCE |
     IDENTITY |
     BIGIDENTITY |
-    DOUBLE |
-    FLOAT |
-    MONEY
+    (DOUBLE | FLOAT) ~ float_size? |
+    MONEY ~ float_size?
 }
 
-size_spec = {
+// Size specifications
+char_size = {
     LEFTPAREN ~ number ~ RIGHTPAREN
 }
 
+float_size = {
+    LEFTPAREN ~ number ~ (COMMA ~ number)? ~ RIGHTPAREN
+}
+
+// Enum and list specifications
+enum_value = {
+    LEFTPAREN ~ enum_item ~ (COMMA ~ enum_item)* ~ RIGHTPAREN
+}
+
+enum_item = {
+    identifier ~ EQUALS ~ number
+}
+
+char_list = {
+    LEFTPAREN ~ string_literal ~ (COMMA ~ string_literal)* ~ RIGHTPAREN
+}
+
+enum_char = {
+    LEFTPAREN ~ string_literal ~ (COMMA ~ string_literal)* ~ RIGHTPAREN
+}
+
+// Lookup type - matches jLookup()
+lookup_type = {
+    EQUALS ~ (LEFTPAREN ~ identifier ~ RIGHTPAREN)?
+}
+
 field_modifiers = {
-    (DEFAULT ~ string_literal) |
+    (DEFAULTV ~ string_literal) |
     ((NOT)? ~ NULL) |
-    (CHECK ~ string_literal)
+    CALC |
+    (CHECK ~ string_literal) |
+    lookup_type
 }
 
 // Enhanced package field modifiers - matches jPackageField() modifiers

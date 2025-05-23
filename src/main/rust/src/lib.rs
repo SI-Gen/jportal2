@@ -59,9 +59,12 @@ pub struct Field {
     pub is_literal: bool,
     pub literal_name: String,
     pub is_package_field: bool,
+    pub is_sequence: bool,
+    pub enum_type: Option<String>,
+    pub lookup_name: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum FieldType {
     Blob,
     Boolean,
@@ -93,6 +96,7 @@ pub enum FieldType {
     Double,
     Float,
     Money,
+    Lookup,
 }
 
 #[derive(Debug, Clone)]
@@ -480,6 +484,9 @@ fn parse_package_field_def(pair: pest::iterators::Pair<Rule>) -> Result<Field, B
         is_literal: false,
         literal_name: String::new(),
         is_package_field: true,
+        is_sequence: false,
+        enum_type: None,
+        lookup_name: None,
     };
     
     for inner_pair in pair.into_inner() {
@@ -492,7 +499,7 @@ fn parse_package_field_def(pair: pest::iterators::Pair<Rule>) -> Result<Field, B
                 field.alias = Some(parse_alias_clause(inner_pair)?);
             }
             Rule::field_type => {
-                field.field_type = parse_field_type(inner_pair)?;
+                parse_field_type_into(inner_pair, &mut field)?;
             }
             Rule::package_field_modifiers => {
                 parse_package_field_modifiers(inner_pair, &mut field)?;
@@ -773,6 +780,9 @@ fn parse_field_def(pair: pest::iterators::Pair<Rule>) -> Result<Field, Box<dyn s
         is_literal: false,
         literal_name: String::new(),
         is_package_field: false,
+        is_sequence: false,
+        enum_type: None,
+        lookup_name: None,
     };
     
     for inner_pair in pair.into_inner() {
@@ -780,11 +790,21 @@ fn parse_field_def(pair: pest::iterators::Pair<Rule>) -> Result<Field, Box<dyn s
             Rule::identifier => {
                 field.name = inner_pair.as_str().to_string();
             }
+            Rule::paren_alias_clause => {
+                field.alias = Some(parse_paren_alias_clause(inner_pair)?);
+            }
             Rule::field_type => {
-                field.field_type = parse_field_type(inner_pair)?;
+                parse_field_type_into(inner_pair, &mut field)?;
             }
             Rule::field_modifiers => {
                 parse_field_modifiers(inner_pair, &mut field)?;
+            }
+            Rule::lookup_type => {
+                field.field_type = FieldType::Lookup;
+                parse_lookup_type_into(inner_pair, &mut field)?;
+            }
+            Rule::comment_clause => {
+                field.comments.push(parse_comment_clause(inner_pair)?);
             }
             _ => {}
         }
@@ -793,59 +813,272 @@ fn parse_field_def(pair: pest::iterators::Pair<Rule>) -> Result<Field, Box<dyn s
     Ok(field)
 }
 
-fn parse_field_type(pair: pest::iterators::Pair<Rule>) -> Result<FieldType, Box<dyn std::error::Error>> {
+fn parse_paren_alias_clause(pair: pest::iterators::Pair<Rule>) -> Result<String, Box<dyn std::error::Error>> {
+    for inner_pair in pair.into_inner() {
+        if let Rule::identifier = inner_pair.as_rule() {
+            return Ok(inner_pair.as_str().to_string());
+        }
+    }
+    Ok(String::new())
+}
+
+fn parse_field_type_into(pair: pest::iterators::Pair<Rule>, field: &mut Field) -> Result<(), Box<dyn std::error::Error>> {
     for inner_pair in pair.into_inner() {
         match inner_pair.as_rule() {
-            Rule::BLOB => return Ok(FieldType::Blob),
-            Rule::BOOLEAN => return Ok(FieldType::Boolean),
-            Rule::BYTE => return Ok(FieldType::Byte),
-            Rule::CHAR => return Ok(FieldType::Char),
-            Rule::ANSICHAR => return Ok(FieldType::AnsiChar),
-            Rule::WCHAR => return Ok(FieldType::WChar),
-            Rule::WANSICHAR => return Ok(FieldType::WAnsiChar),
-            Rule::UTF8 => return Ok(FieldType::Utf8),
-            Rule::SHORT => return Ok(FieldType::Short),
-            Rule::INT => return Ok(FieldType::Int),
-            Rule::LONG => return Ok(FieldType::Long),
-            Rule::UID => return Ok(FieldType::Uid),
-            Rule::DATE => return Ok(FieldType::Date),
-            Rule::DATETIME => return Ok(FieldType::DateTime),
-            Rule::TIME => return Ok(FieldType::Time),
-            Rule::TIMESTAMP => return Ok(FieldType::Timestamp),
-            Rule::AUTOTIMESTAMP => return Ok(FieldType::AutoTimestamp),
-            Rule::TLOB => return Ok(FieldType::Tlob),
-            Rule::XML => return Ok(FieldType::Xml),
-            Rule::BIGXML => return Ok(FieldType::BigXml),
-            Rule::JSON => return Ok(FieldType::Json),
-            Rule::BIGJSON => return Ok(FieldType::BigJson),
-            Rule::USERSTAMP => return Ok(FieldType::UserStamp),
-            Rule::SEQUENCE => return Ok(FieldType::Sequence),
-            Rule::BIGSEQUENCE => return Ok(FieldType::BigSequence),
-            Rule::IDENTITY => return Ok(FieldType::Identity),
-            Rule::BIGIDENTITY => return Ok(FieldType::BigIdentity),
-            Rule::DOUBLE => return Ok(FieldType::Double),
-            Rule::FLOAT => return Ok(FieldType::Float),
-            Rule::MONEY => return Ok(FieldType::Money),
-            Rule::size_spec => {
-                // Handle size specification - we'll ignore it for now but could store it
+            Rule::BLOB => {
+                field.field_type = FieldType::Blob;
+                field.length = Some(0);
+            }
+            Rule::BOOLEAN => {
+                field.field_type = FieldType::Boolean;
+                field.length = Some(1);
+            }
+            Rule::BYTE => {
+                field.field_type = FieldType::Byte;
+                field.length = Some(1);
+            }
+            Rule::CHAR => {
+                field.field_type = FieldType::Char;
+                field.length = Some(1);
+            }
+            Rule::ANSICHAR => {
+                field.field_type = FieldType::AnsiChar;
+                field.length = Some(1);
+            }
+            Rule::WCHAR => {
+                field.field_type = FieldType::WChar;
+                field.length = Some(1);
+            }
+            Rule::WANSICHAR => {
+                field.field_type = FieldType::WAnsiChar;
+                field.length = Some(1);
+            }
+            Rule::UTF8 => {
+                field.field_type = FieldType::Utf8;
+                field.length = Some(1);
+            }
+            Rule::SHORT => {
+                field.field_type = FieldType::Short;
+                field.length = Some(2);
+            }
+            Rule::INT => {
+                field.field_type = FieldType::Int;
+                field.length = Some(4);
+            }
+            Rule::LONG => {
+                field.field_type = FieldType::Long;
+                field.length = Some(8);
+            }
+            Rule::UID => {
+                field.field_type = FieldType::Uid;
+                field.length = Some(16);
+            }
+            Rule::DATE => {
+                field.field_type = FieldType::Date;
+                field.length = Some(8);
+            }
+            Rule::DATETIME => {
+                field.field_type = FieldType::DateTime;
+                field.length = Some(14);
+            }
+            Rule::TIME => {
+                field.field_type = FieldType::Time;
+                field.length = Some(6);
+            }
+            Rule::TIMESTAMP => {
+                field.field_type = FieldType::Timestamp;
+                field.length = Some(14);
+            }
+            Rule::AUTOTIMESTAMP => {
+                field.field_type = FieldType::AutoTimestamp;
+                field.length = Some(14);
+            }
+            Rule::TLOB => {
+                field.field_type = FieldType::Tlob;
+                field.length = Some(0);
+            }
+            Rule::XML => {
+                field.field_type = FieldType::Xml;
+                field.length = Some(1000); // DEFAULT_XML
+            }
+            Rule::BIGXML => {
+                field.field_type = FieldType::BigXml;
+                field.length = Some(10000); // DEFAULT_BIG_XML
+            }
+            Rule::JSON => {
+                field.field_type = FieldType::Json;
+                field.length = Some(1000); // DEFAULT_JSON
+            }
+            Rule::BIGJSON => {
+                field.field_type = FieldType::BigJson;
+                field.length = Some(10000); // DEFAULT_BIG_JSON
+            }
+            Rule::USERSTAMP => {
+                field.field_type = FieldType::UserStamp;
+                field.length = Some(50);
+            }
+            Rule::SEQUENCE => {
+                field.field_type = FieldType::Sequence;
+                field.is_sequence = true;
+                field.length = Some(4);
+            }
+            Rule::BIGSEQUENCE => {
+                field.field_type = FieldType::BigSequence;
+                field.is_sequence = true;
+                field.length = Some(8);
+            }
+            Rule::IDENTITY => {
+                field.field_type = FieldType::Identity;
+                field.is_sequence = true;
+                field.length = Some(4);
+            }
+            Rule::BIGIDENTITY => {
+                field.field_type = FieldType::BigIdentity;
+                field.is_sequence = true;
+                field.length = Some(8);
+            }
+            Rule::DOUBLE => {
+                field.field_type = FieldType::Double;
+                field.length = Some(8);
+            }
+            Rule::FLOAT => {
+                field.field_type = FieldType::Float;
+                field.length = Some(8);
+            }
+            Rule::MONEY => {
+                field.field_type = FieldType::Money;
+                field.length = Some(8);
+            }
+            Rule::char_size => {
+                parse_char_size_into(inner_pair, field)?;
+            }
+            Rule::float_size => {
+                parse_float_size_into(inner_pair, field)?;
+            }
+            Rule::enum_value => {
+                parse_enum_value_into(inner_pair, field)?;
+            }
+            Rule::char_list => {
+                parse_char_list_into(inner_pair, field)?;
+            }
+            Rule::enum_char => {
+                parse_enum_char_into(inner_pair, field)?;
+            }
+            Rule::lookup_type => {
+                field.field_type = FieldType::Lookup;
+                parse_lookup_type_into(inner_pair, field)?;
             }
             _ => {}
         }
     }
-    Ok(FieldType::Int) // default
+    Ok(())
+}
+
+fn parse_char_size_into(pair: pest::iterators::Pair<Rule>, field: &mut Field) -> Result<(), Box<dyn std::error::Error>> {
+    for inner_pair in pair.into_inner() {
+        if let Rule::number = inner_pair.as_rule() {
+            if let Ok(size) = inner_pair.as_str().parse::<i32>() {
+                field.length = Some(size);
+            }
+        }
+    }
+    Ok(())
+}
+
+fn parse_float_size_into(pair: pest::iterators::Pair<Rule>, field: &mut Field) -> Result<(), Box<dyn std::error::Error>> {
+    let mut numbers = Vec::new();
+    for inner_pair in pair.into_inner() {
+        if let Rule::number = inner_pair.as_rule() {
+            if let Ok(num) = inner_pair.as_str().parse::<i32>() {
+                numbers.push(num);
+            }
+        }
+    }
+    
+    if !numbers.is_empty() {
+        field.precision = Some(numbers[0]);
+        if numbers.len() > 1 {
+            field.scale = Some(numbers[1]);
+        }
+    }
+    Ok(())
+}
+
+fn parse_enum_value_into(pair: pest::iterators::Pair<Rule>, field: &mut Field) -> Result<(), Box<dyn std::error::Error>> {
+    for inner_pair in pair.into_inner() {
+        if let Rule::enum_item = inner_pair.as_rule() {
+            let enum_item = parse_enum_item(inner_pair)?;
+            field.enums.push(enum_item);
+        }
+    }
+    Ok(())
+}
+
+fn parse_enum_item(pair: pest::iterators::Pair<Rule>) -> Result<Enum, Box<dyn std::error::Error>> {
+    let mut name = String::new();
+    let mut value = 0;
+    
+    for inner_pair in pair.into_inner() {
+        match inner_pair.as_rule() {
+            Rule::identifier => {
+                name = inner_pair.as_str().to_string();
+            }
+            Rule::number => {
+                if let Ok(num) = inner_pair.as_str().parse::<i32>() {
+                    value = num;
+                }
+            }
+            _ => {}
+        }
+    }
+    
+    Ok(Enum { name, value })
+}
+
+fn parse_char_list_into(pair: pest::iterators::Pair<Rule>, field: &mut Field) -> Result<(), Box<dyn std::error::Error>> {
+    for inner_pair in pair.into_inner() {
+        if let Rule::string_literal = inner_pair.as_rule() {
+            field.value_list.push(parse_string_literal(inner_pair.as_str()));
+        }
+    }
+    Ok(())
+}
+
+fn parse_enum_char_into(pair: pest::iterators::Pair<Rule>, field: &mut Field) -> Result<(), Box<dyn std::error::Error>> {
+    for inner_pair in pair.into_inner() {
+        if let Rule::string_literal = inner_pair.as_rule() {
+            field.value_list.push(parse_string_literal(inner_pair.as_str()));
+        }
+    }
+    Ok(())
+}
+
+fn parse_lookup_type_into(pair: pest::iterators::Pair<Rule>, field: &mut Field) -> Result<(), Box<dyn std::error::Error>> {
+    for inner_pair in pair.into_inner() {
+        if let Rule::identifier = inner_pair.as_rule() {
+            field.lookup_name = Some(inner_pair.as_str().to_string());
+        }
+    }
+    Ok(())
 }
 
 fn parse_field_modifiers(pair: pest::iterators::Pair<Rule>, field: &mut Field) -> Result<(), Box<dyn std::error::Error>> {
     let mut not_modifier = false;
+    let mut expecting_default_value = false;
+    let mut expecting_check_value = false;
     
     for inner_pair in pair.into_inner() {
         match inner_pair.as_rule() {
-            Rule::DEFAULT => {
-                // Handle default value - could extract the string literal
-                for default_pair in inner_pair.into_inner() {
-                    if let Rule::string_literal = default_pair.as_rule() {
-                        field.default_value = Some(parse_string_literal(default_pair.as_str()));
-                    }
+            Rule::DEFAULTV => {
+                expecting_default_value = true;
+            }
+            Rule::string_literal => {
+                if expecting_default_value {
+                    field.default_value = Some(parse_string_literal(inner_pair.as_str()));
+                    expecting_default_value = false;
+                } else if expecting_check_value {
+                    field.check_value = Some(parse_string_literal(inner_pair.as_str()));
+                    expecting_check_value = false;
                 }
             }
             Rule::NOT => {
@@ -855,13 +1088,15 @@ fn parse_field_modifiers(pair: pest::iterators::Pair<Rule>, field: &mut Field) -
                 field.is_null = !not_modifier;
                 not_modifier = false;
             }
+            Rule::CALC => {
+                field.is_calc = true;
+            }
             Rule::CHECK => {
-                // Handle check constraint
-                for check_pair in inner_pair.into_inner() {
-                    if let Rule::string_literal = check_pair.as_rule() {
-                        field.check_value = Some(parse_string_literal(check_pair.as_str()));
-                    }
-                }
+                expecting_check_value = true;
+            }
+            Rule::lookup_type => {
+                field.field_type = FieldType::Lookup;
+                parse_lookup_type_into(inner_pair, field)?;
             }
             _ => {}
         }

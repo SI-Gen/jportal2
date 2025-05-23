@@ -1,173 +1,181 @@
 use rust_parser::parse_database;
 
 fn main() {
-    println!("JPortal Database Parser - Enhanced JavaCC Port");
-    println!("==============================================");
-    
-    // Comprehensive example demonstrating all enhanced JavaCC features
     let input = r#"
-        DATABASE L'Production Database'
-        FLAGS "production" "mysql" "optimized"
-        PACKAGE com.example.ecommerce
-        OUTPUT "generated/sql"
+        DATABASE L'Enhanced JPortal Database'
+        FLAGS "production" "mysql" "enhanced"
+        PACKAGE com.example.enhanced
+        OUTPUT "generated/enhanced"
         IMPORT "common_types"
-        SERVER "prod-db.example.com:3306"
-        SCHEMA "ecommerce_schema"
+        SERVER "enhanced-db.example.com:3306"
+        SCHEMA "enhanced_schema"
         USERID dbadmin
         PASSWORD dbsecret
 
         TABLE Users ALIAS "UserTable" CHECK "id > 0"
-            "User management table"
-            "Stores customer information"
-            OPTIONS "cache" "index"
-            id bigidentity
-            username char(50) not null
-            email char(100) not null
-            com.example.audit.created_at timestamp DEFAULTV "NOW()"
-            com.example.user.status char(20) ALIAS user_status DEFAULTV "pending" NOT NULL CHECK "status IN ('active', 'pending', 'disabled')" "User status field"
+            "User management table with enhanced features"
+            OPTIONS "cache" "index" "optimized"
+            id bigidentity "Primary key" "Auto-generated user ID"
+            username (login) char(50) NOT NULL "User login name"
+            email char(100) DEFAULTV "user@example.com" CHECK "email LIKE '%@%'" "Email address"
+            status byte(ACTIVE=1, INACTIVE=0, PENDING=2) DEFAULTV "2" NOT NULL "User status"
+            age short(MIN=0, MAX=150) "User age"
+            balance money(10,2) DEFAULTV "0.00" "Account balance"
+            created_at timestamp "Creation timestamp"
+            profile_data json(2000) "User profile JSON"
+            avatar blob(1048576) "User avatar image"
+            preferences ansichar("light", "dark", "auto") DEFAULTV "auto" "UI preferences"
+            com.example.audit.created_by char(50) ALIAS created_by DEFAULTV "system" "Audit field"
+            com.example.audit.modified_at timestamp ALIAS modified_at CALC "Computed modification time"
+            related_user = (id) "Self-referencing lookup"
+            manager_id = "Manager lookup without parentheses"
             KEY primary_key (id)
-            LINK email_link (email)
-            GRANT select_grant (id, username)
+            LINK email_unique (email)
+            GRANT user_access (id, username, email)
             PROC GetUserByEmail {
-                email_param char(100)
+                email_param char(100) "Email parameter"
                 "SELECT * FROM Users WHERE email = ?"
             }
-            SPROC CreateUser {
-                new_username char(50)
-                new_email char(100)
-                "INSERT INTO Users (username, email) VALUES (?, ?)"
+            SPROC UpdateUserStatus {
+                user_id bigidentity "User ID parameter"
+                new_status byte "New status value"
+                "UPDATE Users SET status = ? WHERE id = ?"
             }
             PARM {
-                title "User Management"
+                title "Enhanced User Management"
                 cache_size "1000"
-                "Additional configuration"
+                index_type "btree"
             }
 
         IMPORT "external_audit_log" [user_id action timestamp] ALIAS audit_table
 
         TABLE Orders
-            id bigidentity
-            user_id long not null
-            total_amount money
-            com.example.audit.created_at timestamp DEFAULTV "NOW()"
-            com.example.order.status char(20) CALC "Computed order status"
-            KEY primary_key (id)
-            LINK user_link (user_id)
+            order_id bigidentity "Order primary key"
+            user_id (uid) long = (id) "Foreign key to Users table"
+            product_name char(200) ("Electronics", "Books", "Clothing") "Product category"
+            quantity int(MIN=1, MAX=1000) DEFAULTV "1" NOT NULL "Order quantity"
+            unit_price double(8,2) NOT NULL "Price per unit"
+            total_amount money(12,2) CALC "Calculated total amount"
+            order_date datetime "Order creation date"
+            notes tlob(4096) "Order notes and comments"
     "#;
 
     match parse_database(input) {
         Ok(database) => {
-            println!("✅ Successfully parsed enhanced database definition!");
-            println!();
-            
-            println!("📊 Database Information:");
-            println!("  Name: {}", database.name);
-            println!("  Package: {}", database.package_name.unwrap_or("None".to_string()));
-            println!("  Server: {}", database.server);
-            println!("  Schema: {}", database.schema.unwrap_or("None".to_string()));
-            println!("  Flags: {:?}", database.flags);
-            println!("  Imports: {:?}", database.imports);
+            println!("✅ Successfully parsed enhanced JPortal database!");
+            println!("📊 Database: {}", database.name);
+            println!("🏷️  Package: {}", database.package_name.as_ref().unwrap_or(&"None".to_string()));
+            println!("🔗 Server: {}", database.server);
+            println!("📁 Schema: {}", database.schema.as_ref().unwrap_or(&"None".to_string()));
+            println!("🚩 Flags: {:?}", database.flags);
+            println!("📤 Output: {}", database.output.as_ref().unwrap_or(&"None".to_string()));
+            println!("📥 Imports: {:?}", database.imports);
+            println!("👤 User: {} / Password: {}", database.userid, database.password);
             println!();
 
-            println!("📋 Tables ({}):", database.tables.len());
             for (i, table) in database.tables.iter().enumerate() {
-                println!("  {}. Table: {}", i + 1, table.name);
-                if table.is_import {
-                    println!("     Type: Import Table");
-                    if !table.import_fields.is_empty() {
-                        println!("     Import Fields: {:?}", table.import_fields);
-                    }
-                } else {
-                    println!("     Type: Regular Table");
-                }
-                
+                println!("📋 Table {}: {}", i + 1, table.name);
                 if let Some(alias) = &table.alias {
-                    println!("     Alias: {}", alias);
+                    println!("   🏷️  Alias: {}", alias);
                 }
-                
                 if let Some(check) = &table.check {
-                    println!("     Check: {}", check);
+                    println!("   ✅ Check: {}", check);
                 }
-                
                 if !table.comments.is_empty() {
-                    println!("     Comments: {:?}", table.comments);
+                    println!("   💬 Comments: {:?}", table.comments);
                 }
-                
                 if !table.options.is_empty() {
-                    println!("     Options: {:?}", table.options);
+                    println!("   ⚙️  Options: {:?}", table.options);
                 }
+                if table.is_import {
+                    println!("   📥 Import table with fields: {:?}", table.import_fields);
+                }
+                println!("   📊 Fields ({}):", table.fields.len());
 
-                println!("     Fields ({}):", table.fields.len());
                 for (j, field) in table.fields.iter().enumerate() {
-                    print!("       {}. {} ({:?})", j + 1, field.name, field.field_type);
-                    
-                    if field.is_package_field {
-                        print!(" [Package Field]");
+                    print!("      {}. {} ({:?}", j + 1, field.name, field.field_type);
+                    if let Some(length) = field.length {
+                        print!(", len: {}", length);
                     }
+                    if let Some(precision) = field.precision {
+                        print!(", prec: {}", precision);
+                        if let Some(scale) = field.scale {
+                            print!(", scale: {}", scale);
+                        }
+                    }
+                    print!(")");
                     
                     if let Some(alias) = &field.alias {
                         print!(" ALIAS {}", alias);
                     }
-                    
                     if !field.is_null {
                         print!(" NOT NULL");
                     }
-                    
-                    if field.is_calc {
-                        print!(" CALC");
-                    }
-                    
                     if let Some(default) = &field.default_value {
                         print!(" DEFAULT {}", default);
                     }
-                    
+                    if field.is_calc {
+                        print!(" CALC");
+                    }
                     if let Some(check) = &field.check_value {
                         print!(" CHECK {}", check);
                     }
-                    
-                    println!();
-                    
-                    if !field.comments.is_empty() {
-                        println!("          Comments: {:?}", field.comments);
+                    if field.is_sequence {
+                        print!(" SEQUENCE");
                     }
+                    if field.is_package_field {
+                        print!(" PACKAGE");
+                    }
+                    if let Some(lookup) = &field.lookup_name {
+                        print!(" LOOKUP({})", lookup);
+                    }
+                    if !field.enums.is_empty() {
+                        print!(" ENUMS: {:?}", field.enums);
+                    }
+                    if !field.value_list.is_empty() {
+                        print!(" VALUES: {:?}", field.value_list);
+                    }
+                    if !field.comments.is_empty() {
+                        print!(" COMMENTS: {:?}", field.comments);
+                    }
+                    println!();
                 }
 
                 if !table.keys.is_empty() {
-                    println!("     Keys: {:?}", table.keys.iter().map(|k| &k.name).collect::<Vec<_>>());
+                    println!("   🔑 Keys: {:?}", table.keys);
                 }
-                
                 if !table.links.is_empty() {
-                    println!("     Links: {:?}", table.links.iter().map(|l| &l.name).collect::<Vec<_>>());
+                    println!("   🔗 Links: {:?}", table.links);
                 }
-                
                 if !table.grants.is_empty() {
-                    println!("     Grants: {:?}", table.grants.iter().map(|g| &g.perms).collect::<Vec<_>>());
+                    println!("   🛡️  Grants: {:?}", table.grants);
                 }
-                
                 if !table.procs.is_empty() {
-                    println!("     Procedures: {:?}", table.procs.iter().map(|p| &p.name).collect::<Vec<_>>());
+                    println!("   ⚙️  Procedures: {:?}", table.procs);
                 }
-                
                 if !table.parameters.is_empty() {
-                    println!("     Parameters: {} sections", table.parameters.len());
+                    println!("   📋 Parameters: {:?}", table.parameters);
                 }
-                
                 println!();
             }
 
-            println!("🎉 Enhanced JavaCC Features Demonstrated:");
-            println!("  ✅ jPackageIdent() - Package identifiers with dots");
-            println!("  ✅ jIdentOrString() - Flexible identifier/string parsing");
-            println!("  ✅ jIdent() - Enhanced identifiers including literal identifiers");
-            println!("  ✅ jTableImport() - Table imports with field lists and aliases");
-            println!("  ✅ jTable() - Enhanced table structure with aliases, checks, comments, options");
-            println!("  ✅ jPackageField() - Package field definitions with all modifiers");
-            println!("  ✅ Complete procedure and parameter support");
-            println!("  ✅ All field types and modifiers");
-            println!("  ✅ Keys, links, and grants");
+            println!("🎉 Enhanced JPortal parsing completed successfully!");
+            println!("✨ Features demonstrated:");
+            println!("   • Literal identifiers (L'name')");
+            println!("   • Package identifiers with dots");
+            println!("   • Enhanced field types with sizes");
+            println!("   • Field aliases with parentheses");
+            println!("   • Enum values and char lists");
+            println!("   • Lookup types and references");
+            println!("   • Field modifiers (DEFAULTV, CALC, CHECK)");
+            println!("   • Table extras (keys, links, grants)");
+            println!("   • Procedures and parameters");
+            println!("   • Package fields with namespaces");
+            println!("   • Table imports with field lists");
+            println!("   • Comments and options");
         }
         Err(e) => {
-            println!("❌ Failed to parse database: {}", e);
+            eprintln!("❌ Error parsing database: {}", e);
         }
     }
 }
