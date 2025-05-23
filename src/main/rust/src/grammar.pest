@@ -17,6 +17,7 @@ VIEW = { ^"view" }
 NOT = { ^"not" }
 NULL = { ^"null" }
 DEFAULT = { ^"default" }
+DEFAULTV = { ^"defaultv" }
 CHECK = { ^"check" }
 PROC = { ^"proc" }
 SPROC = { ^"sproc" }
@@ -24,6 +25,9 @@ PARM = { ^"parm" }
 KEY = { ^"key" }
 LINK = { ^"link" }
 GRANT = { ^"grant" }
+ALIAS = { ^"alias" }
+OPTIONS = { ^"options" }
+CALC = { ^"calc" }
 
 // Field types (simplified)
 BLOB = { ^"blob" }
@@ -148,14 +152,41 @@ table_definition = {
     parm_section*
 }
 
-// Table structure
+// Enhanced table structure - matches jTable()
 table_section = {
-    TABLE ~ identifier ~ field_def*
+    TABLE ~ identifier ~ 
+    alias_clause? ~
+    check_clause? ~
+    comment_clause* ~
+    options_clause? ~
+    (field_def | package_field_def)*
 }
 
-// Table import (simplified)
+// Enhanced table import - matches jTableImport()
 table_import_section = {
-    IMPORT ~ TABLE ~ identifier
+    IMPORT ~ ident_or_string ~ 
+    field_import_list? ~
+    alias_clause?
+}
+
+field_import_list = {
+    LEFTBRACK ~ identifier+ ~ RIGHTBRACK
+}
+
+alias_clause = {
+    ALIAS ~ ident_or_string
+}
+
+check_clause = {
+    CHECK ~ string_literal
+}
+
+comment_clause = {
+    string_literal  // Comments are just string literals
+}
+
+options_clause = {
+    OPTIONS ~ string_literal+
 }
 
 // Table extras (keys, links, grants, etc.)
@@ -189,7 +220,7 @@ proc_body = {
 }
 
 proc_content = {
-    field_def | identifier | string_literal | number
+    field_def | package_field_def | identifier | string_literal | number
 }
 
 // Parameter section
@@ -205,7 +236,11 @@ parm_content = {
     identifier | string_literal | number
 }
 
-// Field definitions
+// Enhanced field definitions - matches jPackageField()
+package_field_def = {
+    package_ident ~ field_type ~ alias_clause? ~ package_field_modifiers* ~ comment_clause*
+}
+
 field_def = {
     identifier ~ field_type ~ field_modifiers*
 }
@@ -250,6 +285,14 @@ size_spec = {
 field_modifiers = {
     (DEFAULT ~ string_literal) |
     ((NOT)? ~ NULL) |
+    (CHECK ~ string_literal)
+}
+
+// Enhanced package field modifiers - matches jPackageField() modifiers
+package_field_modifiers = {
+    (DEFAULTV ~ string_literal) |
+    ((NOT)? ~ NULL) |
+    CALC |
     (CHECK ~ string_literal)
 }
 

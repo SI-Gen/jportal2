@@ -214,7 +214,7 @@ fn test_table_import() {
     let input = r#"
         DATABASE TestDB
         SERVER "localhost"
-        IMPORT TABLE ExternalUsers
+        IMPORT ExternalUsers
     "#;
     
     let result = parse_database(input);

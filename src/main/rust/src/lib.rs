@@ -35,6 +35,10 @@ pub struct Table {
     pub procs: Vec<Proc>,
     pub parameters: Vec<Parameter>,
     pub is_import: bool,
+    pub import_fields: Vec<String>,
+    pub is_literal: bool,
+    pub literal_name: String,
+    pub start_line: Option<i32>,
 }
 
 #[derive(Debug, Clone)]
@@ -52,6 +56,9 @@ pub struct Field {
     pub comments: Vec<String>,
     pub enums: Vec<Enum>,
     pub value_list: Vec<String>,
+    pub is_literal: bool,
+    pub literal_name: String,
+    pub is_package_field: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -325,6 +332,10 @@ fn parse_table_definition(pair: pest::iterators::Pair<Rule>) -> Result<Table, Bo
         procs: Vec::new(),
         parameters: Vec::new(),
         is_import: false,
+        import_fields: Vec::new(),
+        is_literal: false,
+        literal_name: String::new(),
+        start_line: None,
     };
     
     for inner_pair in pair.into_inner() {
@@ -360,8 +371,24 @@ fn parse_table_section_into(pair: pest::iterators::Pair<Rule>, table: &mut Table
             Rule::identifier => {
                 table.name = inner_pair.as_str().to_string();
             }
+            Rule::alias_clause => {
+                table.alias = Some(parse_alias_clause(inner_pair)?);
+            }
+            Rule::check_clause => {
+                table.check = Some(parse_check_clause(inner_pair)?);
+            }
+            Rule::comment_clause => {
+                table.comments.push(parse_comment_clause(inner_pair)?);
+            }
+            Rule::options_clause => {
+                table.options = parse_options_clause(inner_pair)?;
+            }
             Rule::field_def => {
                 let field = parse_field_def(inner_pair)?;
+                table.fields.push(field);
+            }
+            Rule::package_field_def => {
+                let field = parse_package_field_def(inner_pair)?;
                 table.fields.push(field);
             }
             _ => {}
@@ -373,8 +400,144 @@ fn parse_table_section_into(pair: pest::iterators::Pair<Rule>, table: &mut Table
 fn parse_table_import_section_into(pair: pest::iterators::Pair<Rule>, table: &mut Table) -> Result<(), Box<dyn std::error::Error>> {
     for inner_pair in pair.into_inner() {
         match inner_pair.as_rule() {
-            Rule::identifier => {
-                table.name = inner_pair.as_str().to_string();
+            Rule::ident_or_string => {
+                table.name = parse_ident_or_string(inner_pair);
+            }
+            Rule::field_import_list => {
+                table.import_fields = parse_field_import_list(inner_pair)?;
+            }
+            Rule::alias_clause => {
+                table.alias = Some(parse_alias_clause(inner_pair)?);
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
+fn parse_alias_clause(pair: pest::iterators::Pair<Rule>) -> Result<String, Box<dyn std::error::Error>> {
+    for inner_pair in pair.into_inner() {
+        if let Rule::ident_or_string = inner_pair.as_rule() {
+            return Ok(parse_ident_or_string(inner_pair));
+        }
+    }
+    Ok(String::new())
+}
+
+fn parse_check_clause(pair: pest::iterators::Pair<Rule>) -> Result<String, Box<dyn std::error::Error>> {
+    for inner_pair in pair.into_inner() {
+        if let Rule::string_literal = inner_pair.as_rule() {
+            return Ok(parse_string_literal(inner_pair.as_str()));
+        }
+    }
+    Ok(String::new())
+}
+
+fn parse_comment_clause(pair: pest::iterators::Pair<Rule>) -> Result<String, Box<dyn std::error::Error>> {
+    for inner_pair in pair.clone().into_inner() {
+        if let Rule::string_literal = inner_pair.as_rule() {
+            return Ok(parse_string_literal(inner_pair.as_str()));
+        }
+    }
+    Ok(pair.as_str().to_string())
+}
+
+fn parse_options_clause(pair: pest::iterators::Pair<Rule>) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    let mut options = Vec::new();
+    for inner_pair in pair.into_inner() {
+        if let Rule::string_literal = inner_pair.as_rule() {
+            options.push(parse_string_literal(inner_pair.as_str()));
+        }
+    }
+    Ok(options)
+}
+
+fn parse_field_import_list(pair: pest::iterators::Pair<Rule>) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    let mut fields = Vec::new();
+    for inner_pair in pair.into_inner() {
+        if let Rule::identifier = inner_pair.as_rule() {
+            fields.push(inner_pair.as_str().to_string());
+        }
+    }
+    Ok(fields)
+}
+
+fn parse_package_field_def(pair: pest::iterators::Pair<Rule>) -> Result<Field, Box<dyn std::error::Error>> {
+    let mut field = Field {
+        name: String::new(),
+        alias: None,
+        field_type: FieldType::Int,
+        length: None,
+        precision: None,
+        scale: None,
+        is_null: true, // fieldsNullByDefault in JavaCC
+        is_calc: false,
+        default_value: None,
+        check_value: None,
+        comments: Vec::new(),
+        enums: Vec::new(),
+        value_list: Vec::new(),
+        is_literal: false,
+        literal_name: String::new(),
+        is_package_field: true,
+    };
+    
+    for inner_pair in pair.into_inner() {
+        match inner_pair.as_rule() {
+            Rule::package_ident => {
+                field.name = inner_pair.as_str().to_string();
+                // TODO: Set is_literal and literal_name based on parsing
+            }
+            Rule::alias_clause => {
+                field.alias = Some(parse_alias_clause(inner_pair)?);
+            }
+            Rule::field_type => {
+                field.field_type = parse_field_type(inner_pair)?;
+            }
+            Rule::package_field_modifiers => {
+                parse_package_field_modifiers(inner_pair, &mut field)?;
+            }
+            Rule::comment_clause => {
+                field.comments.push(parse_comment_clause(inner_pair)?);
+            }
+            _ => {}
+        }
+    }
+    
+    Ok(field)
+}
+
+fn parse_package_field_modifiers(pair: pest::iterators::Pair<Rule>, field: &mut Field) -> Result<(), Box<dyn std::error::Error>> {
+    let mut not_modifier = false;
+    let mut expecting_default_value = false;
+    let mut expecting_check_value = false;
+    
+    for inner_pair in pair.into_inner() {
+        match inner_pair.as_rule() {
+            Rule::DEFAULTV => {
+                expecting_default_value = true;
+            }
+            Rule::string_literal => {
+                if expecting_default_value {
+                    field.default_value = Some(parse_string_literal(inner_pair.as_str()));
+                    expecting_default_value = false;
+                } else if expecting_check_value {
+                    field.check_value = Some(parse_string_literal(inner_pair.as_str()));
+                    expecting_check_value = false;
+                }
+            }
+            Rule::NOT => {
+                not_modifier = true;
+            }
+            Rule::NULL => {
+                field.is_null = !not_modifier;
+                not_modifier = false;
+            }
+            Rule::CALC => {
+                field.is_calc = true;
+            }
+            Rule::CHECK => {
+                expecting_check_value = true;
             }
             _ => {}
         }
@@ -532,6 +695,10 @@ fn parse_proc_body_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> R
                             let field = parse_field_def(content_pair)?;
                             proc.inputs.push(field);
                         }
+                        Rule::package_field_def => {
+                            let field = parse_package_field_def(content_pair)?;
+                            proc.inputs.push(field);
+                        }
                         Rule::identifier | Rule::string_literal | Rule::number => {
                             proc.lines.push(content_pair.as_str().to_string());
                         }
@@ -603,6 +770,9 @@ fn parse_field_def(pair: pest::iterators::Pair<Rule>) -> Result<Field, Box<dyn s
         comments: Vec::new(),
         enums: Vec::new(),
         value_list: Vec::new(),
+        is_literal: false,
+        literal_name: String::new(),
+        is_package_field: false,
     };
     
     for inner_pair in pair.into_inner() {
