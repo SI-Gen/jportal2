@@ -1,0 +1,259 @@
+// JPortal Database Definition Language Grammar
+WHITESPACE = _{ " " | "\t" | "\n" | "\r" }
+COMMENT = _{ ("/*" ~ (!"*/" ~ ANY)* ~ "*/") | ("//" ~ (!NEWLINE ~ ANY)*) | ("**" ~ (!NEWLINE ~ ANY)*) }
+
+// Keywords (case insensitive)
+DATABASE = { ^"database" }
+FLAGS = { ^"flags" }
+PACKAGE = { ^"package" }
+OUTPUT = { ^"output" }
+IMPORT = { ^"import" }
+SERVER = { ^"server" }
+SCHEMA = { ^"schema" }
+USERID = { ^"userid" }
+PASSWORD = { ^"password" }
+TABLE = { ^"table" }
+VIEW = { ^"view" }
+NOT = { ^"not" }
+NULL = { ^"null" }
+DEFAULT = { ^"default" }
+CHECK = { ^"check" }
+PROC = { ^"proc" }
+SPROC = { ^"sproc" }
+PARM = { ^"parm" }
+KEY = { ^"key" }
+LINK = { ^"link" }
+GRANT = { ^"grant" }
+
+// Field types (simplified)
+BLOB = { ^"blob" }
+BOOLEAN = { ^"boolean" | ^"bit" }
+BYTE = { ^"byte" }
+CHAR = { ^"char" }
+ANSICHAR = { ^"ansi" | ^"ansichar" }
+WCHAR = { ^"wchar" }
+WANSICHAR = { ^"wansi" | ^"wansichar" }
+UTF8 = { ^"utf8" }
+SHORT = { ^"short" }
+INT = { ^"int" | ^"integer" }
+LONG = { ^"long" }
+UID = { ^"uid" }
+DATE = { ^"date" }
+DATETIME = { ^"datetime" }
+TIME = { ^"time" }
+TIMESTAMP = { ^"timestamp" }
+AUTOTIMESTAMP = { ^"autotimestamp" }
+TLOB = { ^"tlob" | ^"clob" }
+XML = { ^"xml" }
+BIGXML = { ^"bigxml" }
+JSON = { ^"json" }
+BIGJSON = { ^"bigjson" }
+USERSTAMP = { ^"userstamp" }
+SEQUENCE = { ^"sequence" }
+BIGSEQUENCE = { ^"bigsequence" }
+IDENTITY = { ^"identity" }
+BIGIDENTITY = { ^"bigidentity" }
+DOUBLE = { ^"double" }
+FLOAT = { ^"float" }
+MONEY = { ^"money" }
+
+// Separators and operators
+EQUALS = { "=" }
+COMMA = { "," }
+LEFTPAREN = { "(" }
+RIGHTPAREN = { ")" }
+LEFTBRACK = { "[" }
+RIGHTBRACK = { "]" }
+LEFTBRACE = { "{" }
+RIGHTBRACE = { "}" }
+
+// Literals
+number = @{ ("-"? ~ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?) | "0" }
+string_literal = @{ 
+    ("\"" ~ (!"\"" ~ (("\\" ~ ANY) | ANY))* ~ "\"") |
+    ("'" ~ (!"'" ~ (("\\" ~ ANY) | ANY))* ~ "'")
+}
+
+// Identifiers - enhanced to match JavaCC jIdent() behavior
+identifier = @{ (ASCII_ALPHA | "_" | "#" | "$") ~ (ASCII_ALPHANUMERIC | "_" | "#" | "$")* }
+literal_identifier = @{ ("l" | "L") ~ "'" ~ (!"'" ~ ANY)* ~ "'" }
+
+// Package identifier (can contain dots) - matches jPackageIdent()
+package_ident = { identifier ~ ("." ~ identifier)* }
+
+// Identifier or string - matches jIdentOrString()
+ident_or_string = { literal_identifier | string_literal | identifier }
+
+// Database structure
+database = {
+    SOI ~
+    DATABASE ~ database_name ~
+    flags_section? ~
+    package_section? ~
+    (output_section | import_section)* ~
+    connect_section ~
+    tables_section ~
+    EOI
+}
+
+database_name = { literal_identifier | identifier }
+
+flags_section = {
+    FLAGS ~ string_literal+
+}
+
+package_section = {
+    PACKAGE ~ package_ident
+}
+
+output_section = {
+    OUTPUT ~ ident_or_string
+}
+
+import_section = {
+    IMPORT ~ ident_or_string
+}
+
+connect_section = {
+    server_clause ~
+    schema_clause? ~
+    (userid_clause ~ password_clause)?
+}
+
+server_clause = {
+    SERVER ~ ident_or_string
+}
+
+schema_clause = {
+    SCHEMA ~ ident_or_string
+}
+
+userid_clause = {
+    USERID ~ identifier
+}
+
+password_clause = {
+    PASSWORD ~ identifier
+}
+
+// Tables section - matches jTables() structure
+tables_section = {
+    table_definition+
+}
+
+table_definition = {
+    (table_section | table_import_section) ~
+    table_extras* ~
+    proc_section* ~
+    parm_section*
+}
+
+// Table structure
+table_section = {
+    TABLE ~ identifier ~ field_def*
+}
+
+// Table import (simplified)
+table_import_section = {
+    IMPORT ~ TABLE ~ identifier
+}
+
+// Table extras (keys, links, grants, etc.)
+table_extras = {
+    key_section | link_section | grant_section
+}
+
+key_section = {
+    KEY ~ identifier ~ field_list?
+}
+
+link_section = {
+    LINK ~ identifier ~ field_list?
+}
+
+grant_section = {
+    GRANT ~ identifier ~ field_list?
+}
+
+field_list = {
+    LEFTPAREN ~ identifier ~ (COMMA ~ identifier)* ~ RIGHTPAREN
+}
+
+// Procedure section
+proc_section = {
+    (PROC | SPROC) ~ identifier ~ proc_body?
+}
+
+proc_body = {
+    LEFTBRACE ~ proc_content* ~ RIGHTBRACE
+}
+
+proc_content = {
+    field_def | identifier | string_literal | number
+}
+
+// Parameter section
+parm_section = {
+    PARM ~ parm_body?
+}
+
+parm_body = {
+    LEFTBRACE ~ parm_content* ~ RIGHTBRACE
+}
+
+parm_content = {
+    identifier | string_literal | number
+}
+
+// Field definitions
+field_def = {
+    identifier ~ field_type ~ field_modifiers*
+}
+
+field_type = {
+    TIMESTAMP |
+    AUTOTIMESTAMP |
+    BLOB |
+    BOOLEAN |
+    BYTE |
+    CHAR ~ size_spec? |
+    ANSICHAR ~ size_spec? |
+    WCHAR ~ size_spec? |
+    WANSICHAR ~ size_spec? |
+    UTF8 ~ size_spec? |
+    SHORT |
+    INT |
+    LONG |
+    UID |
+    DATE |
+    DATETIME |
+    TIME |
+    TLOB |
+    XML |
+    BIGXML |
+    JSON |
+    BIGJSON |
+    USERSTAMP |
+    SEQUENCE |
+    BIGSEQUENCE |
+    IDENTITY |
+    BIGIDENTITY |
+    DOUBLE |
+    FLOAT |
+    MONEY
+}
+
+size_spec = {
+    LEFTPAREN ~ number ~ RIGHTPAREN
+}
+
+field_modifiers = {
+    (DEFAULT ~ string_literal) |
+    ((NOT)? ~ NULL) |
+    (CHECK ~ string_literal)
+}
+
+// View sections (basic implementation)
+view_section = {
+    VIEW ~ identifier
+} 
