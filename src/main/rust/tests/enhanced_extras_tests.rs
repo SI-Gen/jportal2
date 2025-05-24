@@ -1,4 +1,4 @@
-use rust_parser::parse_database;
+use jportal2_lib::parse_database;
 
 #[test]
 fn test_const_section() {

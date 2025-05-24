@@ -1,4 +1,4 @@
-use rust_parser::parse_database;
+use jportal2_lib::parse_database;
 
 #[test]
 fn test_enhanced_enum_value_with_link() {
@@ -454,11 +454,11 @@ fn test_field_with_lookup_type() {
     let table = &db.tables[0];
     
     let related_field = &table.fields[1];
-    assert_eq!(related_field.field_type, rust_parser::FieldType::Lookup);
+    assert_eq!(related_field.field_type, jportal2_lib::FieldType::Lookup);
     assert_eq!(related_field.lookup_name, Some("id".to_string()));
     
     let other_field = &table.fields[2];
-    assert_eq!(other_field.field_type, rust_parser::FieldType::Lookup);
+    assert_eq!(other_field.field_type, jportal2_lib::FieldType::Lookup);
     assert_eq!(other_field.lookup_name, None);
 }
 
@@ -619,7 +619,7 @@ fn test_mixed_field_types_and_features() {
     // Check lookup field with alias
     let user_id_field = &table.fields[1];
     assert_eq!(user_id_field.alias, Some("uid".to_string()));
-    assert_eq!(user_id_field.field_type, rust_parser::FieldType::Lookup);
+    assert_eq!(user_id_field.field_type, jportal2_lib::FieldType::Lookup);
     assert_eq!(user_id_field.lookup_name, Some("id".to_string()));
     
     // Check char field with value list

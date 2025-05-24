@@ -1,0 +1,5 @@
+DATABASE TestDB
+SERVER "localhost"
+TABLE Users
+    id int
+    username char(50) 

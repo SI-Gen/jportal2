@@ -1,0 +1,30 @@
+DATABASE TestDatabase
+SERVER "localhost:5432"
+SCHEMA "test_schema"
+USERID testuser
+PASSWORD testpass
+
+TABLE Users
+    id              bigidentity
+    username        char(50)        NOT NULL
+    email           char(100)
+    status          byte            DEFAULTV 1
+    created_at      timestamp
+    
+    PROC GetUserById SELECTONE
+    PROC GetAllUsers SELECTALL
+    PROC InsertUser INSERT RETURNING
+    PROC UpdateUser UPDATE
+    PROC DeleteUser DELETEONE
+
+TABLE Orders
+    order_id        bigidentity
+    user_id         long
+    product_name    char(200)       NOT NULL
+    quantity        int             DEFAULT "1"
+    unit_price      money
+    order_date      datetime
+    
+PROC GetOrdersByUser SELECTBY user_id
+PROC INSERT as InsertOrder
+PROC UPDATE as UpdateOrder

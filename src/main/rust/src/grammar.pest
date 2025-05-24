@@ -17,7 +17,6 @@ VIEW = { ^"view" }
 NOT = { ^"not" }
 NULL = { ^"null" }
 DEFAULT = { ^"default" }
-DEFAULTV = { ^"defaultv" }
 CHECK = { ^"check" }
 PROC = { ^"proc" }
 SPROC = { ^"sproc" }
@@ -308,7 +307,7 @@ non_keyword_identifier = @{
 keyword = {
     ALL | DELETE | INSERT | SELECT | UPDATE | EXECUTE | GRANT | TO | KEY | LINK | VIEW | CONST | 
     PROC | SPROC | PARM | TABLE | DATABASE | SERVER | SCHEMA | USERID | PASSWORD | FLAGS | 
-    PACKAGE | OUTPUT | IMPORT | ALIAS | OPTIONS | CHECK | NOT | NULL | DEFAULT | DEFAULTV | 
+    PACKAGE | OUTPUT | IMPORT | ALIAS | OPTIONS | CHECK | NOT | NULL | DEFAULT | 
     CALC | CASCADE | UNIQUE | PRIMARY | CODE | ENDCODE | RETURNING | UPDATEFOR | UPDATEBY | 
     SET | AS | BULKINSERT | MAXTMSTAMP | BULKUPDATE | DELETEALL | DELETEBY | SELECTONE | 
     SELECTONEBY | SELECTBY | FOR | READONLY | IN | ORDER | DESC | COUNT | EXISTS | MERGE | STANDARD |
@@ -647,7 +646,7 @@ lookup_type = {
 }
 
 field_modifiers = {
-    (DEFAULTV ~ string_literal) |
+    (DEFAULT ~ string_literal) |
     ((NOT)? ~ NULL) |
     CALC |
     (CHECK ~ string_literal) |
@@ -656,7 +655,7 @@ field_modifiers = {
 
 // Enhanced package field modifiers - matches jPackageField() modifiers
 package_field_modifiers = {
-    (DEFAULTV ~ string_literal) |
+    (DEFAULT ~ string_literal) |
     ((NOT)? ~ NULL) |
     CALC |
     (CHECK ~ string_literal)

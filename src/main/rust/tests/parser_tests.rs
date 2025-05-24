@@ -1,4 +1,4 @@
-use rust_parser::parse_database;
+use jportal2_lib::parse_database;
 
 #[test]
 fn test_basic_database_parsing() {
@@ -127,7 +127,7 @@ fn test_various_field_types() {
     assert_eq!(table.fields.len(), 10);
     
     // Check field types
-    use rust_parser::FieldType;
+    use jportal2_lib::FieldType;
     assert!(matches!(table.fields[0].field_type, FieldType::Blob));
     assert!(matches!(table.fields[1].field_type, FieldType::Boolean));
     assert!(matches!(table.fields[2].field_type, FieldType::Byte));

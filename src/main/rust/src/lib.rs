@@ -777,7 +777,7 @@ fn parse_package_field_modifiers(pair: pest::iterators::Pair<Rule>, field: &mut 
     
     for inner_pair in pair.into_inner() {
         match inner_pair.as_rule() {
-            Rule::DEFAULTV => {
+            Rule::DEFAULT => {
                 expecting_default_value = true;
             }
             Rule::string_literal => {
@@ -1166,7 +1166,7 @@ fn parse_field_modifiers(pair: pest::iterators::Pair<Rule>, field: &mut Field) -
     
     for inner_pair in pair.into_inner() {
         match inner_pair.as_rule() {
-            Rule::DEFAULTV => {
+            Rule::DEFAULT => {
                 expecting_default_value = true;
             }
             Rule::string_literal => {
@@ -2862,6 +2862,49 @@ mod tests {
     }
     
     #[test]
+    fn test_user_defined_procedures() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                email char(100)
+                status byte
+                PROC CustomUserProc
+                    INPUT
+                        search_term char(100)
+                        result_count int
+                    CODE
+                        "SELECT COUNT(*) FROM Users WHERE username LIKE ?"
+                    ENDCODE
+                PROC StandardUserProc
+                    CODE
+                        "SELECT * FROM Users"
+                    ENDCODE
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        
+        // Check that we have 2 procedures
+        assert_eq!(table.procs.len(), 2);
+        
+        // Check first procedure (user-defined with fields and code)
+        let proc1 = &table.procs[0];
+        assert_eq!(proc1.name, "CustomUserProc");
+        assert!(!proc1.is_built_in);
+        
+        // Check second procedure (simple user-defined)
+        let proc2 = &table.procs[1];
+        assert_eq!(proc2.name, "StandardUserProc");
+        assert!(!proc2.is_built_in);
+    }
+
+    #[test]
     fn test_javacc_helper_functions() {
         let input = r#"
             DATABASE TestDB
@@ -2875,9 +2918,11 @@ mod tests {
                     INPUT
                         search_term char(100)
                     OUTPUT
-                        Users.id int
-                        Users.username char(50)
-                    "SELECT id, username FROM Users WHERE username LIKE ?"
+                        id int
+                        username char(50)
+                    CODE
+                        "SELECT id, username FROM Users WHERE username LIKE ?"
+                    ENDCODE
         "#;
         
         let result = parse_database(input);
@@ -2899,57 +2944,17 @@ mod tests {
         
         // Test that output fields were parsed
         assert_eq!(proc.outputs.len(), 2);
-        assert_eq!(proc.outputs[0].name, "Users.id");
-        assert_eq!(proc.outputs[1].name, "Users.username");
+        assert_eq!(proc.outputs[0].name, "id");
+        assert_eq!(proc.outputs[1].name, "username");
         
         // Test that the helper methods work correctly
         assert!(proc.has_input("search_term"));
         assert!(!proc.has_input("nonexistent"));
-        assert!(proc.has_output("Users.id"));
+        assert!(proc.has_output("id"));
         assert!(!proc.has_output("nonexistent"));
         assert!(!proc.has_dynamic("test_dynamic"));
         assert!(!proc.has_fields("test_field"));
         assert!(!proc.has_update_fields("test_field"));
         assert!(!proc.has_orders("test_field"));
-    }
-    
-    #[test]
-    fn test_user_defined_procedures() {
-        let input = r#"
-            DATABASE TestDB
-            SERVER "localhost"
-            TABLE Users
-                id int
-                username char(50)
-                email char(100)
-                status byte
-                PROC CustomUserProc {
-                    search_term char(100)
-                    result_count int
-                    "SELECT COUNT(*) FROM Users WHERE username LIKE ?"
-                }
-                PROC StandardUserProc {
-                    "SELECT * FROM Users"
-                }
-        "#;
-        
-        let result = parse_database(input);
-        assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
-        
-        let db = result.unwrap();
-        let table = &db.tables[0];
-        
-        // Check that we have 2 procedures
-        assert_eq!(table.procs.len(), 2);
-        
-        // Check first procedure (user-defined with fields and code)
-        let proc1 = &table.procs[0];
-        assert_eq!(proc1.name, "CustomUserProc");
-        assert!(!proc1.is_built_in);
-        
-        // Check second procedure (simple user-defined)
-        let proc2 = &table.procs[1];
-        assert_eq!(proc2.name, "StandardUserProc");
-        assert!(!proc2.is_built_in);
     }
 } 
