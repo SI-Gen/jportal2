@@ -52,6 +52,20 @@ pub struct Table {
     pub has_primary_key: bool,
 }
 
+impl Table {
+    // Helper method to check if table has a field - matches JavaCC hasField()
+    pub fn has_field(&self, field_name: &str) -> bool {
+        self.fields.iter().any(|f| f.name == field_name)
+    }
+    
+    // Helper method to set primary key on a field - matches JavaCC setPrimary()
+    pub fn set_primary(&mut self, field_name: &str) {
+        if let Some(field) = self.fields.iter_mut().find(|f| f.name == field_name) {
+            field.is_primary = true;
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Field {
     pub name: String,
@@ -74,6 +88,7 @@ pub struct Field {
     pub enum_type: Option<String>,
     pub lookup_name: Option<String>,
     pub enum_link: Option<String>,
+    pub is_primary: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -126,6 +141,13 @@ pub struct Key {
     pub options: Vec<String>,
 }
 
+impl Key {
+    // Helper method to check if key has a field - matches JavaCC hasField()
+    pub fn has_field(&self, field_name: &str) -> bool {
+        self.fields.iter().any(|f| f == field_name)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Link {
     pub name: String,
@@ -134,6 +156,13 @@ pub struct Link {
     pub is_delete_cascade: bool,
     pub is_update_cascade: bool,
     pub options: Vec<String>,
+}
+
+impl Link {
+    // Helper method to check if link has a field - matches JavaCC hasField()
+    pub fn has_field(&self, field_name: &str) -> bool {
+        self.fields.iter().any(|f| f == field_name)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -394,7 +423,7 @@ fn parse_table_definition(pair: pest::iterators::Pair<Rule>) -> Result<Table, Bo
                 table.consts.push(const_item);
             }
             Rule::enhanced_grant_section => {
-                let grant = parse_enhanced_grant_section(inner_pair)?;
+                let grant = parse_enhanced_grant_section(inner_pair, &mut table)?;
                 table.grants.push(grant);
             }
             Rule::original_grant_section => {
@@ -402,7 +431,7 @@ fn parse_table_definition(pair: pest::iterators::Pair<Rule>) -> Result<Table, Bo
                 table.grants.push(grant);
             }
             Rule::enhanced_key_section => {
-                let key = parse_enhanced_key_section(inner_pair)?;
+                let key = parse_enhanced_key_section(inner_pair, &mut table)?;
                 table.keys.push(key);
             }
             Rule::original_key_section => {
@@ -410,7 +439,7 @@ fn parse_table_definition(pair: pest::iterators::Pair<Rule>) -> Result<Table, Bo
                 table.keys.push(key);
             }
             Rule::enhanced_link_section => {
-                let link = parse_enhanced_link_section(inner_pair)?;
+                let link = parse_enhanced_link_section(inner_pair, &mut table)?;
                 table.links.push(link);
             }
             Rule::original_link_section => {
@@ -555,6 +584,7 @@ fn parse_package_field_def(pair: pest::iterators::Pair<Rule>) -> Result<Field, B
         enum_type: None,
         lookup_name: None,
         enum_link: None,
+        is_primary: false,
     };
     
     for inner_pair in pair.into_inner() {
@@ -642,6 +672,7 @@ fn parse_field_def(pair: pest::iterators::Pair<Rule>) -> Result<Field, Box<dyn s
         enum_type: None,
         lookup_name: None,
         enum_link: None,
+        is_primary: false,
     };
     
     for inner_pair in pair.into_inner() {
@@ -1102,7 +1133,8 @@ fn parse_const_value(pair: pest::iterators::Pair<Rule>) -> Result<ConstValue, Bo
     Ok(const_value)
 }
 
-fn parse_enhanced_grant_section(pair: pest::iterators::Pair<Rule>) -> Result<Grant, Box<dyn std::error::Error>> {
+// Enhanced grant section parsing - matches jGrant() and jPermission()
+fn parse_enhanced_grant_section(pair: pest::iterators::Pair<Rule>, table: &mut Table) -> Result<Grant, Box<dyn std::error::Error>> {
     let mut grant = Grant {
         perms: Vec::new(),
         users: Vec::new(),
@@ -1114,7 +1146,7 @@ fn parse_enhanced_grant_section(pair: pest::iterators::Pair<Rule>) -> Result<Gra
         match inner_pair.as_rule() {
             Rule::permission => {
                 if !parsing_users {
-                    let perm = parse_permission(inner_pair)?;
+                    let perm = parse_permission(inner_pair, table)?;
                     grant.perms.push(perm);
                 }
             }
@@ -1133,22 +1165,47 @@ fn parse_enhanced_grant_section(pair: pest::iterators::Pair<Rule>) -> Result<Gra
     Ok(grant)
 }
 
-fn parse_permission(pair: pest::iterators::Pair<Rule>) -> Result<String, Box<dyn std::error::Error>> {
+// Enhanced permission parsing - matches JavaCC jPermission() behavior
+fn parse_permission(pair: pest::iterators::Pair<Rule>, table: &mut Table) -> Result<String, Box<dyn std::error::Error>> {
     for inner_pair in pair.into_inner() {
         match inner_pair.as_rule() {
-            Rule::ALL => return Ok("all".to_string()),
-            Rule::DELETE => return Ok("delete".to_string()),
-            Rule::INSERT => return Ok("insert".to_string()),
-            Rule::SELECT => return Ok("select".to_string()),
-            Rule::UPDATE => return Ok("update".to_string()),
-            Rule::EXECUTE => return Ok("execute".to_string()),
+            Rule::ALL => {
+                // Set all permission flags like JavaCC
+                table.has_execute = true;
+                table.has_select = true;
+                table.has_delete = true;
+                table.has_insert = true;
+                table.has_update = true;
+                return Ok("all".to_string());
+            }
+            Rule::DELETE => {
+                table.has_delete = true;
+                return Ok("delete".to_string());
+            }
+            Rule::INSERT => {
+                table.has_insert = true;
+                return Ok("insert".to_string());
+            }
+            Rule::SELECT => {
+                table.has_select = true;
+                return Ok("select".to_string());
+            }
+            Rule::UPDATE => {
+                table.has_update = true;
+                return Ok("update".to_string());
+            }
+            Rule::EXECUTE => {
+                table.has_execute = true;
+                return Ok("execute".to_string());
+            }
             _ => {}
         }
     }
     Ok("unknown".to_string())
 }
 
-fn parse_enhanced_link_section(pair: pest::iterators::Pair<Rule>) -> Result<Link, Box<dyn std::error::Error>> {
+// Enhanced link section parsing - matches jLink() and jLinkColumn()
+fn parse_enhanced_link_section(pair: pest::iterators::Pair<Rule>, table: &mut Table) -> Result<Link, Box<dyn std::error::Error>> {
     let mut link = Link {
         name: String::new(),
         fields: Vec::new(),
@@ -1160,13 +1217,35 @@ fn parse_enhanced_link_section(pair: pest::iterators::Pair<Rule>) -> Result<Link
     
     let mut all_identifiers = Vec::new();
     let mut seen_cascade_or_options = false;
+    let mut parsing_link_fields = false;
     
     for inner_pair in pair.into_inner() {
         match inner_pair.as_rule() {
             Rule::package_ident => {
                 link.name = inner_pair.as_str().trim().to_string();
             }
+            Rule::LEFTPAREN => {
+                parsing_link_fields = true;
+            }
+            Rule::RIGHTPAREN => {
+                parsing_link_fields = false;
+            }
             Rule::non_keyword_identifier => {
+                let field_name = inner_pair.as_str().to_string();
+                
+                if parsing_link_fields {
+                    // This is a link field (in parentheses)
+                    link.link_fields.push(field_name);
+                } else {
+                    // This is a regular field - apply jLinkColumn() validation
+                    if !table.has_field(&field_name) {
+                        eprintln!("Warning: {} field {} not present in table", link.name, field_name);
+                    } else if link.has_field(&field_name) {
+                        eprintln!("Warning: {} field {} already present in link", link.name, field_name);
+                    } else {
+                        link.fields.push(field_name);
+                    }
+                }
                 all_identifiers.push(inner_pair.as_str().to_string());
             }
             Rule::DELETE => {
@@ -1190,19 +1269,18 @@ fn parse_enhanced_link_section(pair: pest::iterators::Pair<Rule>) -> Result<Link
         }
     }
     
-    // The grammar structure is: LINK package_ident (identifiers)? CASCADE_OPTIONS* identifiers+
-    // So if we have CASCADE or OPTIONS, the last identifiers are the final fields
-    // If we don't have CASCADE or OPTIONS, all identifiers are final fields
-    
-    if seen_cascade_or_options && all_identifiers.len() > 1 {
-        // Split identifiers: first ones are link_fields, last ones are fields
-        // For simplicity, assume the last identifier is the field
-        let last_idx = all_identifiers.len() - 1;
-        link.link_fields = all_identifiers[0..last_idx].to_vec();
-        link.fields = vec![all_identifiers[last_idx].clone()];
-    } else {
-        // All identifiers are fields
-        link.fields = all_identifiers;
+    // If we didn't parse fields through the validation logic above,
+    // fall back to the original logic for backward compatibility
+    if link.fields.is_empty() && !all_identifiers.is_empty() {
+        if seen_cascade_or_options && all_identifiers.len() > 1 {
+            let last_idx = all_identifiers.len() - 1;
+            if link.link_fields.is_empty() {
+                link.link_fields = all_identifiers[0..last_idx].to_vec();
+            }
+            link.fields = vec![all_identifiers[last_idx].clone()];
+        } else {
+            link.fields = all_identifiers;
+        }
     }
     
     Ok(link)
@@ -1561,7 +1639,8 @@ fn parse_parm_directive_into(pair: pest::iterators::Pair<Rule>, parameter: &mut 
     Ok(())
 }
 
-fn parse_enhanced_key_section(pair: pest::iterators::Pair<Rule>) -> Result<Key, Box<dyn std::error::Error>> {
+// Enhanced key section parsing - matches jKey() and jColumn()
+fn parse_enhanced_key_section(pair: pest::iterators::Pair<Rule>, table: &mut Table) -> Result<Key, Box<dyn std::error::Error>> {
     let mut key = Key {
         name: String::new(),
         is_unique: false,
@@ -1585,15 +1664,33 @@ fn parse_enhanced_key_section(pair: pest::iterators::Pair<Rule>) -> Result<Key, 
                 parse_key_modifier_into(inner_pair, &mut key)?;
             }
             Rule::non_keyword_identifier => {
-                key.fields.push(inner_pair.as_str().to_string());
+                let field_name = inner_pair.as_str().to_string();
+                
+                // Validation logic from JavaCC jColumn()
+                if !table.has_field(&field_name) {
+                    eprintln!("Warning: {} field {} not present in table", key.name, field_name);
+                } else if key.has_field(&field_name) {
+                    eprintln!("Warning: {} field {} already present in key", key.name, field_name);
+                } else {
+                    // Set primary key on field if this is a primary key
+                    if key.is_primary {
+                        table.set_primary(&field_name);
+                    }
+                    key.fields.push(field_name);
+                }
             }
             _ => {}
         }
     }
     
+    if key.is_primary {
+        table.has_primary_key = true;
+    }
+    
     Ok(key)
 }
 
+// Enhanced key modifier parsing - matches JavaCC jModifier() behavior
 fn parse_key_modifier_into(pair: pest::iterators::Pair<Rule>, key: &mut Key) -> Result<(), Box<dyn std::error::Error>> {
     for inner_pair in pair.into_inner() {
         match inner_pair.as_rule() {
@@ -1602,6 +1699,7 @@ fn parse_key_modifier_into(pair: pest::iterators::Pair<Rule>, key: &mut Key) -> 
             }
             Rule::PRIMARY => {
                 key.is_primary = true;
+                // Note: table.has_primary_key is set in parse_enhanced_key_section
             }
             _ => {}
         }

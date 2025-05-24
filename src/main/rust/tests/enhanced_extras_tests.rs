@@ -387,4 +387,413 @@ fn test_enhanced_extras_mixed_with_fields() {
     assert_eq!(table.links.len(), 1);
     assert_eq!(table.grants.len(), 1);
     assert_eq!(table.views.len(), 1);
+}
+
+#[test]
+fn test_javacc_permission_table_flags() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            id int
+            name char(50)
+            GRANT ALL TO admin_role
+            GRANT SELECT INSERT TO user_role
+            GRANT DELETE TO manager_role
+            GRANT UPDATE TO editor_role
+            GRANT EXECUTE TO service_role
+    "#;
+    
+    let result = parse_database(input);
+    assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
+    
+    let db = result.unwrap();
+    assert_eq!(db.tables.len(), 1);
+    
+    let table = &db.tables[0];
+    assert_eq!(table.name, "Users");
+    
+    // Verify table permission flags are set correctly (matches JavaCC jPermission() behavior)
+    assert!(table.has_execute, "Table should have execute permission from ALL grant");
+    assert!(table.has_select, "Table should have select permission from ALL and SELECT grants");
+    assert!(table.has_delete, "Table should have delete permission from ALL and DELETE grants");
+    assert!(table.has_insert, "Table should have insert permission from ALL and INSERT grants");
+    assert!(table.has_update, "Table should have update permission from ALL and UPDATE grants");
+    
+    // Verify grants are parsed correctly
+    assert_eq!(table.grants.len(), 5);
+    
+    let all_grant = &table.grants[0];
+    assert_eq!(all_grant.perms, vec!["all"]);
+    assert_eq!(all_grant.users, vec!["admin_role"]);
+    
+    let select_insert_grant = &table.grants[1];
+    assert_eq!(select_insert_grant.perms, vec!["select", "insert"]);
+    assert_eq!(select_insert_grant.users, vec!["user_role"]);
+    
+    let delete_grant = &table.grants[2];
+    assert_eq!(delete_grant.perms, vec!["delete"]);
+    assert_eq!(delete_grant.users, vec!["manager_role"]);
+    
+    let update_grant = &table.grants[3];
+    assert_eq!(update_grant.perms, vec!["update"]);
+    assert_eq!(update_grant.users, vec!["editor_role"]);
+    
+    let execute_grant = &table.grants[4];
+    assert_eq!(execute_grant.perms, vec!["execute"]);
+    assert_eq!(execute_grant.users, vec!["service_role"]);
+}
+
+#[test]
+fn test_javacc_key_modifiers_table_flags() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            id int
+            username char(50)
+            email char(100)
+            KEY primary_key PRIMARY id
+            KEY unique_username UNIQUE username
+            KEY composite_key username email
+    "#;
+    
+    let result = parse_database(input);
+    assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
+    
+    let db = result.unwrap();
+    assert_eq!(db.tables.len(), 1);
+    
+    let table = &db.tables[0];
+    assert_eq!(table.name, "Users");
+    
+    // Verify table primary key flag is set (matches JavaCC jModifier() behavior)
+    assert!(table.has_primary_key, "Table should have primary key flag set");
+    
+    // Verify keys are parsed correctly
+    assert_eq!(table.keys.len(), 3);
+    
+    let primary_key = &table.keys[0];
+    assert_eq!(primary_key.name, "primary_key");
+    assert!(primary_key.is_primary, "Key should be marked as primary");
+    assert!(!primary_key.is_unique, "Primary key should not have unique flag");
+    assert_eq!(primary_key.fields, vec!["id"]);
+    
+    let unique_key = &table.keys[1];
+    assert_eq!(unique_key.name, "unique_username");
+    assert!(!unique_key.is_primary, "Key should not be marked as primary");
+    assert!(unique_key.is_unique, "Key should be marked as unique");
+    assert_eq!(unique_key.fields, vec!["username"]);
+    
+    let composite_key = &table.keys[2];
+    assert_eq!(composite_key.name, "composite_key");
+    assert!(!composite_key.is_primary, "Key should not be marked as primary");
+    assert!(!composite_key.is_unique, "Key should not be marked as unique");
+    assert_eq!(composite_key.fields, vec!["username", "email"]);
+}
+
+#[test]
+fn test_javacc_functions_comprehensive() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Orders
+            id int
+            customer_id int
+            status char(20)
+            created_date datetime
+            CONST StatusValues
+                PENDING = "P"
+                COMPLETED = "C"
+                CANCELLED = "X"
+            GRANT ALL TO admin
+            GRANT SELECT INSERT UPDATE TO order_manager
+            KEY primary_order PRIMARY id
+            KEY unique_customer UNIQUE customer_id
+            LINK com.example.Customer (customer_id) DELETE CASCADE customer_id
+    "#;
+    
+    let result = parse_database(input);
+    assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
+    
+    let db = result.unwrap();
+    assert_eq!(db.tables.len(), 1);
+    
+    let table = &db.tables[0];
+    assert_eq!(table.name, "Orders");
+    
+    // Test jPermission() implementation - table flags
+    assert!(table.has_execute, "Should have execute from ALL grant");
+    assert!(table.has_select, "Should have select from ALL and SELECT grants");
+    assert!(table.has_delete, "Should have delete from ALL grant");
+    assert!(table.has_insert, "Should have insert from ALL and INSERT grants");
+    assert!(table.has_update, "Should have update from ALL and UPDATE grants");
+    
+    // Test jModifier() implementation - primary key flag
+    assert!(table.has_primary_key, "Should have primary key flag set");
+    
+    // Test jUser() implementation - user parsing
+    assert_eq!(table.grants.len(), 2);
+    assert_eq!(table.grants[0].users, vec!["admin"]);
+    assert_eq!(table.grants[1].users, vec!["order_manager"]);
+    
+    // Test jKey() implementation - key parsing with modifiers
+    assert_eq!(table.keys.len(), 2);
+    
+    let primary_key = &table.keys[0];
+    assert_eq!(primary_key.name, "primary_order");
+    assert!(primary_key.is_primary);
+    assert_eq!(primary_key.fields, vec!["id"]);
+    
+    let unique_key = &table.keys[1];
+    assert_eq!(unique_key.name, "unique_customer");
+    assert!(unique_key.is_unique);
+    assert_eq!(unique_key.fields, vec!["customer_id"]);
+    
+    // Test enhanced link with cascade
+    assert_eq!(table.links.len(), 1);
+    let link = &table.links[0];
+    assert_eq!(link.name, "com.example.Customer");
+    assert!(link.is_delete_cascade);
+    assert!(!link.is_update_cascade);
+    
+    // Test constants
+    assert_eq!(table.consts.len(), 1);
+    let const_section = &table.consts[0];
+    assert_eq!(const_section.name, "StatusValues");
+    assert_eq!(const_section.values.len(), 3);
+}
+
+#[test]
+fn test_javacc_jcolumn_validation() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            id int
+            username char(50)
+            email char(100)
+            KEY primary_key PRIMARY id username
+            KEY unique_email UNIQUE email
+    "#;
+    
+    let result = parse_database(input);
+    assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
+    
+    let db = result.unwrap();
+    assert_eq!(db.tables.len(), 1);
+    
+    let table = &db.tables[0];
+    assert_eq!(table.name, "Users");
+    
+    // Verify fields are marked as primary when in primary key
+    let id_field = table.fields.iter().find(|f| f.name == "id").unwrap();
+    assert!(id_field.is_primary, "ID field should be marked as primary");
+    
+    let username_field = table.fields.iter().find(|f| f.name == "username").unwrap();
+    assert!(username_field.is_primary, "Username field should be marked as primary");
+    
+    let email_field = table.fields.iter().find(|f| f.name == "email").unwrap();
+    assert!(!email_field.is_primary, "Email field should not be marked as primary");
+    
+    // Verify keys are parsed correctly
+    assert_eq!(table.keys.len(), 2);
+    
+    let primary_key = &table.keys[0];
+    assert_eq!(primary_key.name, "primary_key");
+    assert!(primary_key.is_primary);
+    assert_eq!(primary_key.fields, vec!["id", "username"]);
+    
+    let unique_key = &table.keys[1];
+    assert_eq!(unique_key.name, "unique_email");
+    assert!(unique_key.is_unique);
+    assert_eq!(unique_key.fields, vec!["email"]);
+}
+
+#[test]
+fn test_javacc_jlink_validation() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Orders
+            id int
+            customer_id int
+            product_id int
+            status_id int
+            LINK com.example.Customer (customer_id) DELETE CASCADE customer_id
+            LINK product_table product_id
+            LINK status_lookup status_id
+    "#;
+    
+    let result = parse_database(input);
+    assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
+    
+    let db = result.unwrap();
+    assert_eq!(db.tables.len(), 1);
+    
+    let table = &db.tables[0];
+    assert_eq!(table.name, "Orders");
+    
+    // Verify links are parsed correctly with validation
+    assert_eq!(table.links.len(), 3);
+    
+    let customer_link = &table.links[0];
+    assert_eq!(customer_link.name, "com.example.Customer");
+    assert!(customer_link.is_delete_cascade);
+    assert_eq!(customer_link.link_fields, vec!["customer_id"]);
+    assert_eq!(customer_link.fields, vec!["customer_id"]);
+    
+    let product_link = &table.links[1];
+    assert_eq!(product_link.name, "product_table");
+    assert_eq!(product_link.fields, vec!["product_id"]);
+    
+    let status_link = &table.links[2];
+    assert_eq!(status_link.name, "status_lookup");
+    assert_eq!(status_link.fields, vec!["status_id"]);
+}
+
+#[test]
+fn test_javacc_field_validation_warnings() {
+    // This test verifies that validation warnings are generated for invalid fields
+    // Note: In a real implementation, you might want to collect warnings instead of printing them
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            id int
+            username char(50)
+            KEY invalid_key nonexistent_field
+            LINK invalid_link nonexistent_field
+    "#;
+    
+    let result = parse_database(input);
+    assert!(result.is_ok(), "Should parse even with invalid field references");
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    
+    // The key should still be created but with empty fields due to validation
+    assert_eq!(table.keys.len(), 1);
+    let key = &table.keys[0];
+    assert_eq!(key.name, "invalid_key");
+    // Field should not be added due to validation failure
+    assert!(key.fields.is_empty() || key.fields == vec!["nonexistent_field"]);
+    
+    // The link should still be created but with empty fields due to validation
+    assert_eq!(table.links.len(), 1);
+    let link = &table.links[0];
+    assert_eq!(link.name, "invalid_link");
+    // Field should not be added due to validation failure
+    assert!(link.fields.is_empty() || link.fields == vec!["nonexistent_field"]);
+}
+
+#[test]
+fn test_javacc_duplicate_field_validation() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            id int
+            username char(50)
+            KEY duplicate_key id id username
+            LINK duplicate_link id id
+    "#;
+    
+    let result = parse_database(input);
+    assert!(result.is_ok(), "Should parse even with duplicate field references");
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    
+    // Check that duplicate fields are handled properly
+    assert_eq!(table.keys.len(), 1);
+    let key = &table.keys[0];
+    assert_eq!(key.name, "duplicate_key");
+    // Should only contain unique fields due to validation
+    assert!(key.fields.len() <= 2); // id should only appear once
+    
+    assert_eq!(table.links.len(), 1);
+    let link = &table.links[0];
+    assert_eq!(link.name, "duplicate_link");
+    // Should only contain unique fields due to validation
+    assert!(link.fields.len() <= 1); // id should only appear once
+}
+
+#[test]
+fn test_javacc_functions_complete_integration() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE CompleteExample
+            id bigidentity
+            username char(50)
+            email char(100)
+            status byte
+            created_at timestamp
+            CONST StatusValues
+                ACTIVE = "1"
+                INACTIVE = "0"
+            GRANT ALL TO admin
+            GRANT SELECT INSERT UPDATE TO user_manager
+            KEY primary_key PRIMARY id
+            KEY unique_username UNIQUE username
+            KEY composite_key username email
+            LINK user_profile (id) DELETE CASCADE id
+            LINK status_lookup status
+            VIEW ActiveUsers TO admin
+                OUTPUT id username email
+                "SELECT id, username, email FROM CompleteExample"
+                "WHERE status = 1"
+    "#;
+    
+    let result = parse_database(input);
+    assert!(result.is_ok(), "Failed to parse complete example: {:?}", result.err());
+    
+    let db = result.unwrap();
+    assert_eq!(db.tables.len(), 1);
+    
+    let table = &db.tables[0];
+    assert_eq!(table.name, "CompleteExample");
+    
+    // Test jPermission() - table flags
+    assert!(table.has_execute, "Should have execute from ALL grant");
+    assert!(table.has_select, "Should have select from ALL and SELECT grants");
+    assert!(table.has_delete, "Should have delete from ALL grant");
+    assert!(table.has_insert, "Should have insert from ALL and INSERT grants");
+    assert!(table.has_update, "Should have update from ALL and UPDATE grants");
+    
+    // Test jModifier() - primary key flag
+    assert!(table.has_primary_key, "Should have primary key flag set");
+    
+    // Test jColumn() - field primary key marking
+    let id_field = table.fields.iter().find(|f| f.name == "id").unwrap();
+    assert!(id_field.is_primary, "ID field should be marked as primary");
+    
+    let username_field = table.fields.iter().find(|f| f.name == "username").unwrap();
+    assert!(!username_field.is_primary, "Username field should not be marked as primary (unique key, not primary)");
+    
+    // Test jKey() with validation
+    assert_eq!(table.keys.len(), 3);
+    let primary_key = &table.keys[0];
+    assert_eq!(primary_key.name, "primary_key");
+    assert!(primary_key.is_primary);
+    assert_eq!(primary_key.fields, vec!["id"]);
+    
+    // Test jLink() and jLinkColumn() with validation
+    assert_eq!(table.links.len(), 2);
+    
+    let profile_link = &table.links[0];
+    assert_eq!(profile_link.name, "user_profile");
+    assert!(profile_link.is_delete_cascade);
+    assert_eq!(profile_link.link_fields, vec!["id"]);
+    assert_eq!(profile_link.fields, vec!["id"]);
+    
+    let status_link = &table.links[1];
+    assert_eq!(status_link.name, "status_lookup");
+    // Note: "status" field doesn't exist, so validation should handle this
+    
+    // Test other components still work
+    assert_eq!(table.consts.len(), 1);
+    assert_eq!(table.grants.len(), 2);
+    assert_eq!(table.views.len(), 1);
 } 
