@@ -234,6 +234,13 @@ pub struct Proc {
     pub start_line: Option<i32>,
     pub table: Option<String>,
     pub row_count: Option<i32>,
+    // Additional fields for jNewProc functionality
+    pub is_multiple_input: bool,
+    pub no_rows: Option<i32>,
+    pub has_updates: bool,
+    pub is_sql: bool,
+    pub dynamics: Vec<String>,
+    pub dynamic_sizes: Vec<i32>,
 }
 
 impl Proc {
@@ -1546,6 +1553,13 @@ fn parse_proc_section(pair: pest::iterators::Pair<Rule>) -> Result<Proc, Box<dyn
         start_line: Some(1), // Set start line (in real implementation, get from parser position)
         table: None,
         row_count: None,
+        // Additional fields for jNewProc functionality
+        is_multiple_input: false,
+        no_rows: None,
+        has_updates: false,
+        is_sql: false,
+        dynamics: Vec::new(),
+        dynamic_sizes: Vec::new(),
     };
     
     let mut proc_type = String::new();
@@ -1682,6 +1696,164 @@ fn parse_proc_section(pair: pest::iterators::Pair<Rule>) -> Result<Proc, Box<dyn
                 proc_type = "MERGE".to_string();
                 proc.is_built_in = true;
             }
+            Rule::custom_select_proc => {
+                // Handle custom SELECT procedure (jNewProc equivalent)
+                proc_type = "SELECT".to_string();
+                proc.is_built_in = false;
+                proc.use_std = true;
+                proc.extends_std = true;
+                
+                // Parse the custom SELECT procedure content
+                for select_pair in inner_pair.into_inner() {
+                    match select_pair.as_rule() {
+                        Rule::SELECT => {
+                            // Already handled above
+                        }
+                        Rule::LEFTPAREN | Rule::RIGHTPAREN => {
+                            // Skip parentheses
+                        }
+                        Rule::STANDARD => {
+                            proc.is_std = true;
+                        }
+                        Rule::INPUT => {
+                            // Skip INPUT keyword
+                        }
+                        Rule::input_type => {
+                            parse_input_type_into(select_pair, &mut proc)?;
+                        }
+                        Rule::OUTPUT => {
+                            // Skip OUTPUT keyword
+                        }
+                        Rule::output_type => {
+                            parse_output_type_into(select_pair, &mut proc)?;
+                        }
+                        Rule::field_def => {
+                            // Input field for custom SELECT procedure
+                            let mut field = parse_field_def(select_pair)?;
+                            if proc.has_input(&field.name) {
+                                eprintln!("Warning: {} field {} already present as input", proc.name, field.name);
+                            } else {
+                                if proc.extends_std && !proc.has_output(&field.name) {
+                                    proc.use_std = false;
+                                }
+                                if !field.is_null {
+                                    // In a real implementation, you'd check table.hasFieldAsNull()
+                                    field.is_null = true; // Default for now
+                                }
+                                field.is_out = false; // Input field
+                                proc.inputs.push(field);
+                            }
+                        }
+                        Rule::package_field_def => {
+                            // Output field for custom SELECT procedure
+                            let mut field = parse_package_field_def(select_pair)?;
+                            if proc.is_sproc {
+                                if proc.has_input(&field.name) {
+                                    if let Some(input_field) = proc.get_input(&field.name) {
+                                        input_field.is_out = true;
+                                    }
+                                } else {
+                                    proc.inputs.push(field);
+                                }
+                            } else {
+                                if proc.has_output(&field.name) {
+                                    if !proc.extends_std {
+                                        eprintln!("Warning: {} field {} already present as output", proc.name, field.name);
+                                    }
+                                } else {
+                                    if proc.extends_std {
+                                        proc.use_std = false;
+                                    }
+                                    if !field.is_null {
+                                        // In a real implementation, you'd check table.hasFieldAsNull()
+                                        field.is_null = true; // Default for now
+                                    }
+                                    proc.outputs.push(field);
+                                }
+                            }
+                        }
+                        Rule::old_code => {
+                            parse_old_code_into(select_pair, &mut proc)?;
+                        }
+                        Rule::new_code => {
+                            parse_new_code_into(select_pair, &mut proc)?;
+                        }
+                        _ => {}
+                    }
+                }
+                
+                // Set final flags for custom SELECT procedure
+                proc.use_std = true;
+            }
+            Rule::SELECT => {
+                // This is a custom SELECT procedure (jNewProc)
+                proc_type = "SELECT".to_string();
+                proc.is_built_in = false;
+                proc.use_std = true;
+                proc.extends_std = true;
+            }
+            Rule::INPUT => {
+                // Skip INPUT keyword, next should be input type and field definitions
+            }
+            Rule::input_type => {
+                parse_input_type_into(inner_pair, &mut proc)?;
+            }
+            Rule::output_type => {
+                parse_output_type_into(inner_pair, &mut proc)?;
+            }
+            Rule::package_field_def => {
+                // This is a package field definition for OUTPUT section
+                let field = parse_package_field_def(inner_pair)?;
+                if proc.is_sproc {
+                    if proc.has_input(&field.name) {
+                        // Get existing input field and mark as output
+                        if let Some(input_field) = proc.get_input(&field.name) {
+                            input_field.is_out = true;
+                        }
+                    } else {
+                        proc.inputs.push(field.clone());
+                    }
+                } else {
+                    if !proc.has_output(&field.name) {
+                        proc.outputs.push(field);
+                    }
+                }
+            }
+            Rule::old_code => {
+                parse_old_code_into(inner_pair, &mut proc)?;
+            }
+            Rule::new_code => {
+                parse_new_code_into(inner_pair, &mut proc)?;
+            }
+            Rule::SQL => {
+                proc.is_sql = true;
+            }
+            Rule::CODE => {
+                // Skip CODE keyword, content handled by old_code rule
+            }
+            Rule::ENDCODE => {
+                // Skip ENDCODE keyword
+            }
+            Rule::codeline => {
+                // Handle individual code lines
+                let line = parse_string_literal(inner_pair.as_str());
+                proc.lines.push(line);
+            }
+            Rule::MULTIPLE => {
+                proc.is_multiple_input = true;
+            }
+            Rule::SINGLE => {
+                proc.is_single = true;
+            }
+            Rule::number => {
+                // This could be a row count for input/output types
+                if let Ok(num) = inner_pair.as_str().parse::<i32>() {
+                    if proc.no_rows.is_none() {
+                        proc.no_rows = Some(num);
+                        proc.is_multiple_input = true;
+                    }
+                }
+            }
             Rule::OPTIONS => {
                 // Skip OPTIONS keyword, next should be string literals
             }
@@ -1694,8 +1866,23 @@ fn parse_proc_section(pair: pest::iterators::Pair<Rule>) -> Result<Proc, Box<dyn
             }
             Rule::field_def => {
                 // This is an output field definition
-                let field = parse_field_def(inner_pair)?;
-                proc.outputs.push(field);
+                let mut field = parse_field_def(inner_pair)?;
+                if proc_type == "SELECT" {
+                    // For custom SELECT procedures, handle input/output logic
+                    if proc.has_input(&field.name) {
+                        // Field already exists as input, mark as output too
+                        if let Some(input_field) = proc.get_input(&field.name) {
+                            input_field.is_out = true;
+                        }
+                    } else {
+                        // New input field
+                        field.is_out = false; // Will be set later if needed
+                        proc.inputs.push(field);
+                    }
+                } else {
+                    // Regular output field for built-in procedures
+                    proc.outputs.push(field);
+                }
             }
             Rule::proc_column => {
                 let field_name = inner_pair.as_str().to_string();
@@ -1733,14 +1920,6 @@ fn parse_proc_section(pair: pest::iterators::Pair<Rule>) -> Result<Proc, Box<dyn
                     }
                 }
             }
-            // Rule::proc_output => {
-            //     for output_pair in inner_pair.into_inner() {
-            //         if output_pair.as_rule() == Rule::field_def {
-            //             let field = parse_field_def(output_pair)?;
-            //             proc.outputs.push(field);
-            //         }
-            //     }
-            // }
             _ => {}
         }
     }
@@ -2046,6 +2225,137 @@ fn parse_key_modifier_into(pair: pest::iterators::Pair<Rule>, key: &mut Key) -> 
 fn parse_string_literal(s: &str) -> String {
     // Use the enhanced jString() processing for consistency
     parse_jstring(s)
+}
+
+fn parse_input_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> Result<(), Box<dyn std::error::Error>> {
+    for inner_pair in pair.into_inner() {
+        match inner_pair.as_rule() {
+            Rule::MULTIPLE => {
+                proc.is_multiple_input = true;
+            }
+            Rule::number => {
+                if let Ok(num) = inner_pair.as_str().parse::<i32>() {
+                    proc.no_rows = Some(num);
+                    proc.is_multiple_input = true;
+                }
+            }
+            Rule::STANDARD => {
+                // For STANDARD input type, we would add all table fields to inputs
+                // In a real implementation, you'd get the table fields from the table context
+                // For now, we'll just set a flag
+                proc.extends_std = true;
+                proc.use_std = true;
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
+fn parse_output_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> Result<(), Box<dyn std::error::Error>> {
+    for inner_pair in pair.into_inner() {
+        match inner_pair.as_rule() {
+            Rule::SINGLE => {
+                proc.is_single = true;
+            }
+            Rule::UPDATE => {
+                proc.has_updates = true;
+            }
+            Rule::STANDARD => {
+                // For STANDARD output type, we would add all table fields to outputs
+                // In a real implementation, you'd get the table fields from the table context
+                // For now, we'll just set a flag
+                proc.extends_std = true;
+                proc.use_std = true;
+            }
+            Rule::number => {
+                if let Ok(num) = inner_pair.as_str().parse::<i32>() {
+                    proc.no_rows = Some(num);
+                }
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
+fn parse_old_code_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> Result<(), Box<dyn std::error::Error>> {
+    for inner_pair in pair.into_inner() {
+        match inner_pair.as_rule() {
+            Rule::SQL => {
+                proc.is_sql = true;
+            }
+            Rule::CODE => {
+                // Skip CODE keyword
+            }
+            Rule::ENDCODE => {
+                // Skip ENDCODE keyword
+            }
+            Rule::code_line => {
+                // Handle code lines
+                for code_pair in inner_pair.into_inner() {
+                    if let Rule::string_literal = code_pair.as_rule() {
+                        let line = parse_string_literal(code_pair.as_str());
+                        proc.lines.push(line);
+                    }
+                }
+            }
+            Rule::dynamic_identifier => {
+                // Handle dynamic identifiers
+                let mut identifier = String::new();
+                let mut size = 256; // Default size
+                
+                for dyn_pair in inner_pair.into_inner() {
+                    match dyn_pair.as_rule() {
+                        Rule::identifier => {
+                            identifier = dyn_pair.as_str().to_string();
+                        }
+                        Rule::opt_size => {
+                            for size_pair in dyn_pair.into_inner() {
+                                if let Rule::number = size_pair.as_rule() {
+                                    if let Ok(num) = size_pair.as_str().parse::<i32>() {
+                                        size = num;
+                                    }
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                
+                if !identifier.is_empty() {
+                    // Check if dynamic already exists (matches JavaCC hasDynamic())
+                    if !proc.dynamics.contains(&identifier) {
+                        if proc.extends_std {
+                            proc.use_std = false;
+                        }
+                        proc.dynamics.push(identifier);
+                        proc.dynamic_sizes.push(size);
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
+fn parse_new_code_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> Result<(), Box<dyn std::error::Error>> {
+    for inner_pair in pair.into_inner() {
+        if let Rule::codeline = inner_pair.as_rule() {
+            // In JavaCC, this would call parseDynamics() to process dynamic identifiers
+            // For now, we'll just treat it as a regular string literal
+            for code_pair in inner_pair.into_inner() {
+                if let Rule::string_literal = code_pair.as_rule() {
+                    let line = parse_string_literal(code_pair.as_str());
+                    if !line.trim().is_empty() {
+                        proc.lines.push(line);
+                    }
+                }
+            }
+        }
+    }
+    Ok(())
 }
 
 #[cfg(test)]

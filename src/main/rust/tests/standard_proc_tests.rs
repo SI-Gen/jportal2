@@ -552,4 +552,116 @@ fn test_procedure_start_line_tracking() {
     for proc in &table.procs {
         assert!(proc.start_line.is_some(), "Procedure should have start line set");
     }
+}
+
+#[test]
+fn test_custom_select_procedures() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            id int
+            username char(50)
+            email char(100)
+            status byte
+            PROC CustomSelect SELECT
+                "SELECT id, username FROM Users WHERE username LIKE ?"
+    "#;
+    
+    let result = parse_database(input);
+    assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    assert_eq!(table.procs.len(), 1);
+    
+    let custom_select = &table.procs[0];
+    assert_eq!(custom_select.name, "CustomSelect");
+    assert!(!custom_select.is_built_in);
+    assert!(custom_select.use_std);
+    assert!(custom_select.extends_std);
+    assert_eq!(custom_select.lines.len(), 1);
+    assert!(custom_select.lines[0].contains("SELECT id, username"));
+}
+
+#[test]
+fn test_jnewproc_comprehensive() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            id int
+            username char(50)
+            email char(100)
+            status byte
+            PROC SimpleSelect SELECT
+                "SELECT * FROM Users"
+            PROC SelectWithInput SELECT
+                INPUT
+                    search_term char(100)
+                    status_filter byte
+                "SELECT * FROM Users WHERE username LIKE ? AND status = ?"
+            PROC SelectWithOutput SELECT
+                OUTPUT
+                    Users.id int
+                    Users.username char(50)
+                "SELECT id, username FROM Users"
+            PROC SelectWithBoth SELECT
+                INPUT
+                    min_id int
+                OUTPUT
+                    Users.id int
+                    Users.username char(50)
+                "SELECT id, username FROM Users WHERE id >= ?"
+            PROC StandardSelect SELECT (STANDARD)
+                "SELECT * FROM Users"
+    "#;
+    
+    let result = parse_database(input);
+    assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    assert_eq!(table.procs.len(), 5);
+    
+    // Test SimpleSelect
+    let simple_select = &table.procs[0];
+    assert_eq!(simple_select.name, "SimpleSelect");
+    assert!(!simple_select.is_built_in);
+    assert!(simple_select.use_std);
+    assert!(simple_select.extends_std);
+    assert!(!simple_select.is_std);
+    assert_eq!(simple_select.inputs.len(), 0);
+    assert_eq!(simple_select.outputs.len(), 0);
+    assert_eq!(simple_select.lines.len(), 1);
+    
+    // Test SelectWithInput
+    let select_with_input = &table.procs[1];
+    assert_eq!(select_with_input.name, "SelectWithInput");
+    assert_eq!(select_with_input.inputs.len(), 2);
+    assert_eq!(select_with_input.inputs[0].name, "search_term");
+    assert_eq!(select_with_input.inputs[1].name, "status_filter");
+    assert_eq!(select_with_input.outputs.len(), 0);
+    
+    // Test SelectWithOutput
+    let select_with_output = &table.procs[2];
+    assert_eq!(select_with_output.name, "SelectWithOutput");
+    assert_eq!(select_with_output.inputs.len(), 0);
+    assert_eq!(select_with_output.outputs.len(), 2);
+    assert_eq!(select_with_output.outputs[0].name, "Users.id");
+    assert_eq!(select_with_output.outputs[1].name, "Users.username");
+    
+    // Test SelectWithBoth
+    let select_with_both = &table.procs[3];
+    assert_eq!(select_with_both.name, "SelectWithBoth");
+    assert_eq!(select_with_both.inputs.len(), 1);
+    assert_eq!(select_with_both.outputs.len(), 2);
+    assert_eq!(select_with_both.inputs[0].name, "min_id");
+    
+    // Test StandardSelect
+    let standard_select = &table.procs[4];
+    assert_eq!(standard_select.name, "StandardSelect");
+    assert!(standard_select.is_std);
+    assert!(standard_select.use_std);
+    assert!(standard_select.extends_std);
 } 

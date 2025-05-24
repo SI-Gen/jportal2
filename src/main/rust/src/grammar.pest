@@ -83,6 +83,13 @@ EXISTS = { ^"exists" }
 MERGE = { ^"merge" }
 STANDARD = { ^"standard" }
 
+// Additional tokens for jNewProc
+INPUT = { ^"input" }
+INOUT = { ^"inout" }
+SQL = { ^"sql" }
+MULTIPLE = { ^"multiple" }
+SINGLE = { ^"single" }
+
 // Field types (simplified)
 BLOB = { ^"blob" }
 BOOLEAN = { ^"boolean" | ^"bit" }
@@ -386,7 +393,9 @@ proc_section = {
             (EXISTS) |
             (MERGE)
         ) ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
-        // Regular procedure elements
+        // Custom SELECT procedure (jNewProc equivalent)
+        custom_select_proc |
+        // Regular procedure body
         proc_body
     )?
 }
@@ -466,15 +475,11 @@ order_column = {
     non_keyword_identifier
 }
 
-// Output type specification
-output_type = {
-    identifier
-}
-
 // Row count specification for bulk operations
 row_count = {
     LEFTPAREN ~ number ~ RIGHTPAREN
 }
+
 
 // Enhanced parameter section - matches jParm()
 parm_section = {
@@ -631,4 +636,77 @@ float_size = {
 // Field list for backward compatibility
 field_list = {
     LEFTPAREN ~ identifier ~ (COMMA ~ identifier)* ~ RIGHTPAREN
+}
+
+// Standard procedure patterns
+standard_proc = {
+    insert_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+    update_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+    updatefor_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+    updateby_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+    bulkinsert_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+    maxtmstamp_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+    bulkupdate_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+    deleteone_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+    deleteall_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+    deleteby_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+    selectone_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+    selectoneby_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+    selectby_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+    selectall_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+    count_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+    exists_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+    merge_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)?
+}
+
+// Custom procedure with SELECT statement
+custom_select_proc = {
+    SELECT ~
+    (LEFTPAREN ~ STANDARD ~ RIGHTPAREN)? ~
+    (INPUT ~ input_type? ~ field_def+)? ~
+    (OUTPUT ~ output_type? ~ package_field_def*)? ~
+    (old_code | new_code)
+}
+
+// Input type specifications
+input_type = {
+    (LEFTPAREN ~ MULTIPLE ~ RIGHTPAREN) |
+    (LEFTPAREN ~ number ~ RIGHTPAREN) |
+    (LEFTPAREN ~ STANDARD ~ RIGHTPAREN)
+}
+
+// Output type specifications  
+output_type = {
+    (LEFTPAREN ~ SINGLE ~ (STANDARD)? ~ RIGHTPAREN) |
+    (LEFTPAREN ~ SINGLE ~ (UPDATE)? ~ RIGHTPAREN) |
+    (LEFTPAREN ~ number ~ RIGHTPAREN) |
+    (LEFTPAREN ~ STANDARD ~ (SINGLE)? ~ RIGHTPAREN)
+}
+
+// Old style code block
+old_code = {
+    (SQL)? ~
+    CODE ~
+    (code_line | dynamic_identifier)* ~
+    ENDCODE
+}
+
+// New style code block
+new_code = {
+    codeline*
+}
+
+// Code line content - more flexible to handle whitespace
+code_line = {
+    string_literal
+}
+
+// Dynamic identifier with optional size
+dynamic_identifier = {
+    identifier ~ opt_size?
+}
+
+// Optional size specification
+opt_size = {
+    LEFTPAREN ~ number ~ RIGHTPAREN
 } 
