@@ -2612,6 +2612,142 @@ fn parse_j_output_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc, 
     Ok(())
 }
 
+/// JavaCC jNewData() equivalent - creates a new data proc and processes DATALINE tokens
+fn parse_j_new_data_into(pair: pest::iterators::Pair<Rule>) -> Result<Proc, Box<dyn std::error::Error>> {
+    let mut proc = Proc {
+        name: String::new(),
+        is_proc: false,
+        is_sproc: false,
+        is_built_in: false,
+        is_update: false,
+        is_single: false,
+        is_std: false,
+        has_returning: false,
+        use_std: false,
+        extends_std: false,
+        comments: Vec::new(),
+        options: Vec::new(),
+        inputs: Vec::new(),
+        outputs: Vec::new(),
+        lines: Vec::new(),
+        fields: Vec::new(),
+        start_line: Some(1),
+        table: None,
+        row_count: None,
+        is_multiple_input: false,
+        no_rows: None,
+        has_updates: false,
+        is_sql: false,
+        dynamics: Vec::new(),
+        dynamic_sizes: Vec::new(),
+        is_data: true,  // JavaCC: proc.isData = true
+        is_idl_code: false,
+        update_fields: Vec::new(),
+        order_fields: Vec::new(),
+        dynamic_strung: Vec::new(),
+    };
+    
+    // Process the first DATALINE token - matches JavaCC t = <DATALINE>
+    for inner_pair in pair.into_inner() {
+        match inner_pair.as_rule() {
+            Rule::data_line => {
+                let line_content = inner_pair.as_str().trim();
+                if !line_content.is_empty() {
+                    // JavaCC: Line l1 = new Line(..., new SQLProcStringToken(t.image.trim()))
+                    proc.lines.push(line_content.to_string());
+                }
+            }
+            _ => {}
+        }
+    }
+    
+    Ok(proc)
+}
+
+/// JavaCC jIdlCode() equivalent - creates a new IDL code proc and processes IDLLINE tokens  
+fn parse_j_idl_code_into(pair: pest::iterators::Pair<Rule>) -> Result<Proc, Box<dyn std::error::Error>> {
+    let mut proc = Proc {
+        name: String::new(),
+        is_proc: false,
+        is_sproc: false,
+        is_built_in: false,
+        is_update: false,
+        is_single: false,
+        is_std: false,
+        has_returning: false,
+        use_std: false,
+        extends_std: false,
+        comments: Vec::new(),
+        options: Vec::new(),
+        inputs: Vec::new(),
+        outputs: Vec::new(),
+        lines: Vec::new(),
+        fields: Vec::new(),
+        start_line: Some(1),
+        table: None,
+        row_count: None,
+        is_multiple_input: false,
+        no_rows: None,
+        has_updates: false,
+        is_sql: false,
+        dynamics: Vec::new(),
+        dynamic_sizes: Vec::new(),
+        is_data: false,
+        is_idl_code: true,  // JavaCC: proc.isIdlCode = true
+        update_fields: Vec::new(),
+        order_fields: Vec::new(),
+        dynamic_strung: Vec::new(),
+    };
+    
+    // Process the first IDLLINE token - matches JavaCC t = <IDLLINE>
+    for inner_pair in pair.into_inner() {
+        match inner_pair.as_rule() {
+            Rule::idl_line => {
+                let line_content = inner_pair.as_str().trim();
+                if !line_content.is_empty() {
+                    // JavaCC: Line l1 = new Line(..., new SQLProcStringToken(t.image.trim()))
+                    proc.lines.push(line_content.to_string());
+                }
+            }
+            _ => {}
+        }
+    }
+    
+    Ok(proc)
+}
+
+/// JavaCC jOptSize() equivalent - parses optional size specification
+fn parse_dynamic_identifier_with_size_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> Result<(), Box<dyn std::error::Error>> {
+    let mut identifier = String::new();
+    let mut size = 256; // Default size - matches JavaCC jOptSize() default
+    
+    for inner_pair in pair.into_inner() {
+        match inner_pair.as_rule() {
+            Rule::identifier => {
+                identifier = inner_pair.as_str().to_string();
+            }
+            Rule::opt_size => {
+                size = parse_opt_size(inner_pair)?;
+            }
+            _ => {}
+        }
+    }
+    
+    if !identifier.is_empty() {
+        // Add to dynamics if not already present - matches JavaCC !proc.hasDynamic(s)
+        if !proc.has_dynamic(&identifier) {
+            if proc.extends_std {
+                proc.use_std = false; // JavaCC: if (proc.extendsStd == true) proc.useStd = false;
+            }
+            proc.dynamics.push(identifier);
+            proc.dynamic_sizes.push(size);
+            proc.dynamic_strung.push(false); // Default to not strung
+        }
+    }
+    
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
