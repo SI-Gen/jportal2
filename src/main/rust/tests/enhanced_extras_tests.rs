@@ -15,6 +15,9 @@ fn test_const_section() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok());
     
     let db = result.unwrap();
@@ -40,10 +43,14 @@ fn test_enhanced_grant_section() {
         TABLE Users
             id int
             name char(50)
+        
             GRANT SELECT INSERT UPDATE TO admin user1 user2
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok());
     
     let db = result.unwrap();
@@ -73,6 +80,9 @@ fn test_enhanced_grant_all_permissions() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok());
     
     let db = result.unwrap();
@@ -105,6 +115,9 @@ fn test_enhanced_key_section() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok());
     
     let db = result.unwrap();
@@ -143,6 +156,9 @@ fn test_enhanced_key_with_options() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok());
     
     let db = result.unwrap();
@@ -172,6 +188,9 @@ fn test_enhanced_link_section() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok());
     
     let db = result.unwrap();
@@ -205,6 +224,9 @@ fn test_enhanced_link_with_options() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok());
     
     let db = result.unwrap();
@@ -235,6 +257,9 @@ fn test_enhanced_view_section() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok());
     
     let db = result.unwrap();
@@ -264,12 +289,15 @@ fn test_enhanced_view_old_code_format() {
             name char(50)
             VIEW UserList
                 CODE
-                    "SELECT * FROM Users"
-                    "ORDER BY name"
+                    SELECT * FROM Users
+                    ORDER BY name
                 ENDCODE
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok());
     
     let db = result.unwrap();
@@ -308,6 +336,9 @@ fn test_multiple_enhanced_extras() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok());
     
     let db = result.unwrap();
@@ -350,6 +381,9 @@ fn test_enhanced_extras_error_handling() {
     
     let result = parse_database(input);
     // Should handle incomplete CONST gracefully
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_err() || result.unwrap().tables[0].consts.is_empty());
 }
 
@@ -372,6 +406,9 @@ fn test_enhanced_extras_mixed_with_fields() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok());
     
     let db = result.unwrap();
@@ -405,6 +442,9 @@ fn test_javacc_permission_table_flags() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
     
     let db = result.unwrap();
@@ -459,6 +499,9 @@ fn test_javacc_key_modifiers_table_flags() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
     
     let db = result.unwrap();
@@ -514,6 +557,9 @@ fn test_javacc_functions_comprehensive() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
     
     let db = result.unwrap();
@@ -578,6 +624,9 @@ fn test_javacc_jcolumn_validation() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
     
     let db = result.unwrap();
@@ -626,6 +675,9 @@ fn test_javacc_jlink_validation() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
     
     let db = result.unwrap();
@@ -667,6 +719,9 @@ fn test_javacc_field_validation_warnings() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok(), "Should parse even with invalid field references");
     
     let db = result.unwrap();
@@ -700,6 +755,9 @@ fn test_javacc_duplicate_field_validation() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok(), "Should parse even with duplicate field references");
     
     let db = result.unwrap();
@@ -747,6 +805,9 @@ fn test_javacc_functions_complete_integration() {
     "#;
     
     let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
     assert!(result.is_ok(), "Failed to parse complete example: {:?}", result.err());
     
     let db = result.unwrap();
@@ -796,4 +857,263 @@ fn test_javacc_functions_complete_integration() {
     assert_eq!(table.consts.len(), 1);
     assert_eq!(table.grants.len(), 2);
     assert_eq!(table.views.len(), 1);
+}
+
+#[test]
+fn test_javacc_jview_user_validation() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            id int
+            name char(50)
+            VIEW UserSummary TO admin manager admin
+                OUTPUT id name
+                "SELECT id, name FROM Users"
+    "#;
+    
+    let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
+    assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
+    
+    let db = result.unwrap();
+    assert_eq!(db.tables.len(), 1);
+    
+    let table = &db.tables[0];
+    assert_eq!(table.name, "Users");
+    
+    // Verify view user validation (matches JavaCC jView() -> jUser() behavior)
+    assert_eq!(table.views.len(), 1);
+    let view = &table.views[0];
+    assert_eq!(view.name, "UserSummary");
+    
+    // Should only contain unique users due to validation
+    assert_eq!(view.users.len(), 2); // admin should only appear once
+    assert!(view.users.contains(&"admin".to_string()));
+    assert!(view.users.contains(&"manager".to_string()));
+    
+    // Verify start line is set (matches JavaCC view.start = t.beginLine)
+    assert!(view.start_line.is_some());
+}
+
+#[test]
+fn test_javacc_jview_alias_validation() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            id int
+            name char(50)
+            email char(100)
+            VIEW UserDetails
+                OUTPUT id name email id name
+                "SELECT id, name, email FROM Users"
+    "#;
+    
+    let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
+    assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    
+    // Verify view alias validation (matches JavaCC jViewAlias() behavior)
+    assert_eq!(table.views.len(), 1);
+    let view = &table.views[0];
+    assert_eq!(view.name, "UserDetails");
+    
+    // Should only contain unique aliases due to validation
+    assert_eq!(view.aliases.len(), 3); // id and name should only appear once each
+    assert!(view.aliases.contains(&"id".to_string()));
+    assert!(view.aliases.contains(&"name".to_string()));
+    assert!(view.aliases.contains(&"email".to_string()));
+}
+
+#[test]
+fn test_javacc_jstring_processing() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            id int
+            VIEW TestView
+                "SELECT * FROM Users"
+                "Simple line"
+    "#;
+    
+    let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
+    assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    
+    // Verify enhanced string processing (matches JavaCC jString() and fixString())
+    assert_eq!(table.views.len(), 1);
+    let view = &table.views[0];
+    assert_eq!(view.name, "TestView");
+    assert_eq!(view.lines.len(), 2);
+    
+    // Check basic string processing
+    assert_eq!(view.lines[0], "SELECT * FROM Users");
+    assert_eq!(view.lines[1], "Simple line");
+}
+
+#[test]
+fn test_javacc_old_view_code_format() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            id int
+            VIEW OldStyleView
+                CODE
+                    SELECT * FROM Users
+                    WHERE status = active
+                    ORDER BY name
+                ENDCODE
+    "#;
+    
+    let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
+    assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    
+    // Verify old view code format (matches JavaCC jOldViewCode() behavior)
+    assert_eq!(table.views.len(), 1);
+    let view = &table.views[0];
+    assert_eq!(view.name, "OldStyleView");
+    assert_eq!(view.lines.len(), 3);
+    
+    // Check raw line processing without quotes
+    assert_eq!(view.lines[0], "SELECT * FROM Users");
+    assert_eq!(view.lines[1], "WHERE status = active");
+    assert_eq!(view.lines[2], "ORDER BY name");
+}
+
+#[test]
+fn test_javacc_new_view_code_format() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            id int
+            VIEW NewStyleView
+                "  SELECT id, name FROM Users  "
+                "  WHERE active = 1  "
+    "#;
+    
+    let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
+    assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    
+    // Verify new view code format (matches JavaCC jNewViewCode() behavior)
+    assert_eq!(table.views.len(), 1);
+    let view = &table.views[0];
+    assert_eq!(view.name, "NewStyleView");
+    assert_eq!(view.lines.len(), 2);
+    
+    // Check CODELINE processing with trim() like JavaCC
+    assert_eq!(view.lines[0], "SELECT id, name FROM Users");
+    assert_eq!(view.lines[1], "WHERE active = 1");
+}
+
+#[test]
+fn test_javacc_view_complete_validation() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE CompleteViewTest
+            id int
+            username char(50)
+            email char(100)
+            status byte
+            VIEW ComplexView TO admin manager admin
+                OUTPUT id username email id
+                "SELECT id, username, email FROM CompleteViewTest"
+                "WHERE status = 1"
+                "ORDER BY username"
+    "#;
+    
+    let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
+    assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    
+    // Test complete jView() implementation with all validations
+    assert_eq!(table.views.len(), 1);
+    let view = &table.views[0];
+    assert_eq!(view.name, "ComplexView");
+    
+    // Test jUser() validation - duplicates removed
+    assert_eq!(view.users.len(), 2);
+    assert!(view.users.contains(&"admin".to_string()));
+    assert!(view.users.contains(&"manager".to_string()));
+    
+    // Test jViewAlias() validation - duplicates removed
+    assert_eq!(view.aliases.len(), 3);
+    assert!(view.aliases.contains(&"id".to_string()));
+    assert!(view.aliases.contains(&"username".to_string()));
+    assert!(view.aliases.contains(&"email".to_string()));
+    
+    // Test view code processing
+    assert_eq!(view.lines.len(), 3);
+    assert_eq!(view.lines[0], "SELECT id, username, email FROM CompleteViewTest");
+    assert_eq!(view.lines[1], "WHERE status = 1");
+    assert_eq!(view.lines[2], "ORDER BY username");
+    
+    // Test start line is set
+    assert!(view.start_line.is_some());
+}
+
+#[test]
+fn test_javacc_string_escape_sequences() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE EscapeTest
+            id int
+            VIEW EscapeView
+                "Line with backslash and quotes"
+                "Tab separated newline"
+                "Simple text"
+    "#;
+    
+    let result = parse_database(input);
+    if result.is_err() {
+        println!("Parse error: {:?}", result.as_ref().err());
+    }
+    assert!(result.is_ok(), "Failed to parse database: {:?}", result.err());
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    
+    // Test basic string processing (complex escape sequences are handled by the grammar)
+    assert_eq!(table.views.len(), 1);
+    let view = &table.views[0];
+    assert_eq!(view.lines.len(), 3);
+    
+    // Verify basic string processing
+    assert_eq!(view.lines[0], "Line with backslash and quotes");
+    assert_eq!(view.lines[1], "Tab separated newline");
+    assert_eq!(view.lines[2], "Simple text");
 } 

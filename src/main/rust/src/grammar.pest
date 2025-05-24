@@ -59,6 +59,30 @@ INSERT = { ^"insert" }
 UPDATE = { ^"update" }
 DELETEONE = { ^"deleteone" }
 
+// Standard procedure keywords
+RETURNING = { ^"returning" }
+UPDATEFOR = { ^"updatefor" }
+UPDATEBY = { ^"updateby" }
+SET = { ^"set" }
+AS = { ^"as" }
+BULKINSERT = { ^"bulkinsert" }
+MAXTMSTAMP = { ^"maxtmstamp" }
+BULKUPDATE = { ^"bulkupdate" }
+DELETEALL = { ^"deleteall" }
+DELETEBY = { ^"deleteby" }
+SELECTONE = { ^"selectone" }
+SELECTONEBY = { ^"selectoneby" }
+SELECTBY = { ^"selectby" }
+FOR = { ^"for" }
+READONLY = { ^"readonly" }
+IN = { ^"in" }
+ORDER = { ^"order" }
+DESC = { ^"desc" }
+COUNT = { ^"count" }
+EXISTS = { ^"exists" }
+MERGE = { ^"merge" }
+STANDARD = { ^"standard" }
+
 // Field types (simplified)
 BLOB = { ^"blob" }
 BOOLEAN = { ^"boolean" | ^"bit" }
@@ -256,8 +280,18 @@ user = {
 
 // Non-keyword identifier for users to avoid conflicts
 non_keyword_identifier = @{ 
-    !(ALL | DELETE | INSERT | SELECT | UPDATE | EXECUTE | GRANT | TO | KEY | LINK | VIEW | CONST | PROC | SPROC | PARM | TABLE | DATABASE | SERVER | SCHEMA | USERID | PASSWORD | FLAGS | PACKAGE | OUTPUT | IMPORT | ALIAS | OPTIONS | CHECK | NOT | NULL | DEFAULT | DEFAULTV | CALC | CASCADE | UNIQUE | PRIMARY | CODE | ENDCODE) ~
+    !(keyword ~ !(ASCII_ALPHANUMERIC | "_")) ~
     identifier 
+}
+
+// All keywords that should not be matched as identifiers
+keyword = {
+    ALL | DELETE | INSERT | SELECT | UPDATE | EXECUTE | GRANT | TO | KEY | LINK | VIEW | CONST | 
+    PROC | SPROC | PARM | TABLE | DATABASE | SERVER | SCHEMA | USERID | PASSWORD | FLAGS | 
+    PACKAGE | OUTPUT | IMPORT | ALIAS | OPTIONS | CHECK | NOT | NULL | DEFAULT | DEFAULTV | 
+    CALC | CASCADE | UNIQUE | PRIMARY | CODE | ENDCODE | RETURNING | UPDATEFOR | UPDATEBY | 
+    SET | AS | BULKINSERT | MAXTMSTAMP | BULKUPDATE | DELETEALL | DELETEBY | SELECTONE | 
+    SELECTONEBY | SELECTBY | FOR | READONLY | IN | ORDER | DESC | COUNT | EXISTS | MERGE | STANDARD
 }
 
 // Enhanced key section - matches jKey()
@@ -317,7 +351,12 @@ view_code = {
 }
 
 old_view_code = {
-    CODE ~ string_literal* ~ ENDCODE
+    CODE ~ raw_content ~ ENDCODE
+}
+
+// Raw content for CODE/ENDCODE blocks - matches JavaCC jOldViewCode() behavior
+raw_content = @{
+    (!ENDCODE ~ ANY)*
 }
 
 codeline = {
@@ -326,7 +365,38 @@ codeline = {
 
 // Procedure section
 proc_section = {
-    (PROC | SPROC) ~ identifier ~ proc_body?
+    (PROC | SPROC) ~ identifier ~ (
+        // Built-in procedure patterns with optional OPTIONS and OUTPUT
+        (
+            (UPDATEBY ~ proc_column+ ~ (SET ~ proc_column+)? ~ (AS ~ identifier)?) |
+            (INSERT ~ (RETURNING)?) |
+            (UPDATE) |
+            (UPDATEFOR ~ proc_column+) |
+            (BULKINSERT ~ row_count?) |
+            (MAXTMSTAMP) |
+            (BULKUPDATE ~ row_count?) |
+            (DELETEONE ~ (LEFTPAREN ~ STANDARD ~ RIGHTPAREN)?) |
+            (DELETEALL) |
+            (DELETEBY ~ proc_column+) |
+            (SELECTONEBY ~ proc_column+ ~ ((IN)? ~ ORDER)? ~ ((FOR)? ~ (UPDATE | READONLY))? ~ (AS ~ identifier)?) |
+            (SELECTONE ~ ((FOR)? ~ (UPDATE | READONLY))?) |
+            (SELECTBY ~ proc_column+ ~ ((IN)? ~ ORDER ~ order_column* ~ (DESC)?)? ~ ((FOR)? ~ (UPDATE | READONLY))? ~ (AS ~ identifier)?) |
+            (SELECTALL ~ ((IN)? ~ ORDER ~ order_column* ~ (DESC)?)? ~ ((FOR)? ~ (UPDATE | READONLY))?) |
+            (COUNT) |
+            (EXISTS) |
+            (MERGE)
+        ) ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+        // Regular procedure elements
+        proc_body
+    )?
+}
+
+proc_options = {
+    OPTIONS ~ string_literal+
+}
+
+proc_output = {
+    OUTPUT ~ field_def*
 }
 
 proc_body = {
@@ -335,6 +405,75 @@ proc_body = {
 
 proc_content = {
     field_def | package_field_def | identifier | string_literal | number
+}
+
+// Standard procedure section - matches jStdProc()
+std_proc_section = {
+    insert_proc |
+    update_proc |
+    updatefor_proc |
+    updateby_proc |
+    bulkinsert_proc |
+    maxtmstamp_proc |
+    bulkupdate_proc |
+    deleteone_proc |
+    deleteall_proc |
+    deleteby_proc |
+    selectone_proc |
+    selectoneby_proc |
+    selectby_proc |
+    selectall_proc |
+    count_proc |
+    exists_proc |
+    merge_proc
+}
+
+insert_proc = { INSERT ~ (RETURNING)? }
+update_proc = { UPDATE }
+updatefor_proc = { UPDATEFOR ~ proc_column+ }
+updateby_proc = { UPDATEBY ~ proc_column+ ~ (SET ~ proc_column+)? ~ (AS ~ identifier)? }
+bulkinsert_proc = { BULKINSERT ~ row_count? }
+maxtmstamp_proc = { MAXTMSTAMP }
+bulkupdate_proc = { BULKUPDATE ~ row_count? }
+deleteone_proc = { DELETEONE ~ (LEFTPAREN ~ STANDARD ~ RIGHTPAREN)? }
+deleteall_proc = { DELETEALL }
+deleteby_proc = { DELETEBY ~ proc_column+ }
+selectone_proc = { SELECTONE ~ ((FOR)? ~ (UPDATE | READONLY))? }
+selectoneby_proc = { SELECTONEBY ~ proc_column+ ~ ((IN)? ~ ORDER)? ~ ((FOR)? ~ (UPDATE | READONLY))? ~ (AS ~ identifier)? }
+selectby_proc = { SELECTBY ~ proc_column+ ~ ((IN)? ~ ORDER ~ order_column* ~ (DESC)?)? ~ ((FOR)? ~ (UPDATE | READONLY))? ~ (AS ~ identifier)? }
+selectall_proc = { SELECTALL ~ ((IN)? ~ ORDER ~ order_column* ~ (DESC)?)? ~ ((FOR)? ~ (UPDATE | READONLY))? }
+count_proc = { COUNT }
+exists_proc = { EXISTS }
+merge_proc = { MERGE }
+
+// Procedure column reference
+proc_column = {
+    non_keyword_identifier
+}
+
+// Procedure update by column reference
+proc_update_by_column = {
+    non_keyword_identifier
+}
+
+// Procedure returning column reference
+proc_returning_column = {
+    non_keyword_identifier
+}
+
+// Order column reference
+order_column = {
+    non_keyword_identifier
+}
+
+// Output type specification
+output_type = {
+    identifier
+}
+
+// Row count specification for bulk operations
+row_count = {
+    LEFTPAREN ~ number ~ RIGHTPAREN
 }
 
 // Enhanced parameter section - matches jParm()
