@@ -1,6 +1,288 @@
 use rust_parser::parse_database;
 
 #[test]
+fn test_enhanced_enum_value_with_link() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            status byte(LINK status_table ACTIVE=1, INACTIVE=0, PENDING=2)
+            priority short(HIGH=10, MEDIUM=5, LOW=1)
+    "#;
+    
+    let result = parse_database(input);
+    assert!(result.is_ok());
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    
+    let status_field = &table.fields[0];
+    assert_eq!(status_field.enum_link, Some("status_table".to_string()));
+    assert_eq!(status_field.enums.len(), 3);
+    assert_eq!(status_field.enums[0].name, "ACTIVE");
+    assert_eq!(status_field.enums[0].value, 1);
+    
+    let priority_field = &table.fields[1];
+    assert_eq!(priority_field.enum_link, None);
+    assert_eq!(priority_field.enums.len(), 3);
+    assert_eq!(priority_field.enums[0].name, "HIGH");
+    assert_eq!(priority_field.enums[0].value, 10);
+}
+
+#[test]
+fn test_enhanced_char_list_with_braces() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            category char{electronics, books, clothing}
+            status byte{active, inactive, pending}
+    "#;
+    
+    let result = parse_database(input);
+    if let Err(e) = &result {
+        println!("Error: {}", e);
+    }
+    assert!(result.is_ok());
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    
+    let category_field = &table.fields[0];
+    assert_eq!(category_field.value_list.len(), 3);
+    assert_eq!(category_field.value_list, vec!["electronics", "books", "clothing"]);
+    
+    let status_field = &table.fields[1];
+    assert_eq!(status_field.value_list.len(), 3);
+    assert_eq!(status_field.value_list, vec!["active", "inactive", "pending"]);
+}
+
+#[test]
+fn test_enhanced_char_size_formats() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            name1 char[100]
+            name2 char(200)
+            name3 char 300
+            blob1 blob[1024]
+            xml1 xml(2048)
+    "#;
+    
+    let result = parse_database(input);
+    assert!(result.is_ok());
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    
+    assert_eq!(table.fields[0].length, Some(100)); // char[100]
+    assert_eq!(table.fields[1].length, Some(200)); // char(200)
+    assert_eq!(table.fields[2].length, Some(300)); // char 300
+    assert_eq!(table.fields[3].length, Some(1024)); // blob[1024]
+    assert_eq!(table.fields[4].length, Some(2048)); // xml(2048)
+}
+
+#[test]
+fn test_enhanced_float_size_formats() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            price1 double[10,2]
+            price2 money(12,4)
+            rate float[8,3]
+    "#;
+    
+    let result = parse_database(input);
+    assert!(result.is_ok());
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    
+    let price1_field = &table.fields[0];
+    assert_eq!(price1_field.precision, Some(10));
+    assert_eq!(price1_field.scale, Some(2));
+    
+    let price2_field = &table.fields[1];
+    assert_eq!(price2_field.precision, Some(12));
+    assert_eq!(price2_field.scale, Some(4));
+    
+    let rate_field = &table.fields[2];
+    assert_eq!(rate_field.precision, Some(8));
+    assert_eq!(rate_field.scale, Some(3));
+}
+
+#[test]
+fn test_enhanced_enum_char_formats() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            status1 ansichar[50]
+            status2 ansichar(LINK status_ref ACTIVE=65, INACTIVE=73)
+            status3 ansichar 100
+    "#;
+    
+    let result = parse_database(input);
+    assert!(result.is_ok());
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    
+    let status1_field = &table.fields[0];
+    assert_eq!(status1_field.length, Some(50));
+    
+    let status2_field = &table.fields[1];
+    assert_eq!(status2_field.enum_link, Some("status_ref".to_string()));
+    assert_eq!(status2_field.enums.len(), 2);
+    assert_eq!(status2_field.enums[0].name, "ACTIVE");
+    assert_eq!(status2_field.enums[0].value, 65); // ASCII 'A'
+    
+    let status3_field = &table.fields[2];
+    assert_eq!(status3_field.length, Some(100));
+}
+
+#[test]
+fn test_enhanced_parameter_directives() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            id int
+            name char(50)
+            PARM {
+                "User Management Parameters"
+                PARMSHOWS id name
+                PARMVIEWONLY
+                PARMSUPPLIED name
+                PARMCACHE GetAllUsers extra1 extra2
+                PARMREADER SELECTALL
+                PARMINSERT INSERT
+                PARMUPDATE UPDATE
+                PARMDELETE DELETEONE
+            }
+    "#;
+    
+    let result = parse_database(input);
+    if let Err(e) = &result {
+        println!("Error: {}", e);
+    }
+    assert!(result.is_ok());
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    let parameter = &table.parameters[0];
+    
+    println!("Parameter: {:?}", parameter);
+    
+    assert_eq!(parameter.title, Some("User Management Parameters".to_string()));
+    assert!(parameter.is_view_only);
+    assert!(parameter.shows.contains(&"id".to_string()));
+    assert!(parameter.shows.contains(&"name".to_string()));
+    assert!(parameter.supplied.contains(&"name".to_string()));
+    assert_eq!(parameter.cache, Some("GetAllUsers".to_string()));
+    assert!(parameter.cache_extras.contains(&"extra1".to_string()));
+    assert!(parameter.cache_extras.contains(&"extra2".to_string()));
+    assert_eq!(parameter.reader, Some("SelectAll".to_string()));
+    assert_eq!(parameter.insert, Some("Insert".to_string()));
+    assert_eq!(parameter.update, Some("Update".to_string()));
+    assert_eq!(parameter.delete, Some("DeleteOne".to_string()));
+}
+
+#[test]
+fn test_mixed_enhanced_features() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Orders
+            id bigidentity
+            status byte(LINK order_status PENDING=1, PROCESSING=2, COMPLETED=3)
+            category char{electronics, books, clothing, other}
+            amount money[12,2]
+            notes tlob(4096)
+            metadata ansichar(LINK meta_ref ACTIVE=65, INACTIVE=73)
+            PARM {
+                "Order Management"
+                PARMSHOWS id status category
+                PARMCACHE GetOrdersByStatus
+            }
+    "#;
+    
+    let result = parse_database(input);
+    assert!(result.is_ok());
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    
+    // Check enhanced enum with link
+    let status_field = &table.fields[1];
+    assert_eq!(status_field.enum_link, Some("order_status".to_string()));
+    assert_eq!(status_field.enums.len(), 3);
+    
+    // Check enhanced char list
+    let category_field = &table.fields[2];
+    assert_eq!(category_field.value_list.len(), 4);
+    assert_eq!(category_field.value_list[3], "other");
+    
+    // Check enhanced float size
+    let amount_field = &table.fields[3];
+    assert_eq!(amount_field.precision, Some(12));
+    assert_eq!(amount_field.scale, Some(2));
+    
+    // Check enhanced char size
+    let notes_field = &table.fields[4];
+    assert_eq!(notes_field.length, Some(4096));
+    
+    // Check enhanced enum char
+    let metadata_field = &table.fields[5];
+    assert_eq!(metadata_field.enum_link, Some("meta_ref".to_string()));
+    assert_eq!(metadata_field.enums.len(), 2);
+    
+    // Check enhanced parameters
+    let parameter = &table.parameters[0];
+    assert_eq!(parameter.title, Some("Order Management".to_string()));
+    assert!(parameter.shows.len() >= 3);
+}
+
+#[test]
+fn test_backward_compatibility() {
+    let input = r#"
+        DATABASE TestDB
+        SERVER "localhost"
+        TABLE Users
+            status byte(ACTIVE=1, INACTIVE=0)
+            gender char("M", "F", "O")
+            price money(10,2)
+    "#;
+    
+    let result = parse_database(input);
+    if let Err(e) = &result {
+        println!("Error: {}", e);
+    }
+    assert!(result.is_ok());
+    
+    let db = result.unwrap();
+    let table = &db.tables[0];
+    
+    // Original enum format should still work
+    let status_field = &table.fields[0];
+    assert_eq!(status_field.enums.len(), 2);
+    assert_eq!(status_field.enums[0].name, "ACTIVE");
+    assert_eq!(status_field.enums[0].value, 1);
+    
+    // Original char list format should still work
+    let gender_field = &table.fields[1];
+    assert_eq!(gender_field.value_list.len(), 3);
+    assert_eq!(gender_field.value_list, vec!["M", "F", "O"]);
+    
+    // Original float size format should still work
+    let price_field = &table.fields[2];
+    assert_eq!(price_field.precision, Some(10));
+    assert_eq!(price_field.scale, Some(2));
+}
+
+#[test]
 fn test_field_with_parentheses_alias() {
     let input = r#"
         DATABASE TestDB
@@ -320,6 +602,9 @@ fn test_mixed_field_types_and_features() {
     "#;
     
     let result = parse_database(input);
+    if let Err(e) = &result {
+        println!("Error: {}", e);
+    }
     assert!(result.is_ok());
     
     let db = result.unwrap();

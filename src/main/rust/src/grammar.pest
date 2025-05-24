@@ -29,6 +29,36 @@ ALIAS = { ^"alias" }
 OPTIONS = { ^"options" }
 CALC = { ^"calc" }
 
+// Additional keywords for enhanced functionality
+CONST = { ^"const" }
+TO = { ^"to" }
+CODE = { ^"code" }
+ENDCODE = { ^"endcode" }
+CODELINE = { ^"codeline" }
+UNIQUE = { ^"unique" }
+PRIMARY = { ^"primary" }
+CASCADE = { ^"cascade" }
+
+// Permission keywords
+ALL = { ^"all" }
+DELETE = { ^"delete" }
+SELECT = { ^"select" }
+EXECUTE = { ^"execute" }
+
+// Parameter keywords
+PARMSHOWS = { ^"parmshows" }
+PARMVIEWONLY = { ^"parmviewonly" }
+PARMSUPPLIED = { ^"parmsupplied" }
+PARMCACHE = { ^"parmcache" }
+PARMREADER = { ^"parmreader" }
+PARMINSERT = { ^"parminsert" }
+PARMUPDATE = { ^"parmupdate" }
+PARMDELETE = { ^"parmdelete" }
+SELECTALL = { ^"selectall" }
+INSERT = { ^"insert" }
+UPDATE = { ^"update" }
+DELETEONE = { ^"deleteone" }
+
 // Field types (simplified)
 BLOB = { ^"blob" }
 BOOLEAN = { ^"boolean" | ^"bit" }
@@ -147,9 +177,7 @@ tables_section = {
 
 table_definition = {
     (table_section | table_import_section) ~
-    table_extras* ~
-    proc_section* ~
-    parm_section*
+    (const_section | enhanced_grant_section | original_grant_section | enhanced_key_section | original_key_section | enhanced_link_section | original_link_section | enhanced_view_section | proc_section | parm_section)* 
 }
 
 // Enhanced table structure - matches jTable()
@@ -194,25 +222,106 @@ options_clause = {
     OPTIONS ~ string_literal+
 }
 
-// Table extras (keys, links, grants, etc.)
+// Table extras (keys, links, grants, views, constants, etc.)
 table_extras = {
-    key_section | link_section | grant_section
+    const_section | enhanced_grant_section | enhanced_key_section | enhanced_link_section | enhanced_view_section
 }
 
-key_section = {
-    KEY ~ identifier ~ field_list?
+// Constants section - matches jConst()
+const_section = {
+    CONST ~ identifier ~ const_value+
 }
 
-link_section = {
-    LINK ~ identifier ~ field_list?
+const_value = {
+    identifier ~ EQUALS ~ string_literal ~ COMMA?
 }
 
-grant_section = {
+// Enhanced grant section - matches jGrant()
+enhanced_grant_section = {
+    GRANT ~ permission+ ~ TO ~ non_keyword_identifier+
+}
+
+// Original grant section for backward compatibility
+original_grant_section = {
     GRANT ~ identifier ~ field_list?
 }
 
-field_list = {
-    LEFTPAREN ~ identifier ~ (COMMA ~ identifier)* ~ RIGHTPAREN
+permission = {
+    ALL | DELETE | INSERT | SELECT | UPDATE | EXECUTE
+}
+
+user = {
+    non_keyword_identifier
+}
+
+// Non-keyword identifier for users to avoid conflicts
+non_keyword_identifier = @{ 
+    !(ALL | DELETE | INSERT | SELECT | UPDATE | EXECUTE | GRANT | TO | KEY | LINK | VIEW | CONST | PROC | SPROC | PARM | TABLE | DATABASE | SERVER | SCHEMA | USERID | PASSWORD | FLAGS | PACKAGE | OUTPUT | IMPORT | ALIAS | OPTIONS | CHECK | NOT | NULL | DEFAULT | DEFAULTV | CALC | CASCADE | UNIQUE | PRIMARY | CODE | ENDCODE) ~
+    identifier 
+}
+
+// Enhanced key section - matches jKey()
+enhanced_key_section = {
+    KEY ~ identifier ~ 
+    (OPTIONS ~ string_literal+)* ~
+    key_modifier* ~
+    non_keyword_identifier+
+}
+
+// Original key section for backward compatibility
+original_key_section = {
+    KEY ~ identifier ~ field_list?
+}
+
+key_modifier = {
+    UNIQUE | PRIMARY
+}
+
+key_column = {
+    non_keyword_identifier
+}
+
+// Enhanced link section - matches jLink()
+enhanced_link_section = {
+    LINK ~ package_ident ~
+    (LEFTPAREN ~ non_keyword_identifier+ ~ RIGHTPAREN)? ~
+    (DELETE ~ CASCADE?)? ~
+    (UPDATE ~ CASCADE?)? ~
+    (OPTIONS ~ string_literal+)* ~
+    non_keyword_identifier+
+}
+
+// Original link section for backward compatibility
+original_link_section = {
+    LINK ~ identifier ~ field_list?
+}
+
+link_column = {
+    non_keyword_identifier
+}
+
+// Enhanced view section - matches jView()
+enhanced_view_section = {
+    VIEW ~ identifier ~
+    (TO ~ non_keyword_identifier+)? ~
+    (OUTPUT ~ view_alias+)? ~
+    (view_code | old_view_code)?
+}
+
+view_alias = {
+    identifier
+}
+
+view_code = {
+    codeline+
+}
+
+old_view_code = {
+    CODE ~ string_literal* ~ ENDCODE
+}
+
+codeline = {
+    string_literal
 }
 
 // Procedure section
@@ -228,7 +337,7 @@ proc_content = {
     field_def | package_field_def | identifier | string_literal | number
 }
 
-// Parameter section
+// Enhanced parameter section - matches jParm()
 parm_section = {
     PARM ~ parm_body?
 }
@@ -238,7 +347,20 @@ parm_body = {
 }
 
 parm_content = {
-    identifier | string_literal | number
+    string_literal | PARMSHOWS | PARMVIEWONLY | PARMSUPPLIED | PARMCACHE | PARMREADER | PARMINSERT | PARMUPDATE | PARMDELETE | SELECTALL | INSERT | UPDATE | DELETEONE | identifier | number
+}
+
+// Parameter directives
+parm_directive = {
+    (string_literal) |  // title
+    (PARMSHOWS ~ identifier+) |
+    (PARMVIEWONLY) |
+    (PARMSUPPLIED ~ identifier+) |
+    (PARMCACHE ~ (identifier | SELECTALL) ~ identifier*) |
+    (PARMREADER ~ (identifier | SELECTALL)) |
+    (PARMINSERT ~ (identifier | INSERT)) |
+    (PARMUPDATE ~ (identifier | UPDATE)) |
+    (PARMDELETE ~ (identifier | DELETEONE))
 }
 
 // Enhanced field definitions - matches jPackageField()
@@ -255,59 +377,90 @@ field_def = {
 field_type = {
     TIMESTAMP |
     AUTOTIMESTAMP |
-    BLOB ~ char_size? |
+    BLOB ~ (enhanced_char_size)? |
     BOOLEAN |
-    BYTE ~ (enum_value | char_list)? |
-    CHAR ~ char_size? ~ char_list? |
-    ANSICHAR ~ char_size? ~ char_list? |
-    WCHAR ~ char_size? ~ char_list? |
-    WANSICHAR ~ char_size? ~ char_list? |
-    UTF8 ~ char_size? ~ char_list? |
-    SHORT ~ (enum_value | char_list)? |
-    INT ~ (enum_value | char_list)? |
+    BYTE ~ (enhanced_enum_value | enhanced_char_list | enum_value | char_list)? |
+    CHAR ~ enhanced_char_size? ~ (enhanced_char_list | char_list)? |
+    ANSICHAR ~ (enhanced_enum_char | enhanced_char_list | char_list)? |
+    WCHAR ~ enhanced_char_size? ~ (enhanced_char_list | char_list)? |
+    WANSICHAR ~ (enhanced_enum_char | enhanced_char_list | char_list)? |
+    UTF8 ~ enhanced_char_size? ~ (enhanced_char_list | char_list)? |
+    SHORT ~ (enhanced_enum_value | enhanced_char_list | enum_value | char_list)? |
+    INT ~ (enhanced_enum_value | enhanced_char_list | enum_value | char_list)? |
     LONG |
     UID |
     DATETIME |
     DATE |
     TIME |
-    TLOB ~ char_size? |
-    XML ~ char_size? |
-    BIGXML ~ char_size? |
-    JSON ~ char_size? |
-    BIGJSON ~ char_size? |
+    TLOB ~ (enhanced_char_size)? |
+    XML ~ (enhanced_char_size)? |
+    BIGXML ~ (enhanced_char_size)? |
+    JSON ~ (enhanced_char_size)? |
+    BIGJSON ~ (enhanced_char_size)? |
     USERSTAMP |
     SEQUENCE |
     BIGSEQUENCE |
     IDENTITY |
     BIGIDENTITY |
-    (DOUBLE | FLOAT) ~ float_size? |
-    MONEY ~ float_size?
+    (DOUBLE | FLOAT) ~ (enhanced_float_size | float_size)? |
+    MONEY ~ (enhanced_float_size | float_size)?
 }
 
-// Size specifications
-char_size = {
-    LEFTPAREN ~ number ~ RIGHTPAREN
+// Enhanced size specifications - matches jCharsize()
+enhanced_char_size = {
+    (LEFTBRACK ~ number ~ RIGHTBRACK) |
+    (LEFTPAREN ~ number ~ RIGHTPAREN) |
+    number
 }
 
-float_size = {
-    LEFTPAREN ~ number ~ (COMMA ~ number)? ~ RIGHTPAREN
+// Enhanced float size - matches jFloatsize()
+enhanced_float_size = {
+    (LEFTBRACK ~ number ~ COMMA ~ number ~ RIGHTBRACK) |
+    (LEFTPAREN ~ number ~ COMMA ~ number ~ RIGHTPAREN)
 }
 
-// Enum and list specifications
-enum_value = {
-    LEFTPAREN ~ enum_item ~ (COMMA ~ enum_item)* ~ RIGHTPAREN
+// Enhanced enum specifications - matches jEnumValue()
+enhanced_enum_value = {
+    LEFTPAREN ~ 
+    (LINK ~ identifier)? ~
+    (enum_item ~ COMMA?)+ ~
+    RIGHTPAREN
 }
 
 enum_item = {
     identifier ~ EQUALS ~ number
 }
 
+// Enhanced char list - matches jCharList()
+enhanced_char_list = {
+    LEFTBRACE ~ 
+    (identifier ~ COMMA?)+ ~
+    RIGHTBRACE
+}
+
+// Enhanced enum char - matches jEnumChar()
+enhanced_enum_char = {
+    (LEFTBRACK ~ number ~ RIGHTBRACK) |
+    (LEFTPAREN ~ 
+        (number | 
+         ((LINK ~ identifier)? ~ (enum_char_item ~ COMMA?)+)
+        ) ~ 
+     RIGHTPAREN) |
+    number
+}
+
+enum_char_item = {
+    identifier ~ EQUALS ~ number  // Using number for ASCII char values
+}
+
+// Original char_list for backward compatibility
 char_list = {
     LEFTPAREN ~ string_literal ~ (COMMA ~ string_literal)* ~ RIGHTPAREN
 }
 
-enum_char = {
-    LEFTPAREN ~ string_literal ~ (COMMA ~ string_literal)* ~ RIGHTPAREN
+// Original enum_value for backward compatibility
+enum_value = {
+    LEFTPAREN ~ enum_item ~ (COMMA ~ enum_item)* ~ RIGHTPAREN
 }
 
 // Lookup type - matches jLookup()
@@ -331,7 +484,12 @@ package_field_modifiers = {
     (CHECK ~ string_literal)
 }
 
-// View sections (basic implementation)
-view_section = {
-    VIEW ~ identifier
+// Original float size for backward compatibility
+float_size = {
+    LEFTPAREN ~ number ~ (COMMA ~ number)? ~ RIGHTPAREN
+}
+
+// Field list for backward compatibility
+field_list = {
+    LEFTPAREN ~ identifier ~ (COMMA ~ identifier)* ~ RIGHTPAREN
 } 

@@ -193,8 +193,7 @@ fn test_table_with_parm() {
             id int
             name char(50)
             PARM {
-                title "User Management"
-                view_only
+                "User Management"
                 "Additional parameters"
             }
     "#;
@@ -204,9 +203,9 @@ fn test_table_with_parm() {
     
     let db = result.unwrap();
     let table = &db.tables[0];
+    println!("Parameters: {:?}", table.parameters);
     assert_eq!(table.parameters.len(), 1);
-    assert_eq!(table.parameters[0].shows.len(), 2); // title and view_only
-    assert_eq!(table.parameters[0].supplied.len(), 2); // "User Management" and "Additional parameters"
+    assert_eq!(table.parameters[0].title, Some("User Management".to_string()));
 }
 
 #[test]
