@@ -365,4 +365,426 @@ fn test_mixed_regular_and_package_fields() {
     assert_eq!(table.fields[3].name, "com.example.audit.created_at");
     assert!(table.fields[3].is_package_field);
     assert_eq!(table.fields[3].default_value, Some("NOW()".to_string()));
+}
+
+#[cfg(test)]
+mod enhanced_javacc_tests {
+    use super::*;
+
+    #[test]
+    fn test_new_data_block_parsing() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                PROC SQLDATA
+                INSERT INTO Users VALUES (1, 'test')
+                INSERT INTO Users VALUES (2, 'test2')
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse new data block: {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        assert_eq!(table.procs.len(), 1);
+        
+        let proc = &table.procs[0];
+        assert!(proc.is_data);
+        assert!(!proc.is_idl_code);
+        assert_eq!(proc.lines.len(), 2);
+    }
+
+    #[test]
+    fn test_idl_code_block_parsing() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                PROC IDLCODE
+                interface UserService {
+                    void createUser(in User user);
+                }
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse IDL code block: {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        assert_eq!(table.procs.len(), 1);
+        
+        let proc = &table.procs[0];
+        assert!(proc.is_idl_code);
+        assert!(!proc.is_data);
+        assert_eq!(proc.lines.len(), 3);
+    }
+
+    #[test]
+    fn test_enhanced_input_type_parsing() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                PROC TestProc SELECT
+                    INPUT (MULTIPLE)
+                        search_term char(100)
+                    OUTPUT
+                        Users.id int
+                    "SELECT id FROM Users WHERE username LIKE ?"
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse enhanced input type: {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert!(proc.is_multiple_input);
+        assert_eq!(proc.inputs.len(), 1);
+        assert_eq!(proc.inputs[0].name, "search_term");
+    }
+
+    #[test]
+    fn test_enhanced_output_type_parsing() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                PROC TestProc SELECT
+                    INPUT
+                        search_term char(100)
+                    OUTPUT (SINGLE)
+                        Users.id int
+                        Users.username char(50)
+                    "SELECT id, username FROM Users WHERE username = ?"
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse enhanced output type: {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert!(proc.is_single);
+        assert_eq!(proc.outputs.len(), 2);
+    }
+
+    #[test]
+    fn test_dynamic_sql_parsing() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                PROC TestProc SELECT
+                    INPUT
+                        search_term char(100)
+                    OUTPUT
+                        Users.id int
+                    "SELECT id FROM Users WHERE username LIKE &search_term"
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse dynamic SQL: {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert_eq!(proc.dynamics.len(), 1);
+        assert_eq!(proc.dynamics[0], "search_term");
+        assert_eq!(proc.dynamic_sizes[0], 256); // Default size
+        assert_eq!(proc.dynamic_strung[0], false);
+    }
+
+    #[test]
+    fn test_dynamic_sql_with_size() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                PROC TestProc SELECT
+                    INPUT
+                        search_term char(100)
+                    OUTPUT
+                        Users.id int
+                    "SELECT id FROM Users WHERE username LIKE &search_term(100)"
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse dynamic SQL with size: {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert_eq!(proc.dynamics.len(), 1);
+        assert_eq!(proc.dynamics[0], "search_term");
+        assert_eq!(proc.dynamic_sizes[0], 100);
+    }
+
+    #[test]
+    fn test_dynamic_sql_strung() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                PROC TestProc SELECT
+                    INPUT
+                        search_term char(100)
+                    OUTPUT
+                        Users.id int
+                    "SELECT id FROM Users WHERE username LIKE &'search_term'"
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse strung dynamic SQL: {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert_eq!(proc.dynamics.len(), 1);
+        assert_eq!(proc.dynamics[0], "search_term");
+        assert_eq!(proc.dynamic_strung[0], true);
+    }
+
+    #[test]
+    fn test_old_code_with_dynamic_identifiers() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                PROC TestProc
+                    SQL
+                    CODE
+                        SELECT * FROM Users WHERE id = &search_term(100)
+                        ORDER BY id
+                    ENDCODE
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse old code with dynamic identifiers: {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert!(proc.is_sql);
+        assert_eq!(proc.dynamics.len(), 1);
+        assert_eq!(proc.dynamics[0], "search_term");
+        assert_eq!(proc.dynamic_sizes[0], 100);
+    }
+
+    #[test]
+    fn test_user_proc_with_inout() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                PROC TestProc
+                    INOUT (SINGLE)
+                        user_id int
+                        username char(50)
+                    CODE
+                        UPDATE Users SET username = ? WHERE id = ?
+                    ENDCODE
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse user proc with INOUT: {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert!(!proc.is_built_in);
+        assert!(proc.is_single);
+        assert_eq!(proc.inputs.len(), 2);
+        assert_eq!(proc.inputs[0].name, "user_id");
+        assert_eq!(proc.inputs[1].name, "username");
+        assert!(proc.inputs[0].is_in);
+        assert!(proc.inputs[1].is_in);
+    }
+
+    #[test]
+    fn test_proc_with_standard_extension() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                PROC TestProc (STANDARD)
+                    INPUT
+                        search_term char(100)
+                    CODE
+                        SELECT * FROM Users WHERE username LIKE ?
+                    ENDCODE
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse proc with STANDARD extension: {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert!(proc.extends_std);
+        assert!(proc.use_std);
+        assert!(proc.is_std);
+        assert!(!proc.is_built_in);
+    }
+
+    #[test]
+    fn test_multiple_dynamic_variables() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                email char(100)
+                PROC TestProc SELECT
+                    INPUT
+                        search_term char(100)
+                        email_filter char(100)
+                    OUTPUT
+                        Users.id int
+                    "SELECT id FROM Users WHERE username LIKE &search_term AND email LIKE &email_filter"
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse multiple dynamic variables: {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert_eq!(proc.dynamics.len(), 2);
+        assert!(proc.dynamics.contains(&"search_term".to_string()));
+        assert!(proc.dynamics.contains(&"email_filter".to_string()));
+    }
+
+    #[test]
+    fn test_proc_helper_methods() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                PROC TestProc SELECT
+                    INPUT
+                        search_term char(100)
+                    OUTPUT
+                        Users.id int
+                    "SELECT id FROM Users WHERE username LIKE &search_term"
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse for helper method tests: {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        // Test helper methods
+        assert!(proc.has_input("search_term"));
+        assert!(!proc.has_input("nonexistent"));
+        assert!(proc.has_output("Users.id"));
+        assert!(!proc.has_output("nonexistent"));
+        assert!(proc.has_dynamic("search_term"));
+        assert!(!proc.has_dynamic("nonexistent"));
+    }
+
+    #[test]
+    fn test_complex_data_and_code_blocks() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                PROC SQLDATA
+                INSERT INTO Users (id, username) VALUES (1, 'admin')
+                INSERT INTO Users (id, username) VALUES (2, 'user')
+                PROC IDLCODE
+                interface UserService {
+                    User getUser(in long id);
+                    void updateUser(in User user);
+                }
+                PROC TestSelect SELECT
+                    INPUT
+                        user_id int
+                    OUTPUT
+                        Users.username char(50)
+                    "SELECT username FROM Users WHERE id = &user_id"
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse complex data and code blocks: {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        assert_eq!(table.procs.len(), 3);
+        
+        // Check data proc
+        let data_proc = &table.procs[0];
+        assert!(data_proc.is_data);
+        assert_eq!(data_proc.lines.len(), 2);
+        
+        // Check IDL proc
+        let idl_proc = &table.procs[1];
+        assert!(idl_proc.is_idl_code);
+        assert!(idl_proc.lines.len() > 0);
+        
+        // Check SELECT proc
+        let select_proc = &table.procs[2];
+        assert!(!select_proc.is_built_in);
+        assert_eq!(select_proc.inputs.len(), 1);
+        assert_eq!(select_proc.outputs.len(), 1);
+        assert_eq!(select_proc.dynamics.len(), 1);
+    }
+
+    #[test]
+    fn test_simple_old_code_debug() {
+        let input = r#"DATABASE TestDB
+SERVER "localhost"
+TABLE Users
+id int
+PROC TestProc
+CODE
+SELECT * FROM Users WHERE id = &search_term(100)
+ENDCODE"#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse simple old code: {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert_eq!(proc.name, "TestProc");
+        assert!(!proc.lines.is_empty());
+        assert!(!proc.dynamics.is_empty());
+    }
 } 

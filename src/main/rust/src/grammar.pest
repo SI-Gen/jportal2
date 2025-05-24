@@ -34,10 +34,18 @@ CONST = { ^"const" }
 TO = { ^"to" }
 CODE = { ^"code" }
 ENDCODE = { ^"endcode" }
+SQLCODE = { ^"sqlcode" }
+ENDSQLCODE = { ^"endsqlcode" }
 CODELINE = { ^"codeline" }
 UNIQUE = { ^"unique" }
 PRIMARY = { ^"primary" }
 CASCADE = { ^"cascade" }
+
+// Data and IDL block keywords
+SQLDATA = { ^"sqldata" }
+ENDDATA = { ^"enddata" }
+IDLCODE = { ^"idlcode" }
+ENDIDLCODE = { ^"endidlcode" }
 
 // Permission keywords
 ALL = { ^"all" }
@@ -148,6 +156,11 @@ package_ident = { identifier ~ ("." ~ identifier)* }
 
 // Identifier or string - matches jIdentOrString()
 ident_or_string = { literal_identifier | string_literal | identifier }
+
+// Raw content for various block types
+raw_line = @{ (!NEWLINE ~ ANY)+ ~ NEWLINE? }
+data_line = @{ (!NEWLINE ~ !("PROC" ~ WHITESPACE) ~ !("SPROC" ~ WHITESPACE) ~ ANY)+ ~ NEWLINE? }
+idl_line = @{ (!NEWLINE ~ !("PROC" ~ WHITESPACE) ~ !("SPROC" ~ WHITESPACE) ~ ANY)+ ~ NEWLINE? }
 
 // Database structure
 database = {
@@ -298,7 +311,8 @@ keyword = {
     PACKAGE | OUTPUT | IMPORT | ALIAS | OPTIONS | CHECK | NOT | NULL | DEFAULT | DEFAULTV | 
     CALC | CASCADE | UNIQUE | PRIMARY | CODE | ENDCODE | RETURNING | UPDATEFOR | UPDATEBY | 
     SET | AS | BULKINSERT | MAXTMSTAMP | BULKUPDATE | DELETEALL | DELETEBY | SELECTONE | 
-    SELECTONEBY | SELECTBY | FOR | READONLY | IN | ORDER | DESC | COUNT | EXISTS | MERGE | STANDARD
+    SELECTONEBY | SELECTBY | FOR | READONLY | IN | ORDER | DESC | COUNT | EXISTS | MERGE | STANDARD |
+    SQLDATA | ENDDATA | IDLCODE | ENDIDLCODE | INPUT | INOUT | SQL | MULTIPLE | SINGLE
 }
 
 // Enhanced key section - matches jKey()
@@ -362,42 +376,62 @@ old_view_code = {
 }
 
 // Raw content for CODE/ENDCODE blocks - matches JavaCC jOldViewCode() behavior
-raw_content = @{
-    (!ENDCODE ~ ANY)*
-}
+raw_content = @{ (!NEWLINE ~ ANY)+ ~ NEWLINE? }
 
 codeline = {
     string_literal
 }
 
-// Procedure section
+// Procedure section - enhanced to support data and IDL blocks
 proc_section = {
-    (PROC | SPROC) ~ identifier ~ (
-        // Built-in procedure patterns with optional OPTIONS and OUTPUT
-        (
-            (UPDATEBY ~ proc_column+ ~ (SET ~ proc_column+)? ~ (AS ~ identifier)?) |
-            (INSERT ~ (RETURNING)?) |
-            (UPDATE) |
-            (UPDATEFOR ~ proc_column+) |
-            (BULKINSERT ~ row_count?) |
-            (MAXTMSTAMP) |
-            (BULKUPDATE ~ row_count?) |
-            (DELETEONE ~ (LEFTPAREN ~ STANDARD ~ RIGHTPAREN)?) |
-            (DELETEALL) |
-            (DELETEBY ~ proc_column+) |
-            (SELECTONEBY ~ proc_column+ ~ ((IN)? ~ ORDER)? ~ ((FOR)? ~ (UPDATE | READONLY))? ~ (AS ~ identifier)?) |
-            (SELECTONE ~ ((FOR)? ~ (UPDATE | READONLY))?) |
-            (SELECTBY ~ proc_column+ ~ ((IN)? ~ ORDER ~ order_column* ~ (DESC)?)? ~ ((FOR)? ~ (UPDATE | READONLY))? ~ (AS ~ identifier)?) |
-            (SELECTALL ~ ((IN)? ~ ORDER ~ order_column* ~ (DESC)?)? ~ ((FOR)? ~ (UPDATE | READONLY))?) |
-            (COUNT) |
-            (EXISTS) |
-            (MERGE)
-        ) ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
-        // Custom SELECT procedure (jNewProc equivalent)
-        custom_select_proc |
-        // Regular procedure body
-        proc_body
-    )?
+    (PROC | SPROC) ~ (
+        // Data blocks - matches jNewData()
+        (SQLDATA ~ data_line+) |
+        // IDL code blocks - matches jIdlCode()
+        (IDLCODE ~ idl_line+) |
+        // Regular procedure
+        (identifier ~ (
+            // Built-in procedure patterns with optional OPTIONS and OUTPUT
+            (
+                (UPDATEBY ~ proc_column+ ~ (SET ~ proc_column+)? ~ (AS ~ identifier)?) |
+                (INSERT ~ (RETURNING)?) |
+                (UPDATE) |
+                (UPDATEFOR ~ proc_column+) |
+                (BULKINSERT ~ row_count?) |
+                (MAXTMSTAMP) |
+                (BULKUPDATE ~ row_count?) |
+                (DELETEONE ~ (LEFTPAREN ~ STANDARD ~ RIGHTPAREN)?) |
+                (DELETEALL) |
+                (DELETEBY ~ proc_column+) |
+                (SELECTONEBY ~ proc_column+ ~ ((IN)? ~ ORDER)? ~ ((FOR)? ~ (UPDATE | READONLY))? ~ (AS ~ identifier)?) |
+                (SELECTONE ~ ((FOR)? ~ (UPDATE | READONLY))?) |
+                (SELECTBY ~ proc_column+ ~ ((IN)? ~ ORDER ~ order_column* ~ (DESC)?)? ~ ((FOR)? ~ (UPDATE | READONLY))? ~ (AS ~ identifier)?) |
+                (SELECTALL ~ ((IN)? ~ ORDER ~ order_column* ~ (DESC)?)? ~ ((FOR)? ~ (UPDATE | READONLY))?) |
+                (COUNT) |
+                (EXISTS) |
+                (MERGE)
+            ) ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
+            // Custom SELECT procedure (jNewProc equivalent)
+            custom_select_proc |
+            // Regular procedure body
+            user_proc
+        )?)
+    )
+}
+
+// New data block parsing - matches jNewData()
+new_data_block = {
+    SQLDATA ~ data_line+
+}
+
+// IDL code block parsing - matches jIdlCode()
+idl_code_block = {
+    IDLCODE ~ idl_line+
+}
+
+// Data content for old data blocks - simplified
+data_content = {
+    string_literal
 }
 
 proc_options = {
@@ -663,9 +697,29 @@ standard_proc = {
 custom_select_proc = {
     SELECT ~
     (LEFTPAREN ~ STANDARD ~ RIGHTPAREN)? ~
-    (INPUT ~ input_type? ~ field_def+)? ~
-    (OUTPUT ~ output_type? ~ package_field_def*)? ~
-    (old_code | new_code)
+    (INPUT ~ enhanced_input_type? ~ field_def+)? ~
+    (OUTPUT ~ enhanced_output_type? ~ custom_output_field*)? ~
+    (new_code | string_literal)
+}
+
+// Custom output field for SELECT procedures - no comments to avoid consuming string literals
+custom_output_field = {
+    package_ident ~ field_type ~ alias_clause? ~ package_field_modifiers*
+}
+
+// Enhanced input type specifications - matches jInputType()
+enhanced_input_type = {
+    (LEFTPAREN ~ MULTIPLE ~ RIGHTPAREN) |
+    (LEFTPAREN ~ number ~ RIGHTPAREN) |
+    (LEFTPAREN ~ STANDARD ~ RIGHTPAREN)
+}
+
+// Enhanced output type specifications - matches jOutputType()
+enhanced_output_type = {
+    (LEFTPAREN ~ SINGLE ~ (STANDARD)? ~ RIGHTPAREN) |
+    (LEFTPAREN ~ SINGLE ~ (UPDATE)? ~ RIGHTPAREN) |
+    (LEFTPAREN ~ number ~ RIGHTPAREN) |
+    (LEFTPAREN ~ STANDARD ~ (SINGLE)? ~ RIGHTPAREN)
 }
 
 // Input type specifications
@@ -683,30 +737,32 @@ output_type = {
     (LEFTPAREN ~ STANDARD ~ (SINGLE)? ~ RIGHTPAREN)
 }
 
-// Old style code block
+// Enhanced old style code block - matches jOldCode()
 old_code = {
     (SQL)? ~
     CODE ~
-    (code_line | dynamic_identifier)* ~
+    old_code_content ~
     ENDCODE
 }
 
-// New style code block
+// Raw content for CODE blocks - matches everything until ENDCODE
+old_code_content = @{
+    (!ENDCODE ~ ANY)*
+}
+
+// New style code block - matches jNewCode() with SQLCODE/ENDSQLCODE
 new_code = {
-    codeline*
+    SQLCODE ~
+    sqlcode_content ~
+    ENDSQLCODE
 }
 
-// Code line content - more flexible to handle whitespace
-code_line = {
-    string_literal
+// Raw content for SQLCODE blocks - matches everything until ENDSQLCODE
+sqlcode_content = @{
+    (!ENDSQLCODE ~ ANY)*
 }
 
-// Dynamic identifier with optional size
-dynamic_identifier = {
-    identifier ~ opt_size?
-}
-
-// Optional size specification
+// Optional size specification - matches jOptSize()
 opt_size = {
     LEFTPAREN ~ number ~ RIGHTPAREN
 }
@@ -716,8 +772,8 @@ user_proc = {
     (LEFTPAREN ~ STANDARD ~ RIGHTPAREN)? ~
     comment_clause* ~
     (OPTIONS ~ string_literal+)* ~
-    (INPUT ~ input_type? ~ field_def*)? ~
-    (INOUT ~ output_type? ~ field_def*)? ~
-    (OUTPUT ~ output_type? ~ field_def*)? ~
+    (INPUT ~ enhanced_input_type? ~ field_def*)? ~
+    (INOUT ~ enhanced_output_type? ~ field_def*)? ~
+    (OUTPUT ~ enhanced_output_type? ~ field_def*)? ~
     (old_code | new_code)
 } 

@@ -15,32 +15,41 @@ fn main() {
         TABLE Users ALIAS "UserTable" CHECK "id > 0"
             "User management table with enhanced features"
             OPTIONS "cache" "index" "optimized"
-            id bigidentity "Primary key" "Auto-generated user ID"
-            username (login) char(50) NOT NULL "User login name"
-            email char(100) DEFAULTV "user@example.com" CHECK "email LIKE '%@%'" "Email address"
-            status byte(ACTIVE=1, INACTIVE=0, PENDING=2) DEFAULTV "2" NOT NULL "User status"
-            age short(MIN=0, MAX=150) "User age"
-            balance money(10,2) DEFAULTV "0.00" "Account balance"
-            created_at timestamp "Creation timestamp"
-            profile_data json(2000) "User profile JSON"
-            avatar blob(1048576) "User avatar image"
-            preferences ansichar("light", "dark", "auto") DEFAULTV "auto" "UI preferences"
-            com.example.audit.created_by char(50) ALIAS created_by DEFAULTV "system" "Audit field"
-            com.example.audit.modified_at timestamp ALIAS modified_at CALC "Computed modification time"
-            related_user = (id) "Self-referencing lookup"
-            manager_id = "Manager lookup without parentheses"
-            KEY primary_key (id)
-            LINK email_unique (email)
-            GRANT user_access (id, username, email)
-            PROC GetUserByEmail {
-                email_param char(100) "Email parameter"
-                "SELECT * FROM Users WHERE email = ?"
-            }
-            SPROC UpdateUserStatus {
-                user_id bigidentity "User ID parameter"
-                new_status byte "New status value"
-                "UPDATE Users SET status = ? WHERE id = ?"
-            }
+        id                  bigidentity         "Primary key" "Auto-generated user ID"
+        username (login)    char(50) NOT NULL   "User login name"
+        email               char(100) DEFAULTV  "user@example.com" CHECK "email LIKE '%@%'" "Email address"
+        status              byte(ACTIVE=1, INACTIVE=0, PENDING=2) DEFAULTV "2" NOT NULL "User status"
+        age                 short(MIN=0, MAX=150)   "User age"
+        balance             money(10,2) DEFAULTV "0.00"     "Account balance"
+        created_at          timestamp                       "Creation timestamp"
+        profile_data        json(2000)                      "User profile JSON"
+        avatar              blob(1048576)                   "User avatar image"
+        preferences         ansichar("light", "dark", "auto")   DEFAULTV "auto" "UI preferences"
+        com.example.audit.created_by char(50) ALIAS created_by DEFAULTV "system" "Audit field"
+        com.example.audit.modified_at timestamp ALIAS modified_at CALC "Computed modification time"
+        related_user        =      (id)                              "Self-referencing lookup"
+        manager_id          =      (id)                              "Manager lookup without parentheses"
+            
+        KEY primary_key (id)
+        LINK email_unique (email)
+        GRANT user_access (id, username, email)
+        
+        PROC GetUserByEmail
+        INPUT
+            email_param char(100) "Email parameter"
+        CODE
+            SELECT * FROM Users WHERE email = :email_param
+        ENDCODE
+
+        SPROC UpdateUserStatus
+        INPUT
+            user_id     bigidentity "User ID parameter"
+            new_status  byte "New status value"
+        CODE
+            UPDATE Users SET status = :new_status WHERE id = :user_id
+        ENDCODE
+
+        PARM {
             PARM {
                 title "Enhanced User Management"
                 cache_size "1000"
