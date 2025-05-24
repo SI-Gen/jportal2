@@ -709,4 +709,15 @@ dynamic_identifier = {
 // Optional size specification
 opt_size = {
     LEFTPAREN ~ number ~ RIGHTPAREN
+}
+
+// User-defined procedure - matches jUserProc()
+user_proc = {
+    (LEFTPAREN ~ STANDARD ~ RIGHTPAREN)? ~
+    comment_clause* ~
+    (OPTIONS ~ string_literal+)* ~
+    (INPUT ~ input_type? ~ field_def*)? ~
+    (INOUT ~ output_type? ~ field_def*)? ~
+    (OUTPUT ~ output_type? ~ field_def*)? ~
+    (old_code | new_code)
 } 
