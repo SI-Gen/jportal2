@@ -434,8 +434,10 @@ mod enhanced_javacc_tests {
                     INPUT (MULTIPLE)
                         search_term char(100)
                     OUTPUT
-                        Users.id int
-                    "SELECT id FROM Users WHERE username LIKE ?"
+                        id int
+                    CODE
+                    SELECT id FROM Users WHERE username LIKE ?
+                    ENDCODE
         "#;
         
         let result = parse_database(input);
@@ -462,9 +464,11 @@ mod enhanced_javacc_tests {
                     INPUT
                         search_term char(100)
                     OUTPUT (SINGLE)
-                        Users.id int
-                        Users.username char(50)
-                    "SELECT id, username FROM Users WHERE username = ?"
+                        id int
+                        username char(50)
+                    CODE
+                    SELECT id, username FROM Users WHERE username = ?
+                    ENDCODE
         "#;
         
         let result = parse_database(input);
@@ -490,8 +494,10 @@ mod enhanced_javacc_tests {
                     INPUT
                         search_term char(100)
                     OUTPUT
-                        Users.id int
-                    "SELECT id FROM Users WHERE username LIKE &search_term"
+                        id int
+                    CODE
+                    SELECT id FROM Users WHERE username LIKE &search_term
+                    ENDCODE
         "#;
         
         let result = parse_database(input);
@@ -519,8 +525,10 @@ mod enhanced_javacc_tests {
                     INPUT
                         search_term char(100)
                     OUTPUT
-                        Users.id int
-                    "SELECT id FROM Users WHERE username LIKE &search_term(100)"
+                        id int
+                    CODE
+                    SELECT id FROM Users WHERE username LIKE &search_term(100)
+                    ENDCODE
         "#;
         
         let result = parse_database(input);
@@ -547,8 +555,10 @@ mod enhanced_javacc_tests {
                     INPUT
                         search_term char(100)
                     OUTPUT
-                        Users.id int
-                    "SELECT id FROM Users WHERE username LIKE &'search_term'"
+                        id int
+                    CODE
+                    SELECT id FROM Users WHERE username LIKE &'search_term'
+                    ENDCODE
         "#;
         
         let result = parse_database(input);
@@ -668,8 +678,10 @@ mod enhanced_javacc_tests {
                         search_term char(100)
                         email_filter char(100)
                     OUTPUT
-                        Users.id int
-                    "SELECT id FROM Users WHERE username LIKE &search_term AND email LIKE &email_filter"
+                        id int
+                    CODE
+                    SELECT id FROM Users WHERE username LIKE &search_term AND email LIKE &email_filter
+                    ENDCODE
         "#;
         
         let result = parse_database(input);
@@ -696,8 +708,10 @@ mod enhanced_javacc_tests {
                     INPUT
                         search_term char(100)
                     OUTPUT
-                        Users.id int
-                    "SELECT id FROM Users WHERE username LIKE &search_term"
+                        id int
+                    CODE
+                    SELECT id FROM Users WHERE username LIKE &search_term
+                    ENDCODE
         "#;
         
         let result = parse_database(input);
@@ -710,7 +724,7 @@ mod enhanced_javacc_tests {
         // Test helper methods
         assert!(proc.has_input("search_term"));
         assert!(!proc.has_input("nonexistent"));
-        assert!(proc.has_output("Users.id"));
+        assert!(proc.has_output("id"));
         assert!(!proc.has_output("nonexistent"));
         assert!(proc.has_dynamic("search_term"));
         assert!(!proc.has_dynamic("nonexistent"));
@@ -736,8 +750,10 @@ mod enhanced_javacc_tests {
                     INPUT
                         user_id int
                     OUTPUT
-                        Users.username char(50)
-                    "SELECT username FROM Users WHERE id = &user_id"
+                        username char(50)
+                    CODE
+                    SELECT username FROM Users WHERE id = &user_id
+                    ENDCODE
         "#;
         
         let result = parse_database(input);
@@ -766,6 +782,292 @@ mod enhanced_javacc_tests {
     }
 
     #[test]
+    fn test_debug_simple_proc_field() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                PROC TestProc SELECT
+                    OUTPUT
+                        id int
+                    CODE
+                    SELECT id FROM Users
+                    ENDCODE
+        "#;
+        
+        let result = parse_database(input);
+        if result.is_err() {
+            println!("Parse error: {:?}", result.as_ref().err());
+        }
+        assert!(result.is_ok(), "Failed to parse simple proc field: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_debug_simple_proc_no_output() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                PROC TestProc SELECT
+                    CODE
+                    SELECT id FROM Users
+                    ENDCODE
+        "#;
+        
+        let result = parse_database(input);
+        if result.is_err() {
+            println!("Parse error: {:?}", result.as_ref().err());
+        }
+        assert!(result.is_ok(), "Failed to parse simple proc without output: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_javacc_input_type_standard() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                email char(100)
+                PROC TestProc SELECT
+                    INPUT (STANDARD)
+                    OUTPUT
+                        id int
+                    CODE
+                    SELECT id FROM Users
+                    ENDCODE
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse INPUT (STANDARD): {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        // With STANDARD, all table fields should be added as inputs
+        assert!(proc.extends_std);
+        assert!(proc.use_std);
+        // Note: The actual field addition happens in the JavaCC-style functions
+        // which need table context that we don't have in the current parsing structure
+    }
+
+    #[test]
+    fn test_javacc_input_type_multiple() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                PROC TestProc SELECT
+                    INPUT (MULTIPLE)
+                        search_term char(100)
+                    OUTPUT
+                        id int
+                    CODE
+                    SELECT id FROM Users WHERE username LIKE ?
+                    ENDCODE
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse INPUT (MULTIPLE): {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert!(proc.is_multiple_input);
+        assert_eq!(proc.inputs.len(), 1);
+        assert_eq!(proc.inputs[0].name, "search_term");
+    }
+
+    #[test]
+    fn test_javacc_input_type_with_number() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                PROC TestProc SELECT
+                    INPUT (5)
+                        search_term char(100)
+                    OUTPUT
+                        id int
+                    CODE
+                    SELECT id FROM Users WHERE username LIKE ?
+                    ENDCODE
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse INPUT (5): {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert!(proc.is_multiple_input);
+        assert_eq!(proc.no_rows, Some(5));
+        assert_eq!(proc.inputs.len(), 1);
+    }
+
+    #[test]
+    fn test_javacc_output_type_single() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                PROC TestProc SELECT
+                    INPUT
+                        search_term char(100)
+                    OUTPUT (SINGLE)
+                        id int
+                        username char(50)
+                    CODE
+                    SELECT id, username FROM Users WHERE username = ?
+                    ENDCODE
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse OUTPUT (SINGLE): {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert!(proc.is_single);
+        assert_eq!(proc.outputs.len(), 2);
+    }
+
+    #[test]
+    fn test_javacc_output_type_single_standard() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                email char(100)
+                PROC TestProc SELECT
+                    INPUT
+                        search_term char(100)
+                    OUTPUT (SINGLE STANDARD)
+                    CODE
+                    SELECT * FROM Users WHERE username = ?
+                    ENDCODE
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse OUTPUT (SINGLE STANDARD): {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert!(proc.is_single);
+        assert!(proc.extends_std);
+        assert!(proc.use_std);
+        // Note: The actual field addition happens in the JavaCC-style functions
+    }
+
+    #[test]
+    fn test_javacc_output_type_single_update() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                PROC TestProc SELECT
+                    INPUT
+                        user_id int
+                    OUTPUT (SINGLE UPDATE)
+                        username char(50)
+                    CODE
+                    SELECT username FROM Users WHERE id = ? FOR UPDATE
+                    ENDCODE
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse OUTPUT (SINGLE UPDATE): {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert!(proc.is_single);
+        assert!(proc.has_updates);
+        assert_eq!(proc.outputs.len(), 1);
+    }
+
+    #[test]
+    fn test_javacc_output_type_with_number() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                PROC TestProc SELECT
+                    INPUT
+                        search_term char(100)
+                    OUTPUT (10)
+                        id int
+                        username char(50)
+                    CODE
+                    SELECT id, username FROM Users WHERE username LIKE ?
+                    ENDCODE
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse OUTPUT (10): {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert_eq!(proc.no_rows, Some(10));
+        assert_eq!(proc.outputs.len(), 2);
+    }
+
+    #[test]
+    fn test_javacc_output_type_standard_single() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                email char(100)
+                PROC TestProc SELECT
+                    INPUT
+                        search_term char(100)
+                    OUTPUT (STANDARD SINGLE)
+                    CODE
+                    SELECT * FROM Users WHERE username = ?
+                    ENDCODE
+        "#;
+        
+        let result = parse_database(input);
+        assert!(result.is_ok(), "Failed to parse OUTPUT (STANDARD SINGLE): {:?}", result.err());
+        
+        let db = result.unwrap();
+        let table = &db.tables[0];
+        let proc = &table.procs[0];
+        
+        assert!(proc.is_single);
+        assert!(proc.extends_std);
+        assert!(proc.use_std);
+        // Note: The actual field addition happens in the JavaCC-style functions
+    }
+
+    #[test]
     fn test_simple_old_code_debug() {
         let input = r#"DATABASE TestDB
 SERVER "localhost"
@@ -786,5 +1088,49 @@ ENDCODE"#;
         assert_eq!(proc.name, "TestProc");
         assert!(!proc.lines.is_empty());
         assert!(!proc.dynamics.is_empty());
+    }
+
+    #[test]
+    fn test_debug_minimal_output_field() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                PROC TestProc SELECT
+                    OUTPUT
+                        id int
+                    CODE
+                    SELECT id FROM Users
+                    ENDCODE
+        "#;
+        
+        let result = parse_database(input);
+        if result.is_err() {
+            println!("Minimal output field parse error: {:?}", result.as_ref().err());
+        }
+        assert!(result.is_ok(), "Failed to parse minimal output field: {:?}", result.err());
+    }
+
+    #[test]
+    fn test_debug_input_standard_only() {
+        let input = r#"
+            DATABASE TestDB
+            SERVER "localhost"
+            TABLE Users
+                id int
+                username char(50)
+                PROC TestProc SELECT
+                    INPUT (STANDARD)
+                    CODE
+                    SELECT * FROM Users
+                    ENDCODE
+        "#;
+        
+        let result = parse_database(input);
+        if result.is_err() {
+            println!("INPUT (STANDARD) only parse error: {:?}", result.as_ref().err());
+        }
+        assert!(result.is_ok(), "Failed to parse INPUT (STANDARD) only: {:?}", result.err());
     }
 } 

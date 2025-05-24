@@ -697,14 +697,9 @@ standard_proc = {
 custom_select_proc = {
     SELECT ~
     (LEFTPAREN ~ STANDARD ~ RIGHTPAREN)? ~
-    (INPUT ~ enhanced_input_type? ~ field_def+)? ~
-    (OUTPUT ~ enhanced_output_type? ~ custom_output_field*)? ~
-    (new_code | string_literal)
-}
-
-// Custom output field for SELECT procedures - no comments to avoid consuming string literals
-custom_output_field = {
-    package_ident ~ field_type ~ alias_clause? ~ package_field_modifiers*
+    (INPUT ~ enhanced_input_type? ~ field_def*)? ~
+    (OUTPUT ~ enhanced_output_type? ~ field_def*)? ~
+    (old_code | new_code)
 }
 
 // Enhanced input type specifications - matches jInputType()

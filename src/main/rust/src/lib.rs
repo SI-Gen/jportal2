@@ -1981,9 +1981,12 @@ fn parse_string_literal(s: &str) -> String {
     parse_jstring(s)
 }
 
-fn parse_input_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> Result<(), Box<dyn std::error::Error>> {
+fn parse_input_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc, table: &Table) -> Result<(), Box<dyn std::error::Error>> {
     for inner_pair in pair.into_inner() {
         match inner_pair.as_rule() {
+            Rule::LEFTPAREN => {
+                // Skip opening parenthesis
+            }
             Rule::MULTIPLE => {
                 proc.is_multiple_input = true;
             }
@@ -1994,11 +1997,15 @@ fn parse_input_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> 
                 }
             }
             Rule::STANDARD => {
-                // For STANDARD input type, we would add all table fields to inputs
-                // In a real implementation, you'd get the table fields from the table context
-                // For now, we'll just set a flag
-                proc.extends_std = true;
-                proc.use_std = true;
+                // Add all table fields as inputs - matches JavaCC behavior
+                for field in &table.fields {
+                    let mut input_field = field.clone();
+                    input_field.is_in = true;
+                    proc.inputs.push(input_field);
+                }
+            }
+            Rule::RIGHTPAREN => {
+                // Skip closing parenthesis
             }
             _ => {}
         }
@@ -2006,26 +2013,33 @@ fn parse_input_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> 
     Ok(())
 }
 
-fn parse_output_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> Result<(), Box<dyn std::error::Error>> {
+fn parse_output_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc, table: &Table) -> Result<(), Box<dyn std::error::Error>> {
     for inner_pair in pair.into_inner() {
         match inner_pair.as_rule() {
+            Rule::LEFTPAREN => {
+                // Skip opening parenthesis
+            }
             Rule::SINGLE => {
                 proc.is_single = true;
             }
             Rule::UPDATE => {
                 proc.has_updates = true;
             }
-            Rule::STANDARD => {
-                // For STANDARD output type, we would add all table fields to outputs
-                // In a real implementation, you'd get the table fields from the table context
-                // For now, we'll just set a flag
-                proc.extends_std = true;
-                proc.use_std = true;
-            }
             Rule::number => {
                 if let Ok(num) = inner_pair.as_str().parse::<i32>() {
                     proc.no_rows = Some(num);
                 }
+            }
+            Rule::STANDARD => {
+                // Add all table fields as outputs - matches JavaCC behavior
+                for field in &table.fields {
+                    let mut output_field = field.clone();
+                    output_field.is_out = true;
+                    proc.outputs.push(output_field);
+                }
+            }
+            Rule::RIGHTPAREN => {
+                // Skip closing parenthesis
             }
             _ => {}
         }
@@ -2333,6 +2347,9 @@ fn parse_custom_select_proc_into(pair: pest::iterators::Pair<Rule>, proc: &mut P
     proc.extends_std = true;
     proc.use_std = true;
     
+    let mut in_input_section = false;
+    let mut in_output_section = false;
+    
     for inner_pair in pair.into_inner() {
         match inner_pair.as_rule() {
             Rule::SELECT => {
@@ -2348,27 +2365,34 @@ fn parse_custom_select_proc_into(pair: pest::iterators::Pair<Rule>, proc: &mut P
                 // Skip closing parenthesis
             }
             Rule::INPUT => {
-                // Skip INPUT keyword
+                in_input_section = true;
+                in_output_section = false;
             }
             Rule::enhanced_input_type => {
-                parse_enhanced_input_type_into(inner_pair, proc)?;
+                // For now, parse without table context - will need to be enhanced later
+                parse_enhanced_input_type_into_simple(inner_pair, proc)?;
+            }
+            Rule::OUTPUT => {
+                in_input_section = false;
+                in_output_section = true;
+            }
+            Rule::enhanced_output_type => {
+                // For now, parse without table context - will need to be enhanced later
+                parse_enhanced_output_type_into_simple(inner_pair, proc)?;
             }
             Rule::field_def => {
                 let field = parse_field_def(inner_pair)?;
-                proc.inputs.push(field);
-            }
-            Rule::OUTPUT => {
-                // Skip OUTPUT keyword
-            }
-            Rule::enhanced_output_type => {
-                parse_enhanced_output_type_into(inner_pair, proc)?;
-            }
-            Rule::custom_output_field => {
-                let field = parse_package_field_def(inner_pair)?;
-                proc.outputs.push(field);
+                if in_input_section {
+                    proc.inputs.push(field);
+                } else if in_output_section {
+                    proc.outputs.push(field);
+                }
             }
             Rule::new_code => {
                 parse_new_code_into(inner_pair, proc)?;
+            }
+            Rule::old_code => {
+                parse_old_code_into(inner_pair, proc)?;
             }
             Rule::string_literal => {
                 let sql_content = parse_string_literal(inner_pair.as_str());
@@ -2393,6 +2417,7 @@ fn parse_custom_select_proc_into(pair: pest::iterators::Pair<Rule>, proc: &mut P
 fn parse_user_proc_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> Result<(), Box<dyn std::error::Error>> {
     proc.is_built_in = false;
     
+    
     for inner_pair in pair.into_inner() {
         match inner_pair.as_rule() {
             Rule::STANDARD => {
@@ -2414,7 +2439,8 @@ fn parse_user_proc_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> R
                 // Skip INPUT keyword
             }
             Rule::enhanced_input_type => {
-                parse_enhanced_input_type_into(inner_pair, proc)?;
+                // For now, parse without table context - will need to be enhanced later
+                parse_enhanced_input_type_into_simple(inner_pair, proc)?;
             }
             Rule::INOUT => {
                 // Skip INOUT keyword
@@ -2423,7 +2449,8 @@ fn parse_user_proc_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> R
                 // Skip OUTPUT keyword
             }
             Rule::enhanced_output_type => {
-                parse_enhanced_output_type_into(inner_pair, proc)?;
+                // For now, parse without table context - will need to be enhanced later
+                parse_enhanced_output_type_into_simple(inner_pair, proc)?;
             }
             Rule::field_def => {
                 let mut field = parse_field_def(inner_pair)?;
@@ -2444,9 +2471,12 @@ fn parse_user_proc_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> R
     Ok(())
 }
 
-fn parse_enhanced_input_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> Result<(), Box<dyn std::error::Error>> {
+fn parse_enhanced_input_type_into_simple(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> Result<(), Box<dyn std::error::Error>> {
     for inner_pair in pair.into_inner() {
         match inner_pair.as_rule() {
+            Rule::LEFTPAREN => {
+                // Skip opening parenthesis
+            }
             Rule::MULTIPLE => {
                 proc.is_multiple_input = true;
             }
@@ -2457,8 +2487,12 @@ fn parse_enhanced_input_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut 
                 }
             }
             Rule::STANDARD => {
-                // Add all table fields as inputs - would need table context in real implementation
-                // For now, this is a placeholder
+                // Set flags for STANDARD - actual field addition needs table context
+                proc.extends_std = true;
+                proc.use_std = true;
+            }
+            Rule::RIGHTPAREN => {
+                // Skip closing parenthesis
             }
             _ => {}
         }
@@ -2466,9 +2500,12 @@ fn parse_enhanced_input_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut 
     Ok(())
 }
 
-fn parse_enhanced_output_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> Result<(), Box<dyn std::error::Error>> {
+fn parse_enhanced_output_type_into_simple(pair: pest::iterators::Pair<Rule>, proc: &mut Proc) -> Result<(), Box<dyn std::error::Error>> {
     for inner_pair in pair.into_inner() {
         match inner_pair.as_rule() {
+            Rule::LEFTPAREN => {
+                // Skip opening parenthesis
+            }
             Rule::SINGLE => {
                 proc.is_single = true;
             }
@@ -2481,8 +2518,12 @@ fn parse_enhanced_output_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut
                 }
             }
             Rule::STANDARD => {
-                // Add all table fields as outputs - would need table context in real implementation
-                // For now, this is a placeholder
+                // Set flags for STANDARD - actual field addition needs table context
+                proc.extends_std = true;
+                proc.use_std = true;
+            }
+            Rule::RIGHTPAREN => {
+                // Skip closing parenthesis
             }
             _ => {}
         }
@@ -2492,6 +2533,83 @@ fn parse_enhanced_output_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut
 
 fn parse_proc_column(pair: pest::iterators::Pair<Rule>) -> Result<String, Box<dyn std::error::Error>> {
     Ok(pair.as_str().to_string())
+}
+
+// JavaCC-style jInputType function - matches JavaCC exactly
+fn parse_j_input_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc, table: &Table) -> Result<(), Box<dyn std::error::Error>> {
+    for inner_pair in pair.into_inner() {
+        match inner_pair.as_rule() {
+            Rule::LEFTPAREN => {
+                // Skip opening parenthesis
+            }
+            Rule::MULTIPLE => {
+                // LOOKAHEAD(2) <LEFTPAREN> <MULTIPLE> <RIGHTPAREN>
+                proc.is_multiple_input = true;
+            }
+            Rule::number => {
+                // LOOKAHEAD(2) <LEFTPAREN> n = jNumber() <RIGHTPAREN>
+                if let Ok(num) = inner_pair.as_str().parse::<i32>() {
+                    proc.no_rows = Some(num);
+                    proc.is_multiple_input = true;
+                }
+            }
+            Rule::STANDARD => {
+                // LOOKAHEAD(2) <LEFTPAREN> <STANDARD>
+                // for (int i=0; i<table.fields.size(); i++)
+                //   proc.inputs.addElement(table.fields.elementAt(i));
+                for field in &table.fields {
+                    let mut input_field = field.clone();
+                    input_field.is_in = true;
+                    proc.inputs.push(input_field);
+                }
+            }
+            Rule::RIGHTPAREN => {
+                // Skip closing parenthesis
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
+// JavaCC-style jOutputType function - matches JavaCC exactly
+fn parse_j_output_type_into(pair: pest::iterators::Pair<Rule>, proc: &mut Proc, table: &Table) -> Result<(), Box<dyn std::error::Error>> {
+    for inner_pair in pair.into_inner() {
+        match inner_pair.as_rule() {
+            Rule::LEFTPAREN => {
+                // Skip opening parenthesis
+            }
+            Rule::SINGLE => {
+                // LOOKAHEAD(2) <LEFTPAREN> <SINGLE>
+                proc.is_single = true;
+            }
+            Rule::UPDATE => {
+                // (<UPDATE> { proc.hasUpdates = true; })?
+                proc.has_updates = true;
+            }
+            Rule::number => {
+                // LOOKAHEAD(2) <LEFTPAREN> n = jNumber() <RIGHTPAREN>
+                if let Ok(num) = inner_pair.as_str().parse::<i32>() {
+                    proc.no_rows = Some(num);
+                }
+            }
+            Rule::STANDARD => {
+                // LOOKAHEAD(2) <LEFTPAREN> <STANDARD>
+                // for (int i=0; i<table.fields.size(); i++)
+                //   proc.outputs.addElement(table.fields.elementAt(i));
+                for field in &table.fields {
+                    let mut output_field = field.clone();
+                    output_field.is_out = true;
+                    proc.outputs.push(output_field);
+                }
+            }
+            Rule::RIGHTPAREN => {
+                // Skip closing parenthesis
+            }
+            _ => {}
+        }
+    }
+    Ok(())
 }
 
 #[cfg(test)]
