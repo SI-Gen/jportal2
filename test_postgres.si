@@ -1,0 +1,44 @@
+DATABASE TestPostgresDB
+SERVER "localhost"
+SCHEMA "public"
+
+TABLE Users
+    id int
+    username char(50)
+    email char(100)
+    created_date date
+    is_active boolean
+    balance money
+    
+KEY UsersPK PRIMARY id
+KEY UsersUniqueEmail UNIQUE email
+KEY UsersUsernameIdx username
+
+PROC SelectAll
+PROC SelectBy Email Returning id, username, email
+
+TABLE Orders
+    order_id int
+    user_id int
+    order_date timestamp
+    total_amount money
+    status char(20)
+    
+KEY OrdersPK PRIMARY order_id
+KEY OrdersUserIdx user_id
+
+LINK Users user_id
+    
+PROC SelectAll
+PROC SelectByUser
+INPUT
+    user_id_param int
+OUTPUT
+    order_id int
+    order_date timestamp
+    total_amount money
+CODE
+    SELECT order_id, order_date, total_amount 
+    FROM Orders 
+    WHERE user_id = :user_id_param
+ENDCODE 

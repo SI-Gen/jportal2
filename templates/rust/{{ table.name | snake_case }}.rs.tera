@@ -1,0 +1,45 @@
+// Generated Rust code for {{ table.name }}
+// Database: {{ database.name }}
+
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct {{ table.name | pascalCase }} {
+{% for field in table.fields -%}
+    {% if field.is_null -%}
+    pub {{ field.name | snake_case }}: Option<{{ field.field_type | rust_type }}>,
+    {% else -%}
+    pub {{ field.name | snake_case }}: {{ field.field_type | rust_type }},
+    {% endif -%}
+{% endfor %}
+}
+
+impl {{ table.name | pascalCase }} {
+    pub fn new() -> Self {
+        Self {
+        {% for field in table.fields -%}
+            {% if field.is_null -%}
+            {{ field.name | snake_case }}: None,
+            {% else -%}
+            {{ field.name | snake_case }}: {{ field.field_type | rust_default }},
+            {% endif -%}
+        {% endfor %}
+        }
+    }
+
+{% for proc in table.procs -%}
+    // Procedure: {{ proc.name }}
+    {% if proc.is_built_in -%}
+    // Built-in procedure
+    {% else -%}
+    // User-defined procedure
+    {% endif -%}
+
+{% endfor %}
+}
+
+impl Default for {{ table.name | pascalCase }} {
+    fn default() -> Self {
+        Self::new()
+    }
+}

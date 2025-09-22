@@ -1,0 +1,150 @@
+-- Generated PostgreSQL DDL for {{ database.name }}
+-- Database: {{ database.name }}
+-- Server: {{ database.server }}
+{% if database.schema -%}
+-- Schema: {{ database.schema }}
+{% endif -%}
+
+{% if database.schema -%}
+CREATE SCHEMA IF NOT EXISTS {{ database.schema }};
+{% endif %}
+
+{% for table in database.tables -%}
+-- =============================================================================
+-- Table: {{ table.name }}
+-- =============================================================================
+{% if database.schema -%}
+{% set table_owner = database.schema ~ "." -%}
+{% else -%}
+{% set table_owner = "" -%}
+{% endif -%}
+
+DROP TABLE IF EXISTS {{ table_owner }}{{ table.name }} CASCADE;
+
+CREATE TABLE {{ table_owner }}{{ table.name }}
+{% if table.fields -%}
+(
+{% for field in table.fields -%}
+    {{ field.name }} {{ field | postgres_type }}
+{%- if not loop.last %},{% endif %}
+{% endfor -%}
+)
+{%- endif %};
+
+-- Grants
+{% for grant in table.grants -%}
+{% for perm in grant.perms -%}
+{% for user in grant.users -%}
+GRANT {{ perm }} ON {{ table_owner }}{{ table.name }} TO {{ user }};
+{% endfor -%}
+{% endfor -%}
+{% endfor -%}
+
+-- Indexes (non-primary, non-unique)
+{% for key in table.keys -%}
+{% if not key.is_primary and not key.is_unique -%}
+-- DROP INDEX {{ table.name | upper }}_{{ key.name | upper }};
+
+CREATE INDEX {{ table.name | upper }}_{{ key.name | upper }} ON {{ table_owner }}{{ table.name }}
+(
+{% for field_name in key.fields -%}
+    {{ field_name }}
+{%- if not loop.last %},{% endif %}
+{% endfor -%}
+);
+
+{% endif -%}
+{% endfor -%}
+
+-- Views
+{% for view in table.views -%}
+CREATE OR REPLACE VIEW {{ table_owner }}{{ table.name }}{{ view.name }}
+{% if view.aliases -%}
+(
+{% for alias in view.aliases -%}
+    {{ alias }}
+{%- if not loop.last %},{% endif %}
+{% endfor -%}
+)
+{% endif -%}
+AS (
+{% for line in view.lines -%}
+{{ line }}
+{% endfor -%}
+);
+
+{% for user in view.users -%}
+GRANT SELECT ON {{ table_owner }}{{ table.name }}{{ view.name }} TO {{ user }};
+{% endfor -%}
+
+{% endfor -%}
+
+-- Field constraints and defaults
+{% for field in table.fields -%}
+{% if not field.is_null or field.default_value or field.check_value -%}
+ALTER TABLE {{ table_owner }}{{ table.name }} ALTER COLUMN {{ field.name }} SET
+{%- if field.default_value %} DEFAULT {{ field.default_value }}
+{%- elif field.check_value %} CHECK ({{ field.check_value }})
+{%- else %} NOT NULL
+{%- endif %};
+{% endif -%}
+{% endfor -%}
+
+-- Primary and Unique Keys
+{% for key in table.keys -%}
+{% if key.is_primary -%}
+ALTER TABLE {{ table_owner }}{{ table.name }}
+ ADD CONSTRAINT {{ table.name | upper }}_{{ key.name | upper }} PRIMARY KEY
+(
+{% for field_name in key.fields -%}
+    {{ field_name }}
+{%- if not loop.last %},{% endif %}
+{% endfor -%}
+);
+{% elif key.is_unique -%}
+ALTER TABLE {{ table_owner }}{{ table.name }}
+ ADD CONSTRAINT {{ table.name | upper }}_{{ key.name | upper }} UNIQUE
+(
+{% for field_name in key.fields -%}
+    {{ field_name }}
+{%- if not loop.last %},{% endif %}
+{% endfor -%}
+);
+{% endif -%}
+{% endfor -%}
+
+-- Data procedures (INSERT statements)
+{% for proc in table.procs -%}
+{% if proc.is_data -%}
+{% for line in proc.lines -%}
+{{ line.decorated_line }};
+{% endfor -%}
+
+{% endif -%}
+{% endfor -%}
+
+{% endfor -%}
+
+-- =============================================================================
+-- Foreign Key Constraints (added last so all tables exist)
+-- =============================================================================
+{% for table in database.tables -%}
+{% if table.links -%}
+{% if database.schema -%}
+{% set table_owner = database.schema ~ "." -%}
+{% else -%}
+{% set table_owner = "" -%}
+{% endif -%}
+{% for link in table.links -%}
+ALTER TABLE {{ table_owner }}{{ table.name }}
+ ADD CONSTRAINT {{ table.name | upper }}_FK{{ loop.index0 }} FOREIGN KEY
+(
+{% for field_name in link.fields -%}
+    {{ field_name }}
+{%- if not loop.last %},{% endif %}
+{% endfor -%}
+) REFERENCES {{ table_owner }}{{ link.name }} MATCH FULL;
+{% endfor -%}
+
+{% endif -%}
+{% endfor -%} 

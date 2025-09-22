@@ -49,10 +49,24 @@ fn main() {
 }
 
 /// Main processing logic separated for better error handling
-fn run_main_process(arguments: JPortal2Arguments) -> Result<i32, Box<dyn std::error::Error>> {
-    // Download templates if needed
+fn run_main_process(mut arguments: JPortal2Arguments) -> Result<i32, Box<dyn std::error::Error>> {
+    // Set default template directory if none specified
+    if arguments.get_template_source().is_none() {
+        let default_template_dir = std::env::current_dir()?.join("templates");
+        if default_template_dir.exists() {
+            // Don't set template_source - this will make the downloader skip copying
+            // and the template generator will use the templates in place
+            info!("Using default template directory: {:?}", default_template_dir);
+        }
+    }
+    
+    // Download templates if needed (only if template_source is set)
     let template_downloader = TemplateDownloader::new();
-    let download_rc = template_downloader.download_templates(&arguments)?;
+    let download_rc = if arguments.get_template_source().is_some() {
+        template_downloader.download_templates(&arguments)?
+    } else {
+        0 // Skip template downloading if no source specified
+    };
     
     if download_rc > 0 {
         return Ok(download_rc);

@@ -220,7 +220,7 @@ tables_section = {
 
 table_definition = {
     (table_section | table_import_section) ~
-    (const_section | enhanced_grant_section | original_grant_section | enhanced_key_section | original_key_section | enhanced_link_section | original_link_section | enhanced_view_section | proc_section | parm_section)* 
+    (const_section | enhanced_grant_section | original_grant_section | enhanced_key_section | original_key_section | enhanced_link_section | original_link_section | enhanced_view_section | proc_section | parm_section | standalone_data_section)* 
 }
 
 // Enhanced table structure - matches jTable()
@@ -381,41 +381,100 @@ codeline = {
     string_literal
 }
 
+// Standalone SQLDATA section - matches JavaCC jNewData() at table level
+standalone_data_section = {
+    SQLDATA ~ (!table_definition ~ !EOI ~ ANY)*
+}
+
+// SQLDATA content - everything until end of section or next PROC/SPROC/etc.
+sqldata_content = @{
+    (!table_definition ~ !EOI ~ ANY)*
+}
+
 // Procedure section - enhanced to support data and IDL blocks
 proc_section = {
     (PROC | SPROC) ~ (
-        // Data blocks - matches jNewData()
-        (SQLDATA ~ data_line+) |
+        // Standalone data blocks - matches jNewData()
+        (SQLDATA ~ sqldata_content) |
         // IDL code blocks - matches jIdlCode()
         (IDLCODE ~ idl_line+) |
-        // Regular procedure
+        // Standard built-in procedures without custom names
+        standard_builtin_proc ~ (OPTIONS ~ string_literal+)* |
+        // Named procedures (custom name followed by either standard procedure or custom body)
         (identifier ~ (
-            // Built-in procedure patterns with optional OPTIONS and OUTPUT
-            (
-                (UPDATEBY ~ proc_column+ ~ (SET ~ proc_column+)? ~ (AS ~ identifier)?) |
-                (INSERT ~ (RETURNING)?) |
-                (UPDATE) |
-                (UPDATEFOR ~ proc_column+) |
-                (BULKINSERT ~ row_count?) |
-                (MAXTMSTAMP) |
-                (BULKUPDATE ~ row_count?) |
-                (DELETEONE ~ (LEFTPAREN ~ STANDARD ~ RIGHTPAREN)?) |
-                (DELETEALL) |
-                (DELETEBY ~ proc_column+) |
-                (SELECTONEBY ~ proc_column+ ~ ((IN)? ~ ORDER)? ~ ((FOR)? ~ (UPDATE | READONLY))? ~ (AS ~ identifier)?) |
-                (SELECTONE ~ ((FOR)? ~ (UPDATE | READONLY))?) |
-                (SELECTBY ~ proc_column+ ~ ((IN)? ~ ORDER ~ order_column* ~ (DESC)?)? ~ ((FOR)? ~ (UPDATE | READONLY))? ~ (AS ~ identifier)?) |
-                (SELECTALL ~ ((IN)? ~ ORDER ~ order_column* ~ (DESC)?)? ~ ((FOR)? ~ (UPDATE | READONLY))?) |
-                (COUNT) |
-                (EXISTS) |
-                (MERGE)
-            ) ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)? |
-            // Custom SELECT procedure (jNewProc equivalent)
-            custom_select_proc |
-            // Regular procedure body
-            user_proc
-        )?)
+            // Standard procedure parameter syntax
+            (LEFTPAREN ~ STANDARD ~ RIGHTPAREN ~ proc_body_sections?) |
+            // User procedure (jUserProc style) - optional body
+            proc_body_sections?
+        ))
     )
+}
+
+// SQLDATA content specific to procedures
+sqldata_proc_content = @{
+    (!table_definition ~ !EOI ~ ANY)*
+}
+
+// Standard built-in procedures - matches jStdProc() patterns exactly
+standard_builtin_proc = {
+    (INSERT ~ (RETURNING)?) |
+    (UPDATE) |
+    (UPDATEFOR ~ proc_column+) |
+    (UPDATEBY ~ proc_column+ ~ (SET ~ proc_column+)? ~ (AS ~ identifier)?) |
+    (BULKINSERT ~ row_count?) |
+    (MAXTMSTAMP) |
+    (BULKUPDATE ~ row_count?) |
+    (DELETEONE ~ (LEFTPAREN ~ STANDARD ~ RIGHTPAREN)?) |
+    (DELETEALL) |
+    (DELETEBY ~ proc_column+) |
+    (SELECTONE ~ ((FOR)? ~ (UPDATE | READONLY))?) |
+    (SELECTONEBY ~ proc_column+ ~ ((IN)? ~ ORDER)? ~ ((FOR)? ~ (UPDATE | READONLY))? ~ (AS ~ identifier)?) |
+    (SELECTBY ~ proc_column+ ~ ((IN)? ~ ORDER ~ order_column* ~ (DESC)?)? ~ ((FOR)? ~ (UPDATE | READONLY))? ~ (AS ~ identifier)? ~ (RETURNING ~ proc_returning_column+)?) |
+    (SELECTALL ~ ((IN)? ~ ORDER ~ order_column* ~ (DESC)?)? ~ ((FOR)? ~ (UPDATE | READONLY))?) |
+    (COUNT) |
+    (EXISTS) |
+    (MERGE)
+}
+
+// Procedure body sections - can include INPUT, OUTPUT, and code
+proc_body_sections = {
+    comment_clause* ~
+    (OPTIONS ~ string_literal+)* ~
+    (INPUT ~ enhanced_input_type? ~ proc_input_section*)? ~
+    (INOUT ~ enhanced_output_type? ~ field_def*)? ~
+    (OUTPUT ~ enhanced_output_type? ~ proc_output_section*)? ~
+    (old_code | new_code)?
+}
+
+// User procedure body - matches jUserProc()
+user_proc_body = {
+    (LEFTPAREN ~ STANDARD ~ RIGHTPAREN)? ~
+    comment_clause* ~
+    (OPTIONS ~ string_literal+)* ~
+    (INPUT ~ enhanced_input_type? ~ proc_input_section*)? ~
+    (INOUT ~ enhanced_output_type? ~ field_def*)? ~
+    (OUTPUT ~ enhanced_output_type? ~ proc_output_section*)? ~
+    (old_code | new_code)?
+}
+
+// Procedure input section - supports field references with = and field definitions
+proc_input_section = {
+    proc_input_field | field_def
+}
+
+// Procedure output section - supports field references with = and field definitions
+proc_output_section = {
+    proc_output_field | field_def
+}
+
+// Procedure input fields - support both field definitions and field references with =
+proc_input_field = {
+    identifier ~ EQUALS
+}
+
+// Procedure output fields - support both field definitions and field references with =
+proc_output_field = {
+    identifier ~ EQUALS
 }
 
 // New data block parsing - matches jNewData()
@@ -615,7 +674,7 @@ enhanced_char_list = {
     RIGHTBRACE
 }
 
-// Enhanced enum char - matches jEnumChar()
+// Enhanced enum char - matches jEnumChar() with support for quoted values
 enhanced_enum_char = {
     (LEFTBRACK ~ number ~ RIGHTBRACK) |
     (LEFTPAREN ~ 
@@ -626,8 +685,9 @@ enhanced_enum_char = {
     number
 }
 
+// Enum char item with support for quoted character values like 'N', 'E', etc.
 enum_char_item = {
-    identifier ~ EQUALS ~ number  // Using number for ASCII char values
+    identifier ~ EQUALS ~ (number | string_literal)
 }
 
 // Original char_list for backward compatibility
@@ -692,14 +752,7 @@ standard_proc = {
     merge_proc ~ (OPTIONS ~ string_literal+)? ~ (OUTPUT ~ field_def*)?
 }
 
-// Custom procedure with SELECT statement
-custom_select_proc = {
-    SELECT ~
-    (LEFTPAREN ~ STANDARD ~ RIGHTPAREN)? ~
-    (INPUT ~ enhanced_input_type? ~ field_def*)? ~
-    (OUTPUT ~ enhanced_output_type? ~ field_def*)? ~
-    (old_code | new_code)
-}
+
 
 // Enhanced input type specifications - matches jInputType()
 enhanced_input_type = {
@@ -748,12 +801,12 @@ old_code_content = @{
 new_code = {
     SQLCODE ~
     sqlcode_content ~
-    ENDSQLCODE
+    ENDCODE
 }
 
-// Raw content for SQLCODE blocks - matches everything until ENDSQLCODE
+// Raw content for SQLCODE blocks - matches everything until ENDCODE
 sqlcode_content = @{
-    (!ENDSQLCODE ~ ANY)*
+    (!ENDCODE ~ ANY)*
 }
 
 // Optional size specification - matches jOptSize()

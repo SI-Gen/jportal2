@@ -1,0 +1,30 @@
+DATABASE TestDB
+SERVER "localhost"
+
+TABLE Users
+    id int
+    name char(50)
+    email char(100)
+    created_date date
+    
+    PROC Insert
+        INPUT
+            name
+            email
+        SQLCODE
+            INSERT INTO Users (name, email, created_date) 
+            VALUES (:name, :email, CURRENT_DATE)
+        ENDCODE
+    ENDPROC
+    
+    PROC SelectAll
+        OUTPUT
+            id
+            name
+            email
+            created_date
+        SQLCODE
+            SELECT id, name, email, created_date FROM Users
+        ENDCODE
+    ENDPROC
+ENDTABLE 

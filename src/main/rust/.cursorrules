@@ -1,2 +1,3 @@
 Put the rust code in src
 put the rest tests in tests
+ignore linter issues in .SI files

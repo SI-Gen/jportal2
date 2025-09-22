@@ -1,0 +1,11 @@
+JPortal2 Database Summary
+========================
+
+Source File: "test_simple_no_procs.si"
+Database Name: TestDB
+Server: "localhost"
+Tables: 1
+Views: 0
+
+Tables:
+  1. Users (4 fields, 1 procedures)

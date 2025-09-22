@@ -1,0 +1,30 @@
+DATABASE TestDB
+SERVER "localhost"
+TABLE Users
+    id bigidentity
+    username char(50) NOT NULL
+    email char(100)
+    status byte DEFAULT '1'
+    created_date datetime
+    PROC Insert RETURNING
+    PROC Update
+    PROC SelectAll 
+    PROC SELECTBY status as SelectByStatus
+    PROC CustomUserProc
+    INPUT
+        search_term char(100)
+        
+    OUTPUT
+        id          bigint
+        username    char(50)
+        email       char(100)
+    CODE
+        SELECT 
+            id, 
+            username, 
+            email 
+        FROM 
+            Users 
+        WHERE 
+            username LIKE :search_term LIMIT &result_count(5)"
+    ENDCODE

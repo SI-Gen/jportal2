@@ -1,0 +1,22 @@
+-- Generated SQL for {{ database.name }}
+-- Table: {{ table.name }}
+
+CREATE TABLE {{ table.name }} (
+{% for field in table.fields -%}
+    {{ field.name }} {{ field.field_type | sqlType }}
+    {%- if field.length %} ({{ field.length }}){% endif -%}
+    {%- if not field.is_null %} NOT NULL{% endif -%}
+    {%- if field.default_value %} DEFAULT {{ field.default_value }}{% endif -%}
+    {%- if not loop.last %},{% endif %}
+{% endfor %}
+);
+
+{% for proc in table.procs -%}
+-- Procedure: {{ proc.name }}
+{% if proc.is_built_in -%}
+-- Built-in procedure
+{% else -%}
+-- User-defined procedure
+{% endif -%}
+
+{% endfor -%} 

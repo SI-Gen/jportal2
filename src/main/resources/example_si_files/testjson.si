@@ -1,0 +1,19 @@
+DATABASE ExampleDatabase
+PACKAGE com.example.db
+SERVER ExampleServer
+SCHEMA ToDoList_App
+
+TABLE TestJSON
+   ID               IDENTITY
+   Payload          JSON
+
+KEY PKEY PRIMARY
+    ID
+
+//Simple CRUD queries are available out of the box with JPortal2
+PROC Insert Returning
+PROC Update
+PROC SelectOne
+PROC DeleteOne
+PROC Exists
+

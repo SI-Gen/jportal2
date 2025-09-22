@@ -1,0 +1,32 @@
+DATABASE ExampleDatabase
+PACKAGE com.example.db
+SERVER ExampleServer
+SCHEMA ToDoList_App
+
+TABLE TestSP
+   ID               IDENTITY
+   Payload          CHAR(255)
+
+KEY PKEY PRIMARY
+    ID
+
+//Simple CRUD queries are available out of the box with JPortal2
+SPROC Insert Returning
+PROC Update
+PROC SelectOne
+PROC DeleteOne
+PROC Exists
+
+SPROC CheckIfStoredProcCreated
+INPUT
+    ID =
+OUTPUT
+    Payload =
+SQLCODE
+SELECT
+       Payload
+FROM
+        TestSP
+WHERE
+        ID = :ID
+ENDCODE

@@ -1,0 +1,10 @@
+DATABASE TestDB
+SERVER "localhost"
+
+TABLE Users
+    id int
+    name char(50)
+    email char(100)
+    created_date date
+
+PROC SelectAll
