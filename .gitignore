@@ -37,3 +37,6 @@ pom.xml.releaseBackup
 release.properties
 .project
 .classpath
+
+# Downloaded FreeMarker templates
+downloaded_jportal_templates/

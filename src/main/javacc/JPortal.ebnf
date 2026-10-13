@@ -1,0 +1,488 @@
+(*
+ * JPortal SI language
+ * EBNF derived from JPortal.jj (JavaCC).
+ *
+ * Semantic Java actions, LOOKAHEAD hints, and parser state are omitted.
+ * Where the JavaCC grammar is ambiguous, the intended language is shown
+ * and a comment notes the parser quirk.
+ *
+ * Notation (W3C-style EBNF):
+ *   ::=        production
+ *   |          alternative
+ *   [ X ]      optional X
+ *   X?         optional X (same as [ X ])
+ *   X*         zero or more X
+ *   X+         one or more X
+ *   ( X )      grouping
+ *   "abc"      terminal (keywords are case-insensitive)
+ *   'x'        character / case-sensitive fragment
+ *   #xN        character by code
+ *   A - B      characters in A except those in B
+ *   (* *)      comment
+ *
+ * Concatenation is juxtaposition (space-separated).
+ *)
+
+
+(* ================================================================
+ * 1. Lexical grammar
+ * ================================================================ *)
+
+(* --- Skipped in DEFAULT state --- *)
+
+Whitespace      ::= ' ' | #x9 | #xA | #xD
+BlockComment    ::= "/*" (Char - '*')* '*' ((Char - '/') (Char - '*')* '*')* '/'
+LineComment     ::= "//" (Char - (#xA | #xD))* (#xA | #xD #xA)
+
+(* Whitespace, BlockComment and LineComment are skipped. *)
+
+
+(* --- Keywords (TOKEN[IGNORE_CASE]) --- *)
+
+(* Each alternative is a reserved word. The left-hand name is the
+   token used in the syntactic grammar. *)
+
+ALL             ::= "all"
+ANSICHAR        ::= "ansi" | "ansichar"
+AS              ::= "as"
+AUTOTIMESTAMP   ::= "autotimestamp"
+BIGIDENTITY     ::= "bigidentity"
+BIGJSON         ::= "bigjson"
+BIGSEQUENCE     ::= "bigsequence"
+BIGXML          ::= "bigxml"
+BLOB            ::= "blob"
+BOOLEAN         ::= "boolean" | "bit"
+BULKINSERT      ::= "bulkinsert"
+BULKUPDATE      ::= "bulkupdate"
+BYTE            ::= "byte"
+CALC            ::= "calc"
+CASCADE         ::= "cascade"
+CHAR            ::= "char"
+CHECK           ::= "check"
+COUNT           ::= "count"
+CONST           ::= "const" | "constant"
+CURSOR          ::= "cursor"
+DATABASE        ::= "database"
+DATE            ::= "date"
+DATETIME        ::= "datetime"
+DECLARE         ::= "declare"
+DEFAULTV        ::= "default"
+DELETE          ::= "delete"
+DELETEBY        ::= "deleteby"
+DELETEALL       ::= "deleteall"
+DELETEONE       ::= "deleteone"
+DESC            ::= "desc"
+DOUBLE          ::= "double"
+DYNAMIC         ::= "dynamic"
+EXECUTE         ::= "execute"
+EXISTS          ::= "exists"
+FLAGS           ::= "flags"
+FLOAT           ::= "float"
+FOR             ::= "for"
+GRANT           ::= "grant"
+IDENTITY        ::= "identity"
+IMPORT          ::= "import"
+IN              ::= "in"
+INOUT           ::= "inout"
+INPUT           ::= "input"
+INSERT          ::= "insert"
+INT             ::= "int" | "integer"
+JSON            ::= "json"
+KEY             ::= "key"
+LINK            ::= "link"
+LONG            ::= "long"
+MERGE           ::= "merge"
+MONEY           ::= "money"
+MULTIPLE        ::= "multiple"
+NAMES           ::= "names"
+NOT             ::= "not"
+NULL            ::= "null"
+OPTIONS         ::= "options"
+ORDER           ::= "order" | "sorted"
+OUTPUT          ::= "output"
+PACKAGE         ::= "package"
+PASSWORD        ::= "password"
+PRIMARY         ::= "primary"
+PROC            ::= "proc"
+READONLY        ::= "readonly"
+RETURNING       ::= "returning"
+SCHEMA          ::= "schema"
+SELECT          ::= "select"
+SELECTALL       ::= "selectall"
+SELECTBY        ::= "selectby"
+FROM            ::= "from"                          (* reserved; unused in parser *)
+WHERE           ::= "where"                         (* reserved; unused in parser *)
+SELECTONEBY     ::= "selectoneby"
+SELECTONE       ::= "selectone"
+SEQUENCE        ::= "sequence"
+SERVER          ::= "server"
+SET             ::= "set"
+SHORT           ::= "short"
+SINGLE          ::= "single"
+SQL             ::= "sql"
+SPROC           ::= "storedproc" | "sproc"
+STANDARD        ::= "standard"
+TABLE           ::= "table"
+TIME            ::= "time"
+TIMESTAMP       ::= "timestamp"
+TLOB            ::= "tlob" | "clob"
+TO              ::= "to"
+UID             ::= "uid"
+UNIQUE          ::= "unique"
+UPDATE          ::= "update"
+UPDATEFOR       ::= "updatefor"
+UPDATEBY        ::= "updateby"
+MAXTMSTAMP      ::= "maxtmstamp"
+USERID          ::= "userid"
+USERSTAMP       ::= "userstamp"
+UTF8            ::= "utf8"
+VIEW            ::= "view"
+WANSICHAR       ::= "wansi" | "wansichar"
+WCHAR           ::= "wchar"
+XML             ::= "xml"
+PARM            ::= "{parm}"
+PARMSHOWS       ::= "{shows}"
+PARMVIEWONLY    ::= "{viewonly}"
+PARMCACHE       ::= "{cache}"
+PARMREADER      ::= "{reader}"
+PARMINSERT      ::= "{insert}"
+PARMDELETE      ::= "{delete}"
+PARMUPDATE      ::= "{update}"
+PARMSUPPLIED    ::= "{supplied}"
+
+(* Big-block delimiters (TOKEN[IGNORE_CASE]) *)
+
+CODE            ::= "code"
+DATA            ::= "data"
+ENDCODE         ::= "endcode"
+ENDDATA         ::= "enddata"
+
+
+(* --- Comments passed to the parser --- *)
+
+COMMENT         ::= "**" (Char - (#xA | #xD))* (#xA | #xD #xA)
+
+
+(* --- Separators --- *)
+
+ATSIGN          ::= "@"                             (* reserved; unused in parser *)
+COLON           ::= ":"                             (* reserved; unused in parser *)
+COMMA           ::= ","
+EQUALS          ::= "="
+LEFTBRACE       ::= "{"
+LEFTBRACK       ::= "["
+LEFTPAREN       ::= "("
+RIGHTBRACE      ::= "}"
+RIGHTBRACK      ::= "]"
+RIGHTPAREN      ::= ")"
+SEMICOLON       ::= ";"                             (* reserved; unused in parser *)
+
+
+(* --- Literals --- *)
+
+NUMBER          ::= '0'
+                  | '-'? Digit1 Digit*
+
+STRING          ::= DQuoteString | SQuoteString
+DQuoteString    ::= '"' ( (Char - ('"' | '\')) | '\' ('\' | '"' | "'")? )* '"'
+SQuoteString    ::= "'" ( (Char - ("'" | '\')) | '\' ('\' | '"' | "'")? )* "'"
+
+
+(* --- Identifiers --- *)
+
+IDENTIFIER      ::= (Letter | Extra) (Letter | Digit | Extra)*
+LIDENTIFIER     ::= ('l' | 'L') "'" (Letter | Extra | LiteralChar)
+                    (Letter | Digit | Extra | LiteralChar)* "'"
+
+Letter          ::= 'a'..'z' | 'A'..'Z' | '_'
+Digit           ::= '0'..'9'
+Digit1          ::= '1'..'9'
+Extra           ::= '#' | '$'
+LiteralChar     ::= '[' | ']' | "'" | '"' | ' ' | '\'
+
+Ident           ::= IDENTIFIER | LIDENTIFIER
+IdentOrString   ::= Ident | STRING
+PackageIdent    ::= Ident ('.' Ident)*
+AsciiChar       ::= STRING                          (* first character of the unquoted string *)
+
+
+(* --- Lexical states (SPECIAL_TOKEN switches) ---
+ *
+ * sqlcode / sqldata / idlcode are SPECIAL_TOKENs: they switch state and
+ * are not returned to the parser. The matching endcode / enddata token
+ * returns to DEFAULT. While in a state, each source line is one token.
+ *
+ *   DEFAULT   --sqlcode-->  CODESTATE  --endcode-->  DEFAULT
+ *   DEFAULT   --sqldata-->  DATASTATE  --enddata-->  DEFAULT
+ *   DEFAULT   --idlcode-->  IDLSTATE   --endcode-->  DEFAULT
+ *)
+
+SQLCODE         ::= "sqlcode"  (' ' | #x9)* (#xA | #xD | #xD #xA)   (* -> CODESTATE *)
+ENDSQLCODE      ::= (' ' | #x9)* "endcode" (' ' | #x9)* (#xA | #xD | #xD #xA)?
+                                                                    (* -> DEFAULT  *)
+CODELINE        ::= (Char - (#xA | #xD))* (#xD #xA | #xA | #xD)
+
+SQLDATA         ::= "sqldata"  (' ' | #x9)* (#xA | #xD | #xD #xA)   (* -> DATASTATE *)
+ENDSQLDATA      ::= (' ' | #x9)* "enddata" (' ' | #x9)* (#xA | #xD | #xD #xA)?
+                                                                    (* -> DEFAULT  *)
+DATALINE        ::= (Char - (#xA | #xD))* (#xD #xA | #xA | #xD)
+
+IDLCODE         ::= "idlcode"  (' ' | #x9)* (#xA | #xD | #xD #xA)   (* -> IDLSTATE *)
+ENDIDLCODE      ::= (' ' | #x9)* "endcode" (' ' | #x9)* (#xA | #xD | #xD #xA)?
+                                                                    (* -> DEFAULT  *)
+IDLLINE         ::= (Char - (#xA | #xD))* (#xD #xA | #xA | #xD)
+
+
+(* ================================================================
+ * 2. Syntactic grammar
+ * ================================================================ *)
+
+(* Start symbol: Input  (JavaCC: jInput) *)
+
+Input           ::= DATABASE Ident
+                    ( FLAGS STRING+ )*
+                    ( PACKAGE PackageIdent )?
+                    ( OUTPUT IdentOrString | IMPORT IdentOrString )*
+                    Connect
+                    Tables+
+                    View*
+                    EOF
+
+
+Connect         ::= SERVER IdentOrString
+                    ( SCHEMA IdentOrString )?
+                    ( USERID Ident PASSWORD Ident )?
+
+
+(* --- Tables --- *)
+
+Tables          ::= ( Table Extras* | TableImport )
+                    Proc*
+                    ( PARM Parm )*
+
+TableImport     ::= IMPORT IdentOrString
+                    ( LEFTBRACK Ident+ RIGHTBRACK )?
+                    Alias?
+
+Table           ::= TABLE Ident
+                    Alias?
+                    ( CHECK STRING )?
+                    COMMENT*
+                    ( OPTIONS STRING+ )*
+                    Field*
+
+Field           ::= Ident Alias? Datatype FieldAttr* COMMENT*
+PackageField    ::= PackageIdent Alias? Datatype FieldAttr* COMMENT*
+
+FieldAttr       ::= DEFAULTV STRING
+                  | NOT? NULL
+                  | CALC
+                  | CHECK STRING
+
+Alias           ::= LEFTPAREN Ident RIGHTPAREN
+
+
+(* --- Datatypes --- *)
+
+Datatype        ::= BLOB Charsize?
+                  | BOOLEAN
+                  | BYTE ( EnumValue | CharList )?
+                  | CHAR Charsize? CharList?
+                  | ANSICHAR EnumChar?
+                  | WCHAR Charsize? CharList?
+                  | WANSICHAR EnumChar?
+                  | UTF8 Charsize? CharList?
+                  | SHORT ( EnumValue | CharList )?
+                  | INT ( EnumValue | CharList )?
+                  | LONG
+                  | UID
+                  | DATE
+                  | DATETIME
+                  | TIME
+                  | TIMESTAMP
+                  | AUTOTIMESTAMP
+                  | TLOB Charsize?
+                  | XML Charsize?
+                  | BIGXML Charsize?
+                  | JSON Charsize?
+                  | BIGJSON Charsize?
+                  | USERSTAMP
+                  | SEQUENCE
+                  | BIGSEQUENCE
+                  | IDENTITY
+                  | BIGIDENTITY
+                  | ( DOUBLE | FLOAT ) Floatsize?
+                  | MONEY
+                  | Lookup
+
+Lookup          ::= EQUALS ( LEFTPAREN Ident RIGHTPAREN )?
+
+EnumValue       ::= LEFTPAREN
+                      ( LINK Ident )?
+                      ( Ident EQUALS NUMBER COMMA? )+
+                    RIGHTPAREN
+
+EnumChar        ::= LEFTBRACK NUMBER RIGHTBRACK
+                  | LEFTPAREN
+                      ( NUMBER
+                      | ( LINK Ident )? ( Ident EQUALS AsciiChar COMMA? )+
+                      )
+                    RIGHTPAREN
+                  | NUMBER
+
+Charsize        ::= LEFTBRACK NUMBER RIGHTBRACK
+                  | LEFTPAREN NUMBER RIGHTPAREN
+                  | NUMBER
+
+Floatsize       ::= LEFTBRACK NUMBER COMMA NUMBER RIGHTBRACK
+                  | LEFTPAREN NUMBER COMMA NUMBER RIGHTPAREN
+
+CharList        ::= LEFTBRACE ( Ident COMMA? )+ RIGHTBRACE
+
+
+(* --- Parameters, grants, keys, links, constants --- *)
+
+Parm            ::= STRING?
+                    ( PARMSHOWS Ident+
+                    | PARMVIEWONLY
+                    | PARMSUPPLIED Ident+
+                    | PARMCACHE ( Ident | SELECTALL ) Ident*
+                    | PARMREADER ( Ident | SELECTALL )
+                    | PARMINSERT ( Ident | INSERT )
+                    | PARMUPDATE ( Ident | UPDATE )
+                    | PARMDELETE ( Ident | DELETEONE )
+                    )*
+
+Extras          ::= Grant | Key | Link | View | Const
+
+Const           ::= CONST Ident ( Ident EQUALS STRING COMMA? )+
+
+Grant           ::= GRANT Permission+ TO Ident+
+
+Permission      ::= ALL | DELETE | INSERT | SELECT | UPDATE | EXECUTE
+
+Key             ::= KEY Ident
+                    ( OPTIONS STRING+ )*
+                    Modifier*
+                    Ident+
+
+Modifier        ::= UNIQUE | PRIMARY
+
+Link            ::= LINK PackageIdent
+                    ( LEFTPAREN Ident+ RIGHTPAREN )?
+                    ( DELETE CASCADE? )?
+                    ( UPDATE CASCADE? )?
+                    ( OPTIONS STRING+ )*
+                    Ident+
+
+
+(* --- Views --- *)
+
+View            ::= VIEW Ident
+                    ( TO Ident+ )?
+                    ( OUTPUT Ident+ )?
+                    ( OldViewCode | NewViewCode )
+
+OldViewCode     ::= CODE STRING* ENDCODE
+
+(* NewViewCode is CODELINE* after a sqlcode special token has switched
+   to CODESTATE. It may also match empty in DEFAULT (no body). *)
+NewViewCode     ::= CODELINE*
+
+
+(* --- Procedures --- *)
+
+Proc            ::= ( PROC | SPROC ) ( StdProc | NewProc | UserProc )
+                  | OldData
+                  | NewData
+                  | IdlCode
+
+(* NewProc vs UserProc: both start with Ident. JavaCC uses LOOKAHEAD(3)
+   so NewProc is taken when Ident is followed by SELECT. *)
+
+StdProc         ::= StdProcKind ( OPTIONS STRING+ )*
+
+StdProcKind     ::= INSERT RETURNING?
+                  | UPDATE
+                  | UPDATEFOR Ident+
+                  | UPDATEBY Ident+ ( SET Ident+ )? ( AS Ident )?
+                  | BULKINSERT RowCount?
+                  | MAXTMSTAMP
+                  | BULKUPDATE RowCount?
+                  | DELETEONE ( LEFTPAREN STANDARD RIGHTPAREN )?
+                  | DELETEALL
+                  | DELETEBY Ident+
+                  | SELECTONE ( FOR? ( UPDATE | READONLY ) )?
+                  | SELECTONEBY Ident+
+                      ( IN? ORDER )?
+                      ( FOR? ( UPDATE | READONLY ) )?
+                      ( AS Ident )?
+                  | SELECTBY Ident+
+                      ( IN? ORDER Ident* DESC? )?
+                      ( FOR? ( UPDATE | READONLY ) )?
+                      ( AS Ident )?
+                      ( RETURNING Ident+
+                      | ( OUTPUT OutputType? Field* )?
+                      )
+                  | SELECTALL
+                      ( IN? ORDER Ident* DESC? )?
+                      ( FOR? ( UPDATE | READONLY ) )?
+                  | COUNT
+                  | EXISTS
+                  | MERGE
+
+NewProc         ::= Ident
+                    SELECT
+                    ( LEFTPAREN STANDARD RIGHTPAREN )?
+                    ( INPUT InputType? Field+ )?
+                    ( OUTPUT OutputType? PackageField* )?
+                    ( OldCode | NewCode )
+
+UserProc        ::= Ident
+                    ( LEFTPAREN STANDARD RIGHTPAREN )?
+                    COMMENT*
+                    ( OPTIONS STRING+ )*
+                    ( INPUT InputType? Field* )?
+                    ( INOUT OutputType? Field* )?
+                    ( OUTPUT OutputType? Field* )?
+                    ( OldCode | NewCode )
+
+RowCount        ::= LEFTPAREN NUMBER RIGHTPAREN
+
+InputType       ::= LEFTPAREN MULTIPLE RIGHTPAREN
+                  | LEFTPAREN NUMBER RIGHTPAREN
+                  | LEFTPAREN STANDARD RIGHTPAREN
+
+(* JavaCC splits the SINGLE alternatives with LOOKAHEAD(2), so
+   "( SINGLE UPDATE )" is intended but the first alternative commits
+   on "( SINGLE" and then expects ")" or STANDARD. Combined form: *)
+OutputType      ::= LEFTPAREN SINGLE ( STANDARD | UPDATE )? RIGHTPAREN
+                  | LEFTPAREN NUMBER RIGHTPAREN
+                  | LEFTPAREN STANDARD SINGLE? RIGHTPAREN
+
+OldCode         ::= SQL? CODE ( STRING | Ident OptSize )* ENDCODE
+NewCode         ::= CODELINE*                       (* typically via sqlcode…endcode *)
+
+OptSize         ::= ( LEFTPAREN NUMBER RIGHTPAREN )?
+
+OldData         ::= DATA STRING* ENDDATA
+NewData         ::= DATALINE DATALINE*              (* via sqldata…enddata *)
+IdlCode         ::= IDLLINE IDLLINE*                (* via idlcode…endcode *)
+
+
+(* ================================================================
+ * 3. Concrete (user-facing) forms for lexical-state blocks
+ *
+ * These are what appears in .si files. The parser sees only the
+ * inner *LINE tokens; the delimiters are SPECIAL_TOKENs.
+ * ================================================================ *)
+
+SqlCodeBlock    ::= "sqlcode"  Newline CodeTextLine* "endcode"  Newline?
+SqlDataBlock    ::= "sqldata"  Newline DataTextLine* "enddata"  Newline?
+IdlCodeBlock    ::= "idlcode"  Newline IdlTextLine*  "endcode"  Newline?
+
+Newline         ::= #xA | #xD | #xD #xA
+CodeTextLine    ::= (Char - (#xA | #xD))* Newline
+DataTextLine    ::= (Char - (#xA | #xD))* Newline
+IdlTextLine     ::= (Char - (#xA | #xD))* Newline
+)

@@ -1,6 +1,6 @@
 echo Running JPortal2 from ${PWD}
 docker run --rm -v ${PWD}:/local ghcr.io/si-gen/jportal2:1.8.14 \
-                      --inputdir=/local/src/interfaces \
+                      --inputdir=/local/src/main/resources/full_example_db/ \
                       --template-location=/local/downloaded_jportal_templates \
                       --template-generator \
                         SQLAlchemy:/local/src/python/bbdcontent/sqlalchemy \

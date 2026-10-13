@@ -1,0 +1,238 @@
+
+testDatabase
+    ContingencyStatus
+        ID is of type int
+        Description is of type String
+        UsrID is of type String
+        TMStamp is of type Timestamp
+        Insert
+            ID is of type int
+            Description is of type String
+            UsrID is of type String
+            TMStamp is of type Timestamp
+        SelectOne
+            ID is of type int
+        
+
+    DBHealthCheck
+        dummy is of type Timestamp
+        TestDB
+
+    Selection
+        ID is of type long
+        ContingencyID is of type long
+        ExternalReference is of type String
+        ContingencyExternalReference is of type String
+        SelectionStatus is of type int
+        Description is of type String
+        Price is of type double
+        Result is of type int
+        PercentageWin is of type double
+        PercentageScratch is of type double
+        Place is of type int
+        UsrID is of type String
+        TMStamp is of type Timestamp
+        SelectOne
+            ID is of type long
+        Update
+            ContingencyID is of type long
+            ExternalReference is of type String
+            ContingencyExternalReference is of type String
+            SelectionStatus is of type int
+            Description is of type String
+            Price is of type double
+            Result is of type int
+            PercentageWin is of type double
+            PercentageScratch is of type double
+            Place is of type int
+            UsrID is of type String
+            TMStamp is of type Timestamp
+            ID is of type long
+        Insert
+            ContingencyID is of type long
+            ExternalReference is of type String
+            ContingencyExternalReference is of type String
+            SelectionStatus is of type int
+            Description is of type String
+            Price is of type double
+            Result is of type int
+            PercentageWin is of type double
+            PercentageScratch is of type double
+            Place is of type int
+            UsrID is of type String
+            TMStamp is of type Timestamp
+        SelectForUpdateByContingencyId
+            ContingencyID is of type long
+        SelectByContingencyId
+            ContingencyID is of type long
+        
+
+    ExampleTable
+        ID is of type long
+        IntField is of type int
+        UniqueInt is of type int
+        StandardString is of type String
+        ByteField is of type byte
+        IntEnum is of type int
+        DateTimeColumn is of type Timestamp
+        DateTimeNullable is of type Timestamp
+        DateColumn is of type java.sql.Date
+        DateNullable is of type java.sql.Date
+        Blobby is of type String
+        TMStamp is of type Timestamp
+        SelectOne
+            ID is of type long
+        Update
+            IntField is of type int
+            UniqueInt is of type int
+            StandardString is of type String
+            ByteField is of type byte
+            IntEnum is of type int
+            DateTimeColumn is of type Timestamp
+            DateTimeNullable is of type Timestamp
+            DateColumn is of type java.sql.Date
+            DateNullable is of type java.sql.Date
+            Blobby is of type String
+            TMStamp is of type Timestamp
+            ID is of type long
+        Insert
+            IntField is of type int
+            UniqueInt is of type int
+            StandardString is of type String
+            ByteField is of type byte
+            IntEnum is of type int
+            DateTimeColumn is of type Timestamp
+            DateTimeNullable is of type Timestamp
+            DateColumn is of type java.sql.Date
+            DateNullable is of type java.sql.Date
+            Blobby is of type String
+            TMStamp is of type Timestamp
+        SelectForUpdateByUniqueInt
+            UniqueInt is of type int
+        GetByUniqueInt
+            UniqueInt is of type int
+        SelectByUniqueInt
+            UniqueInt is of type int
+        
+
+    SelectionStatus
+        ID is of type int
+        Description is of type String
+        UsrID is of type String
+        TMStamp is of type Timestamp
+        Insert
+            ID is of type int
+            Description is of type String
+            UsrID is of type String
+            TMStamp is of type Timestamp
+        SelectOne
+            ID is of type int
+        AAA
+            Description is of type String
+        SelectByDescriptionUsrID
+            Description is of type String
+            UsrID is of type String
+        SelectByUsrID
+            UsrID is of type String
+        DDD
+            UsrID is of type String
+        SelectOneByDescription
+            Description is of type String
+        
+
+    TableWithJSONColumn
+        ID is of type int
+        Payload is of type String
+        Insert
+            ID is of type int
+            Payload is of type String
+        SelectOne
+            ID is of type int
+        Update
+            Payload is of type String
+            ID is of type int
+        DeleteOne
+            ID is of type int
+
+    Contingency
+        ID is of type long
+        DataSourceId is of type int
+        ExternalReference is of type String
+        FixtureExternalReference is of type String
+        PlayTypeID is of type int
+        ContingencyStatus is of type int
+        Description is of type String
+        IsActive is of type int
+        IsActiveReason is of type String
+        SourceBetTypeID is of type int
+        SourceBetTypeValue is of type String
+        StartTime is of type Timestamp
+        CloseTime is of type Timestamp
+        ResultTime is of type Timestamp
+        MessageTimeStamp is of type Timestamp
+        UsrID is of type String
+        TMStamp is of type Timestamp
+        SelectOne
+            ID is of type long
+        SelectAll
+        Update
+            DataSourceId is of type int
+            ExternalReference is of type String
+            FixtureExternalReference is of type String
+            PlayTypeID is of type int
+            ContingencyStatus is of type int
+            Description is of type String
+            IsActive is of type int
+            IsActiveReason is of type String
+            SourceBetTypeID is of type int
+            SourceBetTypeValue is of type String
+            StartTime is of type Timestamp
+            CloseTime is of type Timestamp
+            ResultTime is of type Timestamp
+            MessageTimeStamp is of type Timestamp
+            UsrID is of type String
+            TMStamp is of type Timestamp
+            ID is of type long
+        Insert
+            DataSourceId is of type int
+            ExternalReference is of type String
+            FixtureExternalReference is of type String
+            PlayTypeID is of type int
+            ContingencyStatus is of type int
+            Description is of type String
+            IsActive is of type int
+            IsActiveReason is of type String
+            SourceBetTypeID is of type int
+            SourceBetTypeValue is of type String
+            StartTime is of type Timestamp
+            CloseTime is of type Timestamp
+            ResultTime is of type Timestamp
+            MessageTimeStamp is of type Timestamp
+            UsrID is of type String
+            TMStamp is of type Timestamp
+        BulkInsert
+            DataSourceId is of type int
+            ExternalReference is of type String
+            FixtureExternalReference is of type String
+            PlayTypeID is of type int
+            ContingencyStatus is of type int
+            Description is of type String
+            IsActive is of type int
+            IsActiveReason is of type String
+            SourceBetTypeID is of type int
+            SourceBetTypeValue is of type String
+            StartTime is of type Timestamp
+            CloseTime is of type Timestamp
+            ResultTime is of type Timestamp
+            MessageTimeStamp is of type Timestamp
+            UsrID is of type String
+            TMStamp is of type Timestamp
+        SelectForUpdateBySourceAndExternalRef
+            DataSourceId is of type int
+            ExternalReference is of type String
+        SelectBySourceAndFixtureExternalRef
+            DataSourceId is of type int
+            FixtureExternalReference is of type String
+        SelectForExpiry
+        
+

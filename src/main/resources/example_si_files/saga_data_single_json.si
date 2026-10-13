@@ -1,0 +1,21 @@
+DATABASE BBDMSG
+PACKAGE bbdservicebus.py_node_base.db
+OUTPUT   SagaDataSingleJSON
+SERVER   BBDMSG
+SCHEMA   BBDMSG
+
+TABLE SagaDataSingleJSON
+    Id               SEQUENCE           // The unique ID of this message
+    JsonData         JSON                  // The JSON serialized data for the saga
+    CorrelationId    CHAR(100)         // The correlation ID for the saga
+    UsrID            CHAR(50)          // The user ID that created or updated this record
+    TMStamp          TIMESTAMP      // The timestamp of the last update
+
+
+KEY PrimaryKey PRIMARY Id
+
+KEY KEY01 CorrelationId
+
+PROC    Insert Returning
+PROC    SelectOneBy CorrelationID FOR UPDATE As SelectOneByCorrelationIDForUpdate
+PROC    UpdateBy CorrelationId SET JsonData USrID TMStamp As UpdateByCorrelationID
