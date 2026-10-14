@@ -1,8 +1,9 @@
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 
-# JDK 11 matches the CI verify job. GraalVM 25 (with native-image) and Maven
-# are installed by the Java dev container feature. gcc and zlib are required
-# by native-image. MkDocs matches the documentation workflow.
+# JDK 11 remains available for compatibility checks. Maven itself must run on
+# JDK 17 or newer because native-maven-plugin is Java 17 bytecode. GraalVM 25
+# (with native-image) and Maven are installed by the Java dev container feature.
+# gcc and zlib are required by native-image. MkDocs matches the documentation workflow.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get install -y --no-install-recommends \
         openjdk-11-jdk \

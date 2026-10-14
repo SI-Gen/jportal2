@@ -52,26 +52,71 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-      # Prepares Maven Release
-      - name: "Maven Release"
-        uses: SI-Gen/github-actions-maven-release@master
-        env:
-          JAVA_HOME: /usr/lib/jvm/java-11-openjdk/
+          token: ${{ secrets.GITHUB_TOKEN }}
+      # native-maven-plugin 1.1.14 is Java 17 bytecode. The old release image
+      # only provided Java 11, which cannot load NativeExtension.
+      - uses: actions/setup-java@v5
         with:
-          access-token: ${{ secrets.GITHUB_TOKEN }}
-          release-branch-name: "master"
-          git-release-bot-name: "bbd-github-bot"
-          git-release-bot-email: "bbdgithubbot@gmail.com"
-          maven-args: "-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Prelease-oss-maven-central,gpg"
-          version-major: ${{ inputs.release_type == 'major' }}
-          version-minor: ${{ inputs.release_type == 'minor' }}
-          maven-repo-server-id: ossrh
-          maven-repo-server-username: ${{ secrets.OSSRH_USERNAME }}
-          maven-repo-server-password: ${{ secrets.OSSRH_TOKEN }}
-          gpg-enabled: true
-          gpg-key-id: ${{ secrets.GPG_KEY_ID }}
-          gpg-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+          server-id: ossrh
+          server-username: OSSRH_USERNAME
+          server-password: OSSRH_TOKEN
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+      - name: "Maven Release"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          RELEASE_TYPE: ${{ inputs.release_type }}
+        run: |
+          set -euo pipefail
+          git config user.name "bbd-github-bot"
+          git config user.email "bbdgithubbot@gmail.com"
+          git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+
+          version="$(mvn -B -q org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -DforceStdout)"
+          base="${version%-SNAPSHOT}"
+          IFS=. read -r major minor patch <<< "${base}"
+          dev_version_arg=()
+          case "${RELEASE_TYPE}" in
+            minor)
+              dev_version_arg=(-DdevelopmentVersion="${major}.$((minor + 1)).0-SNAPSHOT")
+              ;;
+            major)
+              dev_version_arg=(-DdevelopmentVersion="$((major + 1)).0.0-SNAPSHOT")
+              ;;
+          esac
+
+          inner_args="-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Dgpg.keyname=${GPG_KEY_ID} -Dgpg.passphrase=${GPG_PASSPHRASE} -Prelease-oss-maven-central,gpg"
+          release_args=(
+            -Dusername=x-access-token
+            -Dpassword="${GITHUB_TOKEN}"
+            -Dgpg.keyname="${GPG_KEY_ID}"
+            -Dgpg.passphrase="${GPG_PASSPHRASE}"
+            -Darguments="${inner_args}"
+          )
+          if ! mvn -B org.apache.maven.plugins:maven-release-plugin:3.1.1:prepare \
+            "${release_args[@]}" \
+            "${dev_version_arg[@]}"
+          then
+            mvn -B org.apache.maven.plugins:maven-release-plugin:3.1.1:rollback || true
+            exit 1
+          fi
+          if ! mvn -B org.apache.maven.plugins:maven-release-plugin:3.1.1:perform \
+            "${release_args[@]}"
+          then
+            mvn -B org.apache.maven.plugins:maven-release-plugin:3.1.1:rollback || true
+            exit 1
+          fi
 
   build_and_publish:
     name: "Build and Publish"
@@ -82,6 +127,11 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
       - name: "Get Previous tag"
         id: previoustag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
