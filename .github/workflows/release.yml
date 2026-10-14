@@ -63,12 +63,29 @@ jobs:
           server-id: ossrh
           server-username: OSSRH_USERNAME
           server-password: OSSRH_TOKEN
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg-passphrase: GPG_PASSPHRASE
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+      # setup-java writes this value straight to gpg. The secret is base64,
+      # which is the form the previous release action decoded before import.
+      - name: Import GPG key
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 "${HOME}/.gnupg"
+          printf 'allow-loopback-pinentry\n' >> "${HOME}/.gnupg/gpg-agent.conf"
+          printf 'pinentry-mode loopback\n' >> "${HOME}/.gnupg/gpg.conf"
+          gpgconf --kill gpg-agent || true
+          keyfile="$(mktemp)"
+          trap 'rm -f "$keyfile"' EXIT
+          if printf '%s' "${GPG_PRIVATE_KEY}" | grep -q 'BEGIN PGP PRIVATE KEY BLOCK'; then
+            printf '%s\n' "${GPG_PRIVATE_KEY}" > "$keyfile"
+          else
+            printf '%s' "${GPG_PRIVATE_KEY}" | tr -d '[:space:]' | base64 -d > "$keyfile"
+          fi
+          gpg --batch --import "$keyfile"
+          gpg --batch --list-secret-keys --keyid-format LONG
       - name: "Maven Release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
