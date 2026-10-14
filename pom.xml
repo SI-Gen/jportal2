@@ -6,7 +6,11 @@
     <version>1.11.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <properties>
-        <slf4j.version>1.7.25</slf4j.version>
+        <slf4j.version>2.0.19</slf4j.version>
+        <logback.version>1.6.5</logback.version>
+        <freemarker.version>2.3.35</freemarker.version>
+        <jcommander.version>1.82</jcommander.version>
+        <native.maven.plugin.version>1.1.14</native.maven.plugin.version>
         <compiler.source>1.8</compiler.source>
         <compiler.target>1.8</compiler.target>
         <compiler.release>1.8</compiler.release>
@@ -123,19 +127,19 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.3.0-alpha5</version>
+            <version>${logback.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/https://mvnrepository.com/artifact/com.beust/jcommander -->
         <dependency>
             <groupId>com.beust</groupId>
             <artifactId>jcommander</artifactId>
-            <version>1.72</version>
+            <version>${jcommander.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.freemarker/freemarker -->
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-            <version>2.3.30</version>
+            <version>${freemarker.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/junit/junit -->
         <dependency>
@@ -185,6 +189,7 @@
         </dependency>
     </dependencies>
     <build>
+        <defaultGoal>native:compile</defaultGoal>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -365,6 +370,26 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.graalvm.buildtools</groupId>
+                <artifactId>native-maven-plugin</artifactId>
+                <version>${native.maven.plugin.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <imageName>jportal2</imageName>
+                    <mainClass>bbd.jportal2.Main</mainClass>
+                    <skipNativeTests>true</skipNativeTests>
+                    <buildArgs>
+                        <buildArg>-H:+ReportExceptionStackTraces</buildArg>
+                        <buildArg>--enable-url-protocols=http,https</buildArg>
+                        <buildArg>--enable-https</buildArg>
+                        <buildArg>-H:+AddAllCharsets</buildArg>
+                        <buildArg>--initialize-at-run-time=org.eclipse.jgit</buildArg>
+                        <buildArg>--initialize-at-run-time=com.jcraft.jsch</buildArg>
+                        <buildArg>--initialize-at-run-time=org.yaml.snakeyaml</buildArg>
+                    </buildArgs>
+                </configuration>
+            </plugin>
             <!-- <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
@@ -402,10 +427,12 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <version>1.7</version>
                         <executions>
                             <execution>
+                                <id>echo-properties-install</id>
                                 <phase>install</phase>
                                 <configuration>
                                     <target>
@@ -415,6 +442,18 @@
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
+                            </execution>
+                            <execution>
+                                <id>echo-properties-validate</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <echoproperties />
+                                    </tasks>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
@@ -441,24 +480,6 @@
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
                         </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.7</version>
-                        <executions>
-                            <execution>
-                                <phase>validate</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <tasks>
-                                        <echoproperties />
-                                    </tasks>
-                                </configuration>
-                            </execution>
-                        </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -514,6 +535,26 @@
                                 <id>attach-javadocs</id>
                                 <goals>
                                     <goal>jar</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>build-native</id>
+                                <goals>
+                                    <goal>compile-no-fork</goal>
                                 </goals>
                                 <phase>package</phase>
                             </execution>

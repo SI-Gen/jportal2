@@ -1,0 +1,689 @@
+[
+  {
+    "name": "bbd.jportal2.CommandLineArgs",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.Const",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.Database",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.Enum",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.Field",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.Flag",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.GeneratedFileGroup",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.GeneratedFiles",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.Grant",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.JPortal2Arguments",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.JPortalTemplateOutputOptions",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.Key",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.Line",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.Link",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.Parameter",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.PlaceHolder",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.PlaceHolderPairs",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.Prime",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.Proc",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.Sequence",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.SQLProcDynamicSQLVariableToken",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.SQLProcEngineSugarToken",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.SQLProcFieldToken",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.SQLProcFieldVariableToken",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.SQLProcProcNameToken",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.SQLProcSchemaToken",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.SQLProcStringToken",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.SQLProcTableNameToken",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.Table",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.Value",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "bbd.jportal2.View",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "com.beust.jcommander.Parameter",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "com.beust.jcommander.Parameters",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "queryAllDeclaredMethods": true,
+    "queryAllPublicMethods": true,
+    "queryAllDeclaredConstructors": true,
+    "queryAllPublicConstructors": true
+  },
+  {
+    "name": "com.beust.jcommander.converters.BooleanConverter",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "java.lang.String"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "com.beust.jcommander.converters.CommaParameterSplitter",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "com.beust.jcommander.converters.StringConverter",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "com.beust.jcommander.converters.NoConverter",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "com.beust.jcommander.validators.NoValidator",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "com.beust.jcommander.validators.NoValueValidator",
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "bbd.jportal2.ConstBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.ConstCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.DatabaseBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.DatabaseCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.EnumBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.EnumCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.FieldBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.FieldCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.FlagBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.FlagCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.GeneratedFileGroupBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.GeneratedFileGroupCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.GeneratedFilesBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.GeneratedFilesCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.GrantBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.GrantCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.JPortalTemplateOutputOptionsBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.JPortalTemplateOutputOptionsCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.KeyBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.KeyCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.LineBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.LineCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.LinkBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.LinkCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.ParameterBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.ParameterCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.PlaceHolderBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.PlaceHolderCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.PlaceHolderPairsBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.PlaceHolderPairsCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.PrimeBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.PrimeCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.ProcBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.ProcCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.SequenceBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.SequenceCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.SQLProcDynamicSQLVariableTokenBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.SQLProcDynamicSQLVariableTokenCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.SQLProcEngineSugarTokenBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.SQLProcEngineSugarTokenCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.SQLProcFieldTokenBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.SQLProcFieldTokenCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.SQLProcFieldVariableTokenBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.SQLProcFieldVariableTokenCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.SQLProcProcNameTokenBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.SQLProcProcNameTokenCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.SQLProcSchemaTokenBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.SQLProcSchemaTokenCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.SQLProcStringTokenBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.SQLProcStringTokenCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.SQLProcTableNameTokenBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.SQLProcTableNameTokenCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.TableBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.TableCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.ValueBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.ValueCustomizer"
+  },
+  {
+    "name": "bbd.jportal2.ViewBeanInfo"
+  },
+  {
+    "name": "bbd.jportal2.ViewCustomizer"
+  },
+  {
+    "name": "java.lang.ObjectBeanInfo"
+  },
+  {
+    "name": "java.lang.ObjectCustomizer"
+  },
+  {
+    "name": "freemarker.core._2_4_OrLaterMarker"
+  },
+  {
+    "name": "ch.qos.logback.core.FileAppender",
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  }
+]

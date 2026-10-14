@@ -1,0 +1,16 @@
+{
+  "resources": {
+    "includes": [
+      {"pattern": "logback\\.xml"},
+      {"pattern": "logback-test\\.xml"},
+      {"pattern": "freemarker_implicit\\.ftl"},
+      {"pattern": "si_processor_templates/.*"},
+      {"pattern": "postprocessor_templates/.*"},
+      {"pattern": "META-INF/services/org\\.eclipse\\.jgit\\..*"},
+      {"pattern": "META-INF/services/freemarker\\..*"},
+      {"pattern": "org/eclipse/jgit/.*"},
+      {"pattern": "freemarker/.*"}
+    ]
+  },
+  "bundles": []
+}

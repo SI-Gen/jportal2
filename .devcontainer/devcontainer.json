@@ -1,0 +1,44 @@
+{
+    "name": "JPortal2",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/java:1": {
+            "version": "25",
+            "jdkDistro": "graal",
+            "installMaven": true,
+            "mavenVersion": "3.9"
+        }
+    },
+    "containerEnv": {
+        "JAVA_HOME": "/usr/local/sdkman/candidates/java/current"
+    },
+    "mounts": [
+        "source=jportal2-m2,target=/home/vscode/.m2,type=volume"
+    ],
+    "forwardPorts": [8000],
+    "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.m2 && java -version && javac -version && native-image --version && mvn -version && mkdocs --version",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "vscjava.vscode-java-pack"
+            ],
+            "settings": {
+                "java.compile.nullAnalysis.mode": "automatic",
+                "java.configuration.runtimes": [
+                    {
+                        "name": "JavaSE-11",
+                        "path": "/usr/lib/jvm/java-11"
+                    },
+                    {
+                        "name": "JavaSE-25",
+                        "path": "/usr/local/sdkman/candidates/java/current",
+                        "default": true
+                    }
+                ]
+            }
+        }
+    },
+    "remoteUser": "vscode"
+}
