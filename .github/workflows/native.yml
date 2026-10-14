@@ -1,0 +1,79 @@
+name: Native binaries
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - main
+    tags:
+      - '*'
+
+jobs:
+  native-image:
+    name: ${{ matrix.artifact }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: jportal2-linux-amd64
+            binary: jportal2
+          - os: macos-latest
+            artifact: jportal2-macos-aarch64
+            binary: jportal2
+          - os: windows-latest
+            artifact: jportal2-windows-amd64.exe
+            binary: jportal2.exe
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '25'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cache: 'maven'
+
+      - name: Build native image
+        run: mvn -B -DskipTests native:compile
+
+      - name: Smoke test
+        shell: bash
+        run: |
+          set -o pipefail
+          output="$(./target/${{ matrix.binary }} --help 2>&1)"
+          printf '%s\n' "$output"
+          printf '%s\n' "$output" | grep -F 'SI Generators'
+          printf '%s\n' "$output" | grep -F -- '--builtin-generator'
+
+      - name: Name the binary for this platform
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp "target/${{ matrix.binary }}" "dist/${{ matrix.artifact }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/${{ matrix.artifact }}
+          if-no-files-found: error
+
+  publish-release-assets:
+    name: Publish release assets
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: native-image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: jportal2-*
+          path: dist
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
