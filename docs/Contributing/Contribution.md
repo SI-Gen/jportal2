@@ -8,11 +8,14 @@ The workflow will provide a release to nexus and then prep the pom for the next 
 ```
 
 ### WORKFLOW Process
-1. When ready for a release, head over to the github actions tab 
-2. You should see the `Release`  workflow under the work-flows list
-3. The work flow is initiated manually on master. Provide a description of the release (not-required) 
-and what the next version of the release will be (patch, minor, major).
-4. Initiate Workflow and let the magic happen.
+A merge into `master` releases automatically:
+
+1. The Build workflow must succeed on the merge commit.
+2. The release runs only when that commit belongs to a pull request merged into `master`. Direct pushes, and the version commits created by the release itself, do not start another release.
+3. The patch version is incremented from the current `-SNAPSHOT` in `pom.xml` (for example `1.11.0-SNAPSHOT` becomes release `1.11.0`, then development continues at `1.11.1-SNAPSHOT`).
+4. The workflow tags that release, publishes it, uploads the jar, pushes the container image, and queues the native binaries onto the same GitHub release.
+
+To cut a minor or major release instead, run the `Release` workflow manually from the Actions tab and choose `minor` or `major`. A description is optional. The `pom.xml` version must still be a `-SNAPSHOT`.
 
 ![Work Flow](/docs/img/workflow.png "Work Flow")
 

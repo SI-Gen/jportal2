@@ -21,6 +21,64 @@ jobs:
       - name: 'Build with Maven'
         run: mvn --batch-mode --update-snapshots verify
 
+  release_gate:
+    name: 'Release gate'
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      release: ${{ steps.check.outputs.release }}
+      description: ${{ steps.check.outputs.description }}
+    steps:
+      - name: Release only merged pull requests
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const message = context.payload.head_commit?.message || '';
+            if (/\[maven-release-plugin\]|\[skip ci\]|\[ci skip\]/i.test(message)) {
+              core.info('Skipping release for an automated version commit.');
+              core.setOutput('release', 'false');
+              return;
+            }
+
+            const { data: pulls } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+            });
+            const merged = pulls.filter((pull) => pull.merged_at && pull.base.ref === 'master');
+            if (merged.length === 0) {
+              core.info('Skipping release because this push is not a merge into master.');
+              core.setOutput('release', 'false');
+              return;
+            }
+
+            const description = merged
+              .map((pull) => pull.title)
+              .join(', ')
+              .replace(/\r?\n/g, ' ');
+            core.info(`Releasing merged pull request(s): ${description}`);
+            core.setOutput('release', 'true');
+            core.setOutput('description', description);
+
+  release:
+    name: 'Release'
+    needs: release_gate
+    if: needs.release_gate.result == 'success' && needs.release_gate.outputs.release == 'true'
+    permissions:
+      contents: write
+      packages: write
+      actions: write
+    uses: ./.github/workflows/release.yml
+    secrets: inherit
+    with:
+      release_type: patch
+      release_description: ${{ needs.release_gate.outputs.description }}
+
 #  pre-release:
 #    name: 'Pre-Release'
 #    if: ${{ github.ref == 'refs/heads/master' }}
