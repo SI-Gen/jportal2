@@ -1,6 +1,6 @@
 # WORKFLOW
-The workflow is based off the git-repo [SI-Gen/github-actions-maven-release](https://github.com/SI-Gen/github-actions-maven-release).
-The workflow will provide a release to nexus and then prep the pom for the next development release based on the input provided
+The release runs on JDK 17. The GraalVM native plugin is Java 17 bytecode, so Maven cannot load it on JDK 11.
+The workflow publishes the release to Maven Central and then prepares `pom.xml` for the next development version.
 
 ** Note that the release version will be based off the current version in the pom. The pom MUST have a `-SNAPSHOT`.
 ```xml
