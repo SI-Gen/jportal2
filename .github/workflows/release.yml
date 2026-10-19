@@ -97,10 +97,41 @@ jobs:
             echo "GPG_KEY_ID is empty." >&2
             exit 1
           fi
+          # Field 2 is validity (e = expired). Field 12 is capability (s = sign).
+          key_status="$(gpg --batch --list-secret-keys --with-colons "${key_id}" || true)"
+          if ! printf '%s\n' "${key_status}" | grep -q '^sec:'; then
+            echo "GPG_KEY_ID ${key_id} does not match an imported secret key." >&2
+            exit 1
+          fi
+          validity="$(printf '%s\n' "${key_status}" | awk -F: '/^sec:/ { print $2; exit }')"
+          capability="$(printf '%s\n' "${key_status}" | awk -F: '/^sec:/ { print $12; exit }')"
+          case "${capability}" in
+            *s*|*S*) ;;
+            *)
+              echo "Secret key ${key_id} cannot sign (capabilities: ${capability:-unknown}). GPG_KEY_ID must be the signing key, not an encrypt-only subkey." >&2
+              exit 1
+              ;;
+          esac
+          # The imported secret stays expired in GitHub. Extend it on the runner
+          # and publish the new self-signature; Maven Central rejects an expired key.
+          if [ "${validity}" = "e" ]; then
+            echo "Secret key ${key_id} is expired. Extending it by 2 years."
+            if ! printf '%s' "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
+              --quick-set-expire "${key_id}" 2y; then
+              echo "Could not extend the expired key. Renew it locally and replace the GPG_PRIVATE_KEY secret with the updated export." >&2
+              exit 1
+            fi
+            if ! gpg --batch --keyserver hkps://keyserver.ubuntu.com --send-keys "${key_id}"; then
+              echo "Extended the key locally, but publishing the updated public key failed." >&2
+              echo "Maven Central still has the expired key. Upload this public key to the keyserver and the Central Portal account:" >&2
+              gpg --batch --armor --export "${key_id}" >&2
+              exit 1
+            fi
+          fi
           printf 'sign-check\n' > "$payload"
           if ! printf '%s' "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
             --allow-weak-key-signatures --local-user "${key_id}" --detach-sign --output "$signature" "$payload"; then
-            echo "Secret key cannot sign. GPG_KEY_ID must be the signing key, not an encrypt-only subkey." >&2
+            echo "Secret key ${key_id} still cannot sign. Check GPG_PASSPHRASE, and that the key is not revoked." >&2
             exit 1
           fi
       - name: "Maven Release"
