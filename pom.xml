@@ -509,6 +509,9 @@
                                 <configuration>
                                     <gpgArguments>
                                         <arg>--batch</arg>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                        <arg>--allow-weak-key-signatures</arg>
                                     </gpgArguments>
                                     <keyname>${gpg.keyname}</keyname>
                                     <passphrase><![CDATA[${gpg.passphrase}]]></passphrase>
