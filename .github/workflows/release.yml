@@ -66,19 +66,25 @@ jobs:
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
-      # setup-java writes this value straight to gpg. The secret is base64,
-      # which is the form the previous release action decoded before import.
+      # The private-key secret is base64, which is the form the previous release
+      # action decoded before import. Ubuntu's GnuPG rejects older keys whose
+      # binding signatures use SHA-1 with "Unusable secret key" unless this
+      # override is set. It does not change the digest used for new signatures.
       - name: Import GPG key
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           set -euo pipefail
           install -d -m 700 "${HOME}/.gnupg"
-          printf 'allow-loopback-pinentry\n' >> "${HOME}/.gnupg/gpg-agent.conf"
-          printf 'pinentry-mode loopback\n' >> "${HOME}/.gnupg/gpg.conf"
+          printf 'allow-loopback-pinentry\n' > "${HOME}/.gnupg/gpg-agent.conf"
+          printf '%s\n' 'pinentry-mode loopback' 'allow-weak-key-signatures' > "${HOME}/.gnupg/gpg.conf"
           gpgconf --kill gpg-agent || true
           keyfile="$(mktemp)"
-          trap 'rm -f "$keyfile"' EXIT
+          payload="$(mktemp)"
+          signature="$(mktemp)"
+          trap 'rm -f "$keyfile" "$payload" "$signature"' EXIT
           if printf '%s' "${GPG_PRIVATE_KEY}" | grep -q 'BEGIN PGP PRIVATE KEY BLOCK'; then
             printf '%s\n' "${GPG_PRIVATE_KEY}" > "$keyfile"
           else
@@ -86,6 +92,17 @@ jobs:
           fi
           gpg --batch --import "$keyfile"
           gpg --batch --list-secret-keys --keyid-format LONG
+          key_id="$(printf '%s' "${GPG_KEY_ID}" | tr -d '[:space:]')"
+          if [ -z "${key_id}" ]; then
+            echo "GPG_KEY_ID is empty." >&2
+            exit 1
+          fi
+          printf 'sign-check\n' > "$payload"
+          if ! printf '%s' "${GPG_PASSPHRASE}" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
+            --allow-weak-key-signatures --local-user "${key_id}" --detach-sign --output "$signature" "$payload"; then
+            echo "Secret key cannot sign. GPG_KEY_ID must be the signing key, not an encrypt-only subkey." >&2
+            exit 1
+          fi
       - name: "Maven Release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -113,11 +130,12 @@ jobs:
               ;;
           esac
 
-          inner_args="-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Dgpg.keyname=${GPG_KEY_ID} -Dgpg.passphrase=${GPG_PASSPHRASE} -Prelease-oss-maven-central,gpg"
+          key_id="$(printf '%s' "${GPG_KEY_ID}" | tr -d '[:space:]')"
+          inner_args="-DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip -Dgpg.keyname=${key_id} -Dgpg.passphrase=${GPG_PASSPHRASE} -Prelease-oss-maven-central"
           release_args=(
             -Dusername=x-access-token
             -Dpassword="${GITHUB_TOKEN}"
-            -Dgpg.keyname="${GPG_KEY_ID}"
+            -Dgpg.keyname="${key_id}"
             -Dgpg.passphrase="${GPG_PASSPHRASE}"
             -Darguments="${inner_args}"
           )
