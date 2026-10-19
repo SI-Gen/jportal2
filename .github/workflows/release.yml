@@ -60,7 +60,7 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: maven
-          server-id: ossrh
+          server-id: central
           server-username: OSSRH_USERNAME
           server-password: OSSRH_TOKEN
         env:
@@ -147,6 +147,16 @@ jobs:
           git config user.name "bbd-github-bot"
           git config user.email "bbdgithubbot@gmail.com"
           git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+
+          # A re-run checks out the original workflow SHA. master on GitHub may
+          # have moved since then, and release:prepare would push a non-fast-forward.
+          if [ "${GITHUB_REF_TYPE}" != "branch" ]; then
+            echo "Run this workflow from a branch. The current ref is ${GITHUB_REF}." >&2
+            exit 1
+          fi
+          git fetch origin "${GITHUB_REF_NAME}"
+          git checkout "${GITHUB_REF_NAME}"
+          git merge --ff-only "origin/${GITHUB_REF_NAME}"
 
           version="$(mvn -B -q org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -DforceStdout)"
           base="${version%-SNAPSHOT}"
